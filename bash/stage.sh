@@ -40,17 +40,17 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'b
   if [ -f "$originalBackupApp" ]
   then
   	mv "$originalBackupApp" "$rollBackApp";
-  #fi
+  fi
   
   if [ -f "$currentApp" ]
   then
   	mv "$currentApp" "$originalBackupApp";
-  #fi
+  fi
 
   if [ -f "$newAppToBecomeCurrentApp" ]
   then
   	mv "$newAppToBecomeCurrentApp" "$currentApp";
-  #fi
+  fi
 
   #echo $currentApp
   #echo $originalBackupApp
