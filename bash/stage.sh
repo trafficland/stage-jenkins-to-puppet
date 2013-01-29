@@ -37,9 +37,9 @@ ssh $destinationAddress applicationName=$applicationName 'bash -s' <<'ENDSSH'
   #then
   #	echo "$device0 is a block device.
   #fi
-  mv "$originalBackupApp" "$rollBackApp"
-  mv "$currentApp" "$originalBackupApp"
-  mv "$newAppToBecomeCurrentApp" "$currentApp"
+  mv "$originalBackupApp" "$rollBackApp";
+  mv "$currentApp" "$originalBackupApp";
+  mv "$newAppToBecomeCurrentApp" "$currentApp";
   echo $currentApp
   echo $originalBackupApp
   echo $rollBackApp
