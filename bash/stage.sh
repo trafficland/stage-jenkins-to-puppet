@@ -52,7 +52,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'b
   	mv "$newAppToBecomeCurrentApp" "$currentApp";
   fi
 
-  #echo $currentApp
+  echo 'Your latest application should now be: '$currentApp'!'
   #echo $originalBackupApp
   #echo $rollBackApp
 ENDSSH
