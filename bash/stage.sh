@@ -30,3 +30,4 @@ cd $stagePath
 mv $applicationName'.last' $applicationName'.last.bak'
 mv $applicationName $applicationName'.last'
 mv $applicationNameNew $applicationName
+exit
