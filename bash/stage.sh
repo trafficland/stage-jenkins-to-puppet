@@ -1,11 +1,58 @@
 #get correct arguments
-jenkinsJobName=$1
-destinationAddress=$2
-stageLocation=$3
-#can grap any zip in dist as there is only every one in there
-packageLocation=scp' '/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*.zip 
-#add url
+jenkinsJobName=$1 #example proj1-stage
+destinationAddress=$2 #
+stageHome=$3 #example ~/stage/
+applicationName=$4 #example proj1
 
-destination=$destinationAddress:$stageLocation
-cmd=$packageLocation' '$destination
+applicationNameNew=$applicationName'.new'
+
+#create the package location by replacing the jenkinsJobName variable with the actual jobName
+packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*.zip
+
+#stagePath will combine the stageHome location to the subdirectory structure we want
+#ie: if stageHome = '~/stage/'' and applicationName = 'proj1'
+#then stagePath = ~/stage/proj1/ 
+stagePath=$stageHome''$applicationName'/'
+#append appNew, #then stagePath = ~/stage/proj1/proj1.new
+stagePathWithNewApplication=$stagePath''$applicationNameNew
+
+#destination will combine address/hostname to a full stagePath, this will fulfill the scp destination
+#ie: 127.0.0.1:~/stage/proj1/proj1New
+destination=$destinationAddress:$stagePathWithNewApplication
+#pack full scp line
+cmd=scp' '$packageLocation' '$destination
+#execute scp
 $cmd
+
+#ssh into puppet machine
+#http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
+  # commands to run on remote host
+  newAppToBecomeCurrentApp=$applicationName'.new'
+  currentApp=$applicationName
+  originalBackupApp=$applicationName'.last'
+  rollBackApp=$applicationName'.last.bak'
+  
+  echo 'stagePath: '$stagePath
+  #pwd
+  cd $stagePath
+  #move each app if it exists as a file
+  if [ -f "$originalBackupApp" ]
+  then
+  	mv "$originalBackupApp" "$rollBackApp";
+  fi
+  
+  if [ -f "$currentApp" ]
+  then
+  	mv "$currentApp" "$originalBackupApp";
+  fi
+
+  if [ -f "$newAppToBecomeCurrentApp" ]
+  then
+  	mv "$newAppToBecomeCurrentApp" "$currentApp";
+  fi
+
+  echo 'Your latest application should now be: '$currentApp'!'
+  #echo $originalBackupApp
+  #echo $rollBackApp
+ENDSSH
