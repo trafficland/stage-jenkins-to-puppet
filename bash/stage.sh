@@ -4,7 +4,7 @@ destinationAddress=$2 #
 stageHome=$3 #example ~/stage/
 applicationName=$4 #example proj1
 
-applicationNameNew = $applicationName'.new'
+applicationNameNew=$applicationName'.new'
 
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
 packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*.zip
@@ -14,7 +14,7 @@ packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*.zip
 #then stagePath = ~/stage/proj1/ 
 stagePath=$stageHome''$applicationName'/'
 #append appNew, #then stagePath = ~/stage/proj1/proj1.new
-stagePathWithNewApplication = $stagePath''$applicationNameNew
+stagePathWithNewApplication=$stagePath''$applicationNameNew
 
 #destination will combine address/hostname to a full stagePath, this will fulfill the scp destination
 #ie: 127.0.0.1:~/stage/proj1/proj1New
@@ -28,5 +28,5 @@ $cmd
 ssh $destinationAddress
 cd $stagePath
 mv $applicationName'.last' $applicationName'.last.bak'
-mv $applicationName $applicationName'.last
+mv $applicationName $applicationName'.last'
 mv $applicationNameNew $applicationName
