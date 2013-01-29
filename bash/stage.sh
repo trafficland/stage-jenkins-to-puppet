@@ -20,23 +20,19 @@ stagePathWithNewApplication=$stagePath''$applicationNameNew
 #ie: 127.0.0.1:~/stage/proj1/proj1New
 destination=$destinationAddress:$stagePathWithNewApplication
 #pack full scp line
-cmd=scp' '$packageLocation' '$destination
+cmd=scp''$packageLocation' '$destination
 #execute scp
 $cmd
 
 #ssh into puppet machine
-cmdSSH=ssh' '$destinationAddress
-sshCmdMoveIntoStagePath=$cmdSSH' "cd $stagePath; exit bash"'
-cmdCopyLastToLastBak=mv' '$applicationName'.last '$applicationName'.last.bak'
-sshCmdCopyLastToLastBak=$cmdSSH' "$cmdCopyLastToLastBak; exit bash"'
-cmdCopyOldLatestToLast=mv' '$applicationName' '$applicationName'.last'
-sshCmdCopyOldLatestToLast=$cmdSSH' "$cmdCopyOldLatestToLast; exit bash"'
-cmdCopyNewToDefault=mv' '$applicationNameNew' '$applicationName
-sshCmdCopyNewToDefault=$cmdSSH' "$cmdCopyNewToDefault; exit bash"'
-#cmdExit=exit
-
-$sshCmdMoveIntoStagePath
-$sshCmdCopyLastToLastBak
-$sshCmdCopyOldLatestToLast
-$sshCmdCopyNewToDefault
-#$cmdExit
+#http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
+ssh $destinationAddress applicationName=$applicationName 'bash -s' <<'ENDSSH'
+  # commands to run on remote host
+  cd $stagePath
+  mv $applicationName'.last' $applicationName'.last.bak'
+  mv $applicationName $applicationName'.last'
+  mv $applicationNameNew $applicationName
+  echo $applicationName
+  echo $applicationName.'last'
+  echo $applicationName.'last.bak'
+ENDSSH
