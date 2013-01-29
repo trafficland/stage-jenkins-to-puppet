@@ -26,14 +26,14 @@ $cmd
 
 #ssh into puppet machine
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
-ssh $destinationAddress applicationName=$applicationName 'bash -s' <<'ENDSSH'
-  newAppToBecomeCurrentApp=$stagePath$applicationName'.new'
-  currentApp=$stagePath$applicationName
-  originalBackupApp=$stagePath$applicationName'.last'
-  rollBackApp=$stagePath$applicationName'.last.bak'
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
+  newAppToBecomeCurrentApp=$applicationName'.new'
+  currentApp=$applicationName
+  originalBackupApp=$applicationName'.last'
+  rollBackApp=$applicationName'.last.bak'
   # commands to run on remote host
   echo 'stagePath: '$stagePath
-  #cd $stagePath
+  cd $stagePath
   pwd
   #if [ -b "$device0" ]
   #then
