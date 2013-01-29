@@ -27,22 +27,32 @@ $cmd
 #ssh into puppet machine
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
 ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
+  # commands to run on remote host
   newAppToBecomeCurrentApp=$applicationName'.new'
   currentApp=$applicationName
   originalBackupApp=$applicationName'.last'
   rollBackApp=$applicationName'.last.bak'
-  # commands to run on remote host
+  
   echo 'stagePath: '$stagePath
+  #pwd
   cd $stagePath
-  pwd
-  #if [ -b "$device0" ]
-  #then
-  #	echo "$device0 is a block device.
+  #move each app if it exists as a file
+  if [ -f "$originalBackupApp" ]
+  then
+  	mv "$originalBackupApp" "$rollBackApp";
   #fi
-  mv "$originalBackupApp" "$rollBackApp";
-  mv "$currentApp" "$originalBackupApp";
-  mv "$newAppToBecomeCurrentApp" "$currentApp";
-  echo $currentApp
-  echo $originalBackupApp
-  echo $rollBackApp
+  
+  if [ -f "$currentApp" ]
+  then
+  	mv "$currentApp" "$originalBackupApp";
+  #fi
+
+  if [ -f "$newAppToBecomeCurrentApp" ]
+  then
+  	mv "$newAppToBecomeCurrentApp" "$currentApp";
+  #fi
+
+  #echo $currentApp
+  #echo $originalBackupApp
+  #echo $rollBackApp
 ENDSSH
