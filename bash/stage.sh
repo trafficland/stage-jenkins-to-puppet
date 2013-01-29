@@ -26,14 +26,17 @@ $cmd
 
 #ssh into puppet machine
 cmdSSH=ssh' '$destinationAddress
-cmdMoveIntoStagePath=cd' '$stagePath
+sshCmdMoveIntoStagePath=$cmdSSH' "cd $stagePath; exit bash"'
 cmdCopyLastToLastBak=mv' '$applicationName'.last '$applicationName'.last.bak'
+sshCmdCopyLastToLastBak=$cmdSSH' "$cmdCopyLastToLastBak; exit bash"'
 cmdCopyOldLatestToLast=mv' '$applicationName' '$applicationName'.last'
+sshCmdCopyOldLatestToLast=$cmdSSH' "$cmdCopyOldLatestToLast; exit bash"'
 cmdCopyNewToDefault=mv' '$applicationNameNew' '$applicationName
-cmdExit=exit
-$cmdSSH
-$cmdMoveIntoStagePath
-$cmdCopyLastToLastBak
-$cmdCopyOldLatestToLast
-$cmdCopyNewToDefault
-$cmdExit
+sshCmdCopyNewToDefault=$cmdSSH' "$cmdCopyNewToDefault; exit bash"'
+#cmdExit=exit
+
+$sshCmdMoveIntoStagePath
+$sshCmdCopyLastToLastBak
+$sshCmdCopyOldLatestToLast
+$sshCmdCopyNewToDefault
+#$cmdExit
