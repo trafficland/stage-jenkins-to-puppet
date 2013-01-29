@@ -20,14 +20,20 @@ stagePathWithNewApplication=$stagePath''$applicationNameNew
 #ie: 127.0.0.1:~/stage/proj1/proj1New
 destination=$destinationAddress:$stagePathWithNewApplication
 #pack full scp line
-cmd=scp''$packageLocation' '$destination
+cmd=scp' '$packageLocation' '$destination
 #execute scp
 $cmd
 
 #ssh into puppet machine
-ssh $destinationAddress
-cd $stagePath
-mv $applicationName'.last' $applicationName'.last.bak'
-mv $applicationName $applicationName'.last'
-mv $applicationNameNew $applicationName
-exit
+cmdSSH=ssh' '$destinationAddress
+cmdMoveIntoStagePath=cd' '$stagePath
+cmdCopyLastToLastBak=mv' '$applicationName'.last '$applicationName'.last.bak'
+cmdCopyOldLatestToLast=mv' '$applicationName' '$applicationName'.last'
+cmdCopyNewToDefault=mv' '$applicationNameNew' '$applicationName
+cmdExit=exit
+$cmdSSH
+$cmdMoveIntoStagePath
+$cmdCopyLastToLastBak
+$cmdCopyOldLatestToLast
+$cmdCopyNewToDefault
+$cmdExit
