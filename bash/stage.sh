@@ -29,7 +29,7 @@ $cmd
 
 #ssh into puppet machine
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
-ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension 'bash -s' <<'ENDSSH'
   # commands to run on remote host
   newAppToBecomeCurrentApp=$applicationName'.new'$extension
   currentApp=$applicationName$extension
