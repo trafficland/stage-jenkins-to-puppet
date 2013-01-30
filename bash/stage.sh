@@ -32,7 +32,7 @@ $cmd
 ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
   # commands to run on remote host
   newAppToBecomeCurrentApp=$applicationName'.new'$extension
-  currentApp=$applicationName
+  currentApp=$applicationName$extension
   originalBackupApp=$applicationName'.last'$extension
   rollBackApp=$applicationName'.last.bak'$extension
   
