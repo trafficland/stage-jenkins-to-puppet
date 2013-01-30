@@ -4,7 +4,7 @@ destinationAddress=$2 #
 stageHome=$3 #example ~/stage/
 applicationName=$4 #example proj1
 
-applicationNameNew=$applicationName'.new'
+applicationNameNew=$applicationName'.new.zip'
 
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
 packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*.zip
@@ -28,10 +28,10 @@ $cmd
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
 ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
   # commands to run on remote host
-  newAppToBecomeCurrentApp=$applicationName'.new'
+  newAppToBecomeCurrentApp=$applicationName'.new.zip'
   currentApp=$applicationName
-  originalBackupApp=$applicationName'.last'
-  rollBackApp=$applicationName'.last.bak'
+  originalBackupApp=$applicationName'.last.zip'
+  rollBackApp=$applicationName'.last.bak.zip'
   
   echo 'stagePath: '$stagePath
   #pwd
