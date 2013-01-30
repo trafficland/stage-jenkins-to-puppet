@@ -7,7 +7,7 @@ extension=${5-.zip}
 echo $extension
 
 
-applicationNameNew=$applicationName'.new$extension'
+applicationNameNew=$applicationName'.new'$extension
 
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
 packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*.zip
@@ -31,10 +31,10 @@ $cmd
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
 ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
   # commands to run on remote host
-  newAppToBecomeCurrentApp=$applicationName'.new$extension'
+  newAppToBecomeCurrentApp=$applicationName'.new'$extension
   currentApp=$applicationName
-  originalBackupApp=$applicationName'.last$extension'
-  rollBackApp=$applicationName'.last.bak$extension'
+  originalBackupApp=$applicationName'.last'$extension
+  rollBackApp=$applicationName'.last.bak'$extension
   
   echo 'stagePath: '$stagePath
   #pwd
