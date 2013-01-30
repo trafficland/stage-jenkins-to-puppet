@@ -36,7 +36,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   originalBackupApp=$applicationName'.last'$extension
   rollBackApp=$applicationName'.last.bak'$extension
   
-  echo 'stagePath: '$stagePath
+  echo 'stagePath: '$stagePath' on '$destinationAddress 
   #pwd
   cd $stagePath
   #move each app if it exists as a file
