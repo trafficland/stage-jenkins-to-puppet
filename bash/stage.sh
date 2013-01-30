@@ -3,14 +3,14 @@ jenkinsJobName=$1 #example proj1-stage
 destinationAddress=$2 #
 stageHome=$3 #example ~/stage/
 applicationName=$4 #example proj1
-extension=${5-.zip}
-echo $extension
+extension=${5-.zip} #default extension to zip
+echo 'Your extension for '$applicationName' is '$extension' .'
 
 
 applicationNameNew=$applicationName'.new'$extension
 
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
-packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*.zip
+packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*$extension
 
 #stagePath will combine the stageHome location to the subdirectory structure we want
 #ie: if stageHome = '~/stage/'' and applicationName = 'proj1'
