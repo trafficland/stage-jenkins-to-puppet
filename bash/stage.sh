@@ -31,7 +31,7 @@ $cmd
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
 ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress 'bash -s' <<'ENDSSH'
   # commands to run on remote host
-  newAppToBecomeCurrentApp=$applicationNiame'.new'$extension
+  newAppToBecomeCurrentApp=$applicationName'.new'$extension
   currentApp=$applicationName$extension
   originalBackupApp=$applicationName'.last'$extension
   rollBackApp=$applicationName'.last.bak'$extension
@@ -56,11 +56,11 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   fi
 
   #copy latest to puppet module location
-  rm -f /etc/puppet/modules/"$applicationName"/files/*"$extension"
+  rm -f /etc/puppet/modules/"$applicationName"/files/stage/*"$extension"
   
   puppetModule="/etc/puppet/modules/$applicationName/files/stage"
   echo 'App should be sent to puppet module @: '$puppetModule
-  cp $currentApp $puppetModule
+  cp "$currentApp" "$puppetModule";
 
   echo 'Your latest application should now be: '$currentApp'!'
   #echo $originalBackupApp
