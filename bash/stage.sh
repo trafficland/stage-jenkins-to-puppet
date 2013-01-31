@@ -81,11 +81,11 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
 
   #extract
   extractWhole=$extractCmd' ./'$currentApp
-  $extractWhole
+  $extractWhole 
 
   #find the depth of packaging
   #move into matching directory there should only be one unziped applicationName at this point
-  cd "$applicationName"'*';
+  cd $applicationName'*'
   
   #see if we need to go deeper
   if test -n "$(find $applicationName -maxdepth 1 -print -quit)"
