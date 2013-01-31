@@ -85,6 +85,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
 
   #find the depth of packaging
   #move into matching directory there should only be one unziped applicationName at this point
+  #wild cards in a command need to be created as a variable
   changeDirIntoZip=cd' '$applicationName'*'
   $changeDirIntoZip
   
@@ -105,6 +106,9 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   rm -rf $puppetModule/"$applicationName"'*'
   
   #whatever the current naming convention it will be just appName in the end!
-  cp "$applicationName*" "$puppetModule"/$applicationName;
+  copyAppToPuppetModule=cp' '"$applicationName"'* '"$puppetModule"/"$applicationName";
+  #execute copy or move
+  $copyAppToPuppetModule
+  
   echo 'App should be sent to puppet module @: '$puppetModule
 ENDSSH
