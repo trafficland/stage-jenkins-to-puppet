@@ -55,9 +55,9 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   	mv "$newAppToBecomeCurrentApp" "$currentApp";
   fi
 
-  #move latest to puppet module location
-  rm -f "/etc/puppet/modules/$applicationName/files/*$extension";  
-  mv "$currentApp" "/etc/puppet/modules/$applicationName/files/.";
+  #copy latest to puppet module location
+  rm -f /etc/puppet/modules/"$applicationName"/files/*"$extension"
+  cp "$currentApp" "/etc/puppet/modules/$applicationName/files";
 
   echo 'Your latest application should now be: '$currentApp'!'
   #echo $originalBackupApp
