@@ -4,8 +4,9 @@ destinationAddress=$2 #
 stageHome=$3 #example ~/stage/
 applicationName=$4 #example proj1
 extension=${5-.zip} #default extension to zip
-echo 'Your extension for '$applicationName' is '$extension' .'
+extractCmd=${6-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
+echo 'Your extension for '$applicationName' is '$extension' . Your extraction cmd is '$extractCmd'.'
 
 applicationNameNew=$applicationName'.new'$extension
 
@@ -29,8 +30,10 @@ $cmd
 
 #ssh into puppet machine
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
-ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress 'bash -s' <<'ENDSSH'
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd 'bash -s' <<'ENDSSH'
   # commands to run on remote host
+  
+  ######## Begin local hive replication
   newAppToBecomeCurrentApp=$applicationName'.new'$extension
   currentApp=$applicationName$extension
   originalBackupApp=$applicationName'.last'$extension
@@ -54,15 +57,46 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   then
   	mv "$newAppToBecomeCurrentApp" "$currentApp";
   fi
+  ######## End local hive replication
 
-  #copy latest to puppet module location
-  rm -f /etc/puppet/modules/"$applicationName"/files/stage/*"$extension"
+  ######## Begin Extraction
+  #an extracted package is desirable for puppet management, since the extracted contents is pushed "as is"
+  #creating an isolated location for unzipping the package
+  extractDir=extractZone
   
-  puppetModule="/etc/puppet/modules/$applicationName/files/stage"
-  echo 'App should be sent to puppet module @: '$puppetModule
-  cp "$currentApp" "$puppetModule";
+  #always start with a fresh extraction zone
+  if [ -f "$extractDir" ]
+  then
+    rm -rf $extractDir
+  else  
+    mkdir $extractDir
+  fi
 
-  echo 'Your latest application should now be: '$currentApp'!'
-  #echo $originalBackupApp
-  #echo $rollBackApp
+  #copy latest compressed app to extractZone and extract!
+  cp $currentApp ./$extractDir
+  cd $$extractDir
+  $extractCmd $currentApp
+
+  #find the depth of packaging
+  #move into matching directory, there should only be one unziped applicationName at this point
+  cd $applicationName* 
+  
+  #see if we need to go deeper
+  if test -n "$(find ./$applicationName -maxdepth 1 -print -quit)"
+  then
+    echo found package one level deep moving to puppet modules
+    
+  else
+    echo package is at zero depth, backing out and moving to puppet
+    cd ../
+  fi
+  ####### End Extraction
+
+  ############# Actual Puppet Module Copying
+  #clean up puppet module hive, and set up puppet module locations
+  puppetModule=/etc/puppet/modules/"$applicationName"/files/stage
+  rm -rf $puppetModule/$applicationName*
+  
+  cp "$applicationName" "$puppetModule";
+  echo 'App should be sent to puppet module @: '$puppetModule
 ENDSSH
