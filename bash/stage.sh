@@ -69,10 +69,9 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   if [ -d "$extractDir" ]
   then
     rm -rf $extractDir
-  else  
-    mkdir $extractDir
   fi
-
+  mkdir $extractDir
+  
   #copy latest compressed app to extractZone and extract!
   cp $currentApp ./$extractDir
   cd $extractDir
@@ -81,7 +80,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
 
   #find the depth of packaging
   #move into matching directory there should only be one unziped applicationName at this point
-  cd $applicationName* 
+  cd "$applicationName"'*';
   
   #see if we need to go deeper
   if test -n "$(find $applicationName -maxdepth 1 -print -quit)"
