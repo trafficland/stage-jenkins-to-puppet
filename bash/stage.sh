@@ -75,6 +75,10 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   #copy latest compressed app to extractZone and extract!
   cp $currentApp ./$extractDir
   cd $extractDir
+  
+  echo should be in extractZone
+  pwd
+
   #extract
   $extractCmd' '$currentApp
 
@@ -96,7 +100,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   ############# Actual Puppet Module Copying
   #clean up puppet module hive, and set up puppet module locations
   puppetModule=/etc/puppet/modules/"$applicationName"/files/stage
-  rm -rf $puppetModule/$applicationName*
+  rm -rf $puppetModule/"$applicationName"'*'
   
   #whatever the current naming convention it will be just appName in the end!
   cp "$applicationName*" "$puppetModule"/$applicationName;
