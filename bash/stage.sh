@@ -1,3 +1,4 @@
+#!/bin/sh
 #get correct arguments
 jenkinsJobName=$1 #example proj1-stage
 destinationAddress=$2 #
@@ -65,7 +66,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   extractDir=extractZone
   
   #always start with a fresh extraction zone
-  if [ -f "$extractDir" ]
+  if [ -d "$extractDir" ]
   then
     rm -rf $extractDir
   else  
@@ -83,7 +84,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   cd $applicationName* 
   
   #see if we need to go deeper
-  if test -n "$(find ./$applicationName -maxdepth 1 -print -quit)"
+  if test -n "$(find $applicationName -maxdepth 1 -print -quit)"
   then
     echo found package one level deep moving to puppet modules
     
@@ -98,6 +99,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   puppetModule=/etc/puppet/modules/"$applicationName"/files/stage
   rm -rf $puppetModule/$applicationName*
   
-  cp "$applicationName" "$puppetModule";
+  #whatever the current naming convention it will be just appName in the end!
+  cp "$applicationName*" "$puppetModule"/$applicationName;
   echo 'App should be sent to puppet module @: '$puppetModule
 ENDSSH
