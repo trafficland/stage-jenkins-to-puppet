@@ -106,7 +106,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   rm -rf $puppetModule/"$applicationName"'*'
   
   #whatever the current naming convention it will be just appName in the end!
-  copyAppToPuppetModule=cp' '"$applicationName"'* '"$puppetModule"/"$applicationName";
+  copyAppToPuppetModule=cp' -r '"$applicationName"'* '"$puppetModule"/"$applicationName";
   #execute copy or move
   echo Copying via command $copyAppToPuppetModule
   $copyAppToPuppetModule
