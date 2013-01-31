@@ -85,7 +85,8 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
 
   #find the depth of packaging
   #move into matching directory there should only be one unziped applicationName at this point
-  cd $applicationName'*'
+  changeDirIntoZip=cd' '$applicationName'*'
+  $changeDirIntoZip
   
   #see if we need to go deeper
   if test -n "$(find $applicationName -maxdepth 1 -print -quit)"
