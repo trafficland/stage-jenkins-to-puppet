@@ -80,7 +80,8 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
   pwd
 
   #extract
-  $extractCmd' '$currentApp
+  extractWhole=$extractCmd' ./'$currentApp
+  $extractWhole
 
   #find the depth of packaging
   #move into matching directory there should only be one unziped applicationName at this point
