@@ -23,6 +23,17 @@ project/project
 .idea
 atlassian-ide-plugin.xml
 
+#dump rdb
+*.rdb
 
-# vim
+#OSX
+.DS_STORE 
+
+#Sublime
+.sublime*
+
+#unix swap/ backups
 *.swp
+
+#dia swp
+*.dia~
