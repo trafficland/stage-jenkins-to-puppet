@@ -30,6 +30,9 @@ object PuppetSubstantiatorBuild extends Build {
         "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/",
         "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
         ),
+      sourceGenerators in Compile <+= sourceManaged in Compile map { outDir: File =>
+        writeVersion(outDir)
+      },
       testOptions in Test := Seq( Tests.Filter(s => databaseIndependentSpecsFilter(s)) ),
       testOptions in DatabaseTests := Seq( Tests.Filter(s => databaseDependentSpecsFilter(s)) ),
       testOptions in AllTests := Seq( Tests.Filter(s => allSpecsFilter(s))
@@ -38,6 +41,18 @@ object PuppetSubstantiatorBuild extends Build {
     fork in DatabaseTests := false,
     fork in AllTests := false
   ).dependsOn(gitHubDependencies: _*)
+
+  def writeVersion(outDir: File) = {
+    val file = outDir / "controllers/AppInfo.scala"
+    IO.write(file,
+      """package controllers
+    object AppInfo {
+      val version = "%s"
+      val name = "%s"
+      val vendor = "mccready"
+    }""".format(appVersion, appName))
+    Seq(file)
+  }
 
   def systemSpecsFilter(name:String) : Boolean = name endsWith "SystemSpec"
   def integrationSpecsFilter(name:String) : Boolean = name endsWith "IntegrationSpec"
