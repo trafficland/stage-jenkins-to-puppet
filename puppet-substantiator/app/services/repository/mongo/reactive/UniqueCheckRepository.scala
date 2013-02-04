@@ -2,13 +2,13 @@ package services.repository.mongo.reactive
 
 import reactivemongo.core.commands.Count
 import concurrent.{Future, ExecutionContext}
-import models.mongo.reactive.BaseMongoModel
+import models.mongo.reactive.IMongoModel
 
 import reactivemongo.bson.{BSONObjectID, BSONDocument}
 import services.repository.IUniqueCheckRepository
 
-trait MongoUniqueCheckRepository[TModel <: BaseMongoModel]
-  extends IUniqueCheckRepository[BSONObjectID,BaseMongoModel,MongoSearchCriteria] {
+trait MongoUniqueCheckRepository[TModel <: IMongoModel]
+  extends IUniqueCheckRepository[BSONObjectID,IMongoModel,MongoSearchCriteria] {
   this: MongoBaseRepository[TModel] =>
 
   def uniqueCheck(criteria: MongoUniqueCheck)

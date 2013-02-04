@@ -7,14 +7,14 @@ import reactivemongo.bson.handlers.DefaultBSONHandlers._
 import reactivemongo.core.commands.Count
 import util.IConfigurationProvider
 import concurrent.{Future, ExecutionContext}
-import models.mongo.reactive.BaseMongoModel
+import models.mongo.reactive.IMongoModel
 import services.repository._
 import scala.Some
 import reactivemongo.api.QueryOpts
 import reactivemongo.api.QueryBuilder
 import reactivemongo.bson.BSONInteger
 
-abstract class MongoBaseRepository[TModel <: BaseMongoModel]
+abstract class MongoBaseRepository[TModel <: IMongoModel]
   extends IMongoRepository[TModel]
   with IMongoDbProvider
   with IConfigurationProvider {
@@ -43,11 +43,6 @@ abstract class MongoBaseRepository[TModel <: BaseMongoModel]
   }
 
   def create(entity: TModel)(implicit context: ExecutionContext): Future[Option[TModel]] = {
-    entity.id match {
-      case Some(id) =>
-      case None => entity.id = Some(BSONObjectID.generate)
-    }
-
     for {
       _ <- collection.insert[TModel](entity)
       inserted <- onCreated(entity)

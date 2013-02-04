@@ -1,0 +1,89 @@
+package models.mongo.reactive
+
+import reactivemongo.api._
+import reactivemongo.bson._
+import reactivemongo.bson.handlers.{BSONReader, BSONWriter}
+import play.api.libs.json._
+import models.Model._
+
+trait IMachine extends IMongoModel {
+  def name: String
+
+  def isAlive: Boolean
+}
+
+class Machine(override val id: Option[BSONObjectID],
+              override val name: String,
+              override val isAlive: Boolean = true) extends IMachine {
+
+}
+
+object Machine {
+
+  implicit object MachineBSONReader extends IBSONReaderExtended[Machine] {
+    def fromBSON(document: BSONDocument) = {
+      val doc = document.toTraversable
+
+      new Machine(
+        doc.getAs[BSONObjectID]("_id"),
+        doc.getAs[BSONString]("name").map(_.value).getOrElse(throw errorFrom("BSONRead", "name")),
+        doc.getAs[BSONBoolean]("isAlive").map(_.value).getOrElse(throw errorFrom("BSONRead", "name"))
+      )
+    }
+  }
+
+  implicit object MachineBSONWriter extends IBSONWriterExtended[Machine] {
+    def toBSON(entity: Machine) =
+      BSONDocument(
+        "_id" -> entity.id.getOrElse(BSONObjectID.generate),
+        "name" -> BSONString(entity.name),
+        "isAlive" -> BSONBoolean(entity.isAlive)
+      )
+  }
+
+  implicit object MachineJSONReader extends Reads[Machine] {
+    def reads(json: JsValue) = {
+      JsSuccess(new Machine(
+        (json \ "_id").asOpt[String] map {
+          id => new BSONObjectID(id)
+        },
+        (json \ "name").as[String],
+        (json \ "isAlive").as[Boolean]
+      ))
+    }
+  }
+
+  implicit object MachineJSONWriter {
+    def writes(entity: Machine): JsValue = {
+      val list = scala.collection.mutable.Buffer(
+        "name" -> JsString(entity.name),
+        "disabled" -> JsBoolean(entity.isAlive))
+
+      if (entity.id.isDefined)
+        list.+=("_id" -> JsString(entity.id.get.stringify))
+      JsObject(list.toSeq)
+    }
+  }
+
+  implicit object MachineCriteriaReader extends BaseCriteriaReader {
+    def criteria(json: JsValue) = {
+
+      var doc = BSONDocument()
+
+      (json \ "name").asOpt[String] foreach {
+        name =>
+          doc = doc append ("name" -> new BSONString(name))
+      }
+
+      (json \ "isAlive").asOpt[Boolean] foreach {
+        isAlive =>
+          doc = doc append ("isAlive" -> new BSONBoolean(isAlive))
+      }
+
+      doc
+    }
+  }
+
+  implicit object MachineUniqueCheckReader extends UniqueKeyReader("name")
+
+}

@@ -2,7 +2,7 @@ import sbt._
 import Keys._
 import trafficland.opensource.sbt.plugins._
 
-object PuppetSubstantiatorBuild extends Build {
+object ApplicationBuild extends Build {
 
   val appName         = "puppet-substantiator"
   val appVersion      = "1.0.0-SNAPSHOT".toReleaseFormat()

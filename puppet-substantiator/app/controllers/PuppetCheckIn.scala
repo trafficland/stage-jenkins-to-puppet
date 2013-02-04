@@ -10,7 +10,8 @@ object PuppetCheckIn extends Controller {
     Ok("Actual Values Set")
   }
 
-  def expected(machineId: String, appId: String, expectedObjective: String)= Action{
+  def expected = Action{
+    //accept a json blob of a system (Application cluster that is expected
     Ok("Expectation Set")
   }
 }

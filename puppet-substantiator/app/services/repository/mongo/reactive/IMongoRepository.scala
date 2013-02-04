@@ -3,7 +3,6 @@ package services.repository.mongo.reactive
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import play.api.libs.iteratee.Enumerator
 import concurrent.{ExecutionContext, Future}
-import models.mongo.reactive.BaseMongoModel
 import services.repository.{ISearchCriteria, IRepository, IRepositoryProvider, ISearchResults}
 import models.IModel
 

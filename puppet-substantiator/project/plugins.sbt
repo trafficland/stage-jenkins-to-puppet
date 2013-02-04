@@ -6,4 +6,4 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 addSbtPlugin("com.trafficland" % "sbt-plugins" % "0.6.4")
 
-addSbtPlugin("play" % "sbt-plugin" % "2.1-RC3")
+addSbtPlugin("play" % "sbt-plugin" % "2.1-RC4")
