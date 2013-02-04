@@ -3,10 +3,10 @@ package services.repository.mongo.reactive
 import models.mongo.reactive._
 import util.ConfigurationProvider
 
-trait IMachineRepository extends MongoBaseRepository[Machine] with IMongoUniqueCheckRepository[Machine]
+trait IMachinesRepository extends MongoBaseRepository[Machine] with IMongoUniqueCheckRepository[Machine]
 
-abstract class MachineRepository
-  extends IMachineRepository {
+abstract class MachinesRepository
+  extends IMachinesRepository {
 
   override protected def collectionName = "machines"
 
@@ -14,20 +14,20 @@ abstract class MachineRepository
   implicit val writer = Machine.MachineBSONWriter
 }
 
-trait IMachineRepositoryProvider
+trait IMachinesRepositoryProvider
   extends IMongoRepositoryProvider[Machine] {
 
-  def repository: IMachineRepository
+  def repository: IMachinesRepository
 }
 
 trait MachineRepositoryProvider
-  extends IMachineRepositoryProvider {
+  extends IMachinesRepositoryProvider {
 
-  def repository = MachineRepository
+  def repository = MachinesRepository
 }
 
-object MachineRepository
-  extends MachineRepository
+object MachinesRepository
+  extends MachinesRepository
   with IMongoDbProvider
   with ConfigurationProvider
   with MachineRepositoryProvider

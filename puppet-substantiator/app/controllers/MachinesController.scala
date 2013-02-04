@@ -2,13 +2,13 @@ package controllers
 
 import play.api.mvc._
 import models.mongo.reactive._
-import services.repository.mongo.reactive.{IMachineRepositoryProvider, MongoUniqueCheck, MachineRepositoryProvider, IMachineRepository}
+import services.repository.mongo.reactive.{IMachinesRepositoryProvider, MongoUniqueCheck, MachineRepositoryProvider, IMachinesRepository}
 import play.api.libs.json.JsBoolean
 import concurrent.ExecutionContext.Implicits.global
 
 
-abstract class MachineController extends RestController[Machine]
-with IMachineRepositoryProvider {
+abstract class MachinesController extends RestController[Machine]
+with IMachinesRepositoryProvider {
 
 implicit val jsonReader = Machine.MachineJSONReader
 implicit val jsonWriter = Machine.MachineJSONWriter
@@ -26,5 +26,5 @@ def uniqueCheck = Action(parse.json) { request =>
 }
 
 object MachinesController
-  extends MachineController
+  extends MachinesController
   with MachineRepositoryProvider
