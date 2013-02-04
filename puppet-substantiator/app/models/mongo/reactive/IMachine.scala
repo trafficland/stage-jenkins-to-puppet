@@ -1,8 +1,6 @@
 package models.mongo.reactive
 
-import reactivemongo.api._
 import reactivemongo.bson._
-import reactivemongo.bson.handlers.{BSONReader, BSONWriter}
 import play.api.libs.json._
 import models.Model._
 
@@ -53,7 +51,7 @@ object Machine {
     }
   }
 
-  implicit object MachineJSONWriter {
+  implicit object MachineJSONWriter extends Writes[Machine]{
     def writes(entity: Machine): JsValue = {
       val list = scala.collection.mutable.Buffer(
         "name" -> JsString(entity.name),

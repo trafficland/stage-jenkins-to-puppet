@@ -81,7 +81,7 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
     collection.find[BSONDocument, TModel](BSONDocument()).enumerate()
   }
 
-  def search(criteria: MongoSearchCriteria)(implicit context: ExecutionContext) = {
+  def search(criteria: ISearchCriteria[BSONDocument])(implicit context: ExecutionContext) = {
     val sortDoc = criteria.sort map {
       sort => BSONDocument(sort.field -> BSONInteger(sort.direction))
     }
@@ -94,7 +94,7 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
           case None =>
             collection.find[TModel](QueryBuilder(Some(criteria.query), sortDoc, projectionDoc = projection)).enumerate()
         }
-        MongoSearchResults[TModel](count, enumerator).asInstanceOf[ISearchResults[TModel]]
+        MongoSearchResults[TModel](count, enumerator)
 
     }
   }

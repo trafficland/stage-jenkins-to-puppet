@@ -5,7 +5,7 @@ import reactivemongo.bson._
 import services.repository.IUniqueCheck
 import services.repository.mongo.reactive.MongoUniqueCheck
 
-abstract class BaseUniqueCheckReader extends Reads[IUniqueCheck[BSONObjectID,BSONDocument]] {
+abstract class BaseUniqueCheckReader extends Reads[MongoUniqueCheck] {
   private def parseId(json: JsValue) = {
     (json \ "_id").asOpt[String].map(id => new BSONObjectID(id))
   }

@@ -1,6 +1,5 @@
 package models.mongo.reactive
 
-import reactivemongo.bson.handlers._
 import play.api.libs.json._
 import reactivemongo.bson._
 import models.Model._
