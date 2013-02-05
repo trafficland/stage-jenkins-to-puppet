@@ -4,6 +4,7 @@ import org.specs2.mutable._
 
 import play.api.test._
 import play.api.test.Helpers._
+import controllers.AppInfo
 
 /**
  * add your integration spec here.
@@ -16,9 +17,9 @@ class IntegrationSpec extends Specification {
     "work from within a browser" in {
       running(TestServer(3333), HTMLUNIT) { browser =>
 
-        browser.goTo("http://localhost:3333/")
+        browser.goTo("http://localhost:3333/version")
 
-        browser.pageSource must contain("Your new application is ready.")
+        browser.pageSource must contain(AppInfo.version)
        
       }
     }
