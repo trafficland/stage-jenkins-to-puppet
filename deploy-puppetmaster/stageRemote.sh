@@ -78,7 +78,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
       $changeDirIntoZip
       #sed in linux does not work in osx
       #replace java with nohup java
-      sed -i 's/java/nohup java/g' ./start
+      sed -i 's/exec java/exec nohup java/g' ./start
 
       #replace and with &, literal & is \& 
       sed -i 's/NettyServer `dirname $0`/NettyServer `dirname $0` \&/g' ./start
