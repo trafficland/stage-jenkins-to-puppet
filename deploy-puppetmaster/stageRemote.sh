@@ -9,7 +9,7 @@ extractCmd=$5
 ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd 'bash -s' <<'ENDSSH'
   # commands to run on remote host
   
-  ######## Begin local hive replication
+  ######## Begin local hive replication #TODO - THIS IS PROBABLY being removed, to use git  as rollback
     newAppToBecomeCurrentApp=$applicationName'.new'$extension
     currentApp=$applicationName$extension
     originalBackupApp=$applicationName'.last'$extension
