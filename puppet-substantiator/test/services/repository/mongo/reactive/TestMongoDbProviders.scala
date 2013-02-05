@@ -1,5 +1,6 @@
 package services.repository.mongo.reactive
 
+import impls.MachinesRepository
 import models.mongo.reactive._
 import play.api.Configuration
 import org.scalatest.mock.MockitoSugar.mock

@@ -1,7 +1,8 @@
-package services.repository.mongo.reactive
+package services.repository.mongo.reactive.impls
 
 import models.mongo.reactive._
 import util.ConfigurationProvider
+import services.repository.mongo.reactive._
 
 trait IMachinesRepository extends MongoBaseRepository[Machine] with IMongoUniqueCheckRepository[Machine]
 
@@ -23,7 +24,7 @@ trait IMachinesRepositoryProvider
 trait MachineRepositoryProvider
   extends IMachinesRepositoryProvider {
 
-  def repository = MachinesRepository
+  override val repository = MachinesRepository
 }
 
 object MachinesRepository

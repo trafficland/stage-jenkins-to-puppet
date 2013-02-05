@@ -29,4 +29,5 @@ cmd=scp' '$packageLocation' '$destination
 #execute scp
 $cmd
 
-sh ./stageRemote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd
+workingDirectory=pwd
+sh $workingDirectory/stageRemote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd

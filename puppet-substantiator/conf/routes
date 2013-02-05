@@ -2,9 +2,26 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+GET     /apps                               controllers.AppsController.index
+GET     /apps/:id                           controllers.AppsController.get(id: String)
+POST    /apps                               controllers.AppsController.create
+POST    /apps/search                        controllers.AppsController.search
+PUT     /apps/:id                           controllers.AppsController.edit(id: String)
+DELETE  /apps/:id                           controllers.AppsController.remove(id: String)
+POST    /apps/uniqueCheck                   controllers.AppsController.uniqueCheck
+
+GET     /machines                           controllers.MachinesController.index
+GET     /machines/:id                       controllers.MachinesController.get(id: String)
+POST    /machines                           controllers.MachinesController.create
+POST    /machines/search                    controllers.MachinesController.search
+PUT     /machines/:id                       controllers.MachinesController.edit(id: String)
+DELETE  /machines/:id                       controllers.MachinesController.remove(id: String)
+POST    /machines/uniqueCheck               controllers.MachinesController.uniqueCheck
+
+
 # Home page
-GET     /version                    controllers.Application.version
-GET     /                           controllers.Application.version
+GET     /version                            controllers.Application.version
+GET     /                                   controllers.Application.version
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /assets/*file                       controllers.Assets.at(path="/public", file)

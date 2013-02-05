@@ -66,7 +66,7 @@ object App {
     }
   }
 
-  implicit object AppJSONWriter {
+  implicit object AppJSONWriter extends Writes[App] {
     def writes(entity: App): JsValue = {
       val list = scala.collection.mutable.Buffer(
         "name" -> JsString(entity.name),
