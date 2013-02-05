@@ -84,6 +84,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
       sed -i 's/NettyServer `dirname $0`/NettyServer `dirname $0` \&/g' ./start
       cd ../
     #END fix start
+    rm -f *.zip
   ####### End Extraction
 
   ############# Actual Puppet Module Copying
