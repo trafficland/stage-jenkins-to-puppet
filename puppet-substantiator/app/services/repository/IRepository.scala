@@ -5,12 +5,12 @@ import concurrent.{ExecutionContext, Future}
 import models.IModel
 
 trait IRepository[ID,TModel <: IModel[ID],Q ] {
-  def create(entity: TModel)(implicit context: ExecutionContext): Future[Option[TModel]]
-  def update(entity: TModel)(implicit context: ExecutionContext): Future[Option[TModel]]
+  def create(entity: TModel)(implicit context: ExecutionContext): Future[Either[Option[TModel],Exception]]
+  def update(entity: TModel)(implicit context: ExecutionContext): Future[Either[Option[TModel],Exception]]
   def remove(id: ID)(implicit context: ExecutionContext): Future[Boolean]
-  def get(id: ID)(implicit context: ExecutionContext): Future[Option[TModel]]
-  def getAll(implicit context: ExecutionContext): Enumerator[TModel]
-  def search(criteria: ISearchCriteria[Q])(implicit context: ExecutionContext): Future[ISearchResults[TModel]]
+  def get(id: ID)(implicit context: ExecutionContext): Future[Either[Option[TModel],Exception]]
+  def getAll(implicit context: ExecutionContext): Either[Enumerator[TModel],Exception]
+  def search(criteria: ISearchCriteria[Q])(implicit context: ExecutionContext): Future[Either[ISearchResults[TModel],Exception]]
 }
 
 trait IRepositoryProvider[ID,TModel <: IModel[ID],Q] {

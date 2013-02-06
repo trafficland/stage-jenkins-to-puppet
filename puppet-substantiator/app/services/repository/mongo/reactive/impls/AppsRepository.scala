@@ -18,17 +18,24 @@ abstract class AppsRepository
   implicit val writer = App.AppBSONWriter
 
   def ifMachinesExistExecute(entity: App,
-                             func: App => Future[Option[App]])
-                            (implicit context: ExecutionContext): Future[Option[App]] = {
+                             func: App => Future[Either[Option[App], Exception]])
+                            (implicit context: ExecutionContext): Future[Either[Option[App], Exception]] = {
     val futureAll = machineRepo.machinesExistByNames(entity.actualCluster.map(_.machineName))
     for {
-      allNamesExist <- futureAll.map(_.forall(_._2 == true))
+      allNamesExistEither <-
+      futureAll.map(either => either match {
+        case Left(nameMap) => Left(nameMap.forall(_._2 == true))
+        case Right(ex) => Right(ex)
+      })
       optionalApp <-
-      if (allNamesExist)
-        func.apply(entity)
-      else {
-        //throw new AppRepositoryException("Machines do not exist for App, create machines first")
-        future(None)
+      allNamesExistEither match {
+        case Left(bool) =>
+          if (bool)
+            func.apply(entity)
+          else
+            future(Right(new AppRepositoryException("Machines do not exist for App, create machines first")))
+        case Right(ex) =>
+          future(Right(ex))
       }
     } yield (optionalApp)
   }
@@ -36,10 +43,10 @@ abstract class AppsRepository
   /*
   Creation is mostly like other repos except this is checking for an existing machine
    */
-  override def create(entity: App)(implicit context: ExecutionContext) =
+  override def create(entity: App)(implicit context: ExecutionContext): Future[Either[Option[App], Exception]] =
     ifMachinesExistExecute(entity, (ent: App) => super.create(ent)(context))
 
-  override def update(entity: App)(implicit context: ExecutionContext) = {
+  override def update(entity: App)(implicit context: ExecutionContext): Future[Either[Option[App], Exception]] = {
     ifMachinesExistExecute(entity, (ent: App) => super.update(ent)(context))
   }
 }

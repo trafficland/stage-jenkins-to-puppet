@@ -56,21 +56,14 @@ class AppsRepositoryIntegrationSpec
   "creation with no machines" should {
     "fail" in {
       val entity = createEntity
-      val except = try{
-        machineRepoSpec.clean()
-        Await.result(repository.create(entity), 10 seconds) match{
-          case Some(app) =>
-            None
-          case None =>
-            Some("yay failed")
-        }
+      machineRepoSpec.clean()
+      val failed = Await.result(repository.create(entity), 10 seconds) match {
+        case Left(app) =>
+          app
+        case Right(ex) =>
+          None
       }
-      catch {
-        case a: AppRepositoryException =>
-          Some("worked")
-      }
-
-      except should be('defined)
+      failed should be('empty)
     }
   }
 

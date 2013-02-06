@@ -29,37 +29,46 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
   protected def projection: Option[BSONDocument] = None
 
   protected def onCreated(model: TModel)
-                         (implicit context: ExecutionContext): Future[Option[TModel]] = {
+                         (implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
     get(model.id.get)
   }
 
   protected def onUpdated(originalModel: TModel, updatedModel: TModel)
-                         (implicit context: ExecutionContext): Future[Option[TModel]] = {
+                         (implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
     get(updatedModel.id.get)
   }
 
-  protected def onDeleted(model: Option[TModel])(implicit context: ExecutionContext): Future[Boolean] = {
-    Future(true)
+  protected def onDeleted(either: Either[Option[TModel], Exception])(implicit context: ExecutionContext): Future[Boolean] = {
+    either match {
+      case Left(model) => Future(true)
+      case Right(ex) => Future(false)
+    }
+
   }
 
-  def create(entity: TModel)(implicit context: ExecutionContext): Future[Option[TModel]] = {
+  def create(entity: TModel)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
     for {
       _ <- collection.insert[TModel](entity)
       inserted <- onCreated(entity)
-    } yield inserted
+    } yield (inserted)
   }
 
-  def update(entity: TModel)(implicit context: ExecutionContext): Future[Option[TModel]] = {
+  def update(entity: TModel)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
     get(entity.id.get) flatMap {
-      _ match {
-        case Some(originalEntity) =>
-          for {
-            _ <- collection.update[BSONDocument, TModel](BSONDocument("_id" -> entity.id.get), entity)
-            updated <- onUpdated(originalEntity, entity)
-          } yield updated
+      either =>
+        val optModel = either match {
+          case Left(model) => (model, None)
+          case Right(ex) => (None, Some(ex))
+        }
+        optModel._1 match {
+          case Some(originalEntity) =>
+            for {
+              _ <- collection.update[BSONDocument, TModel](BSONDocument("_id" -> entity.id.get), entity)
+              updated <- onUpdated(originalEntity, entity)
+            } yield (updated)
 
-        case None => Future(None)
-      }
+          case None => Future(Right(optModel._2.get))
+        }
     }
   }
 
@@ -73,15 +82,16 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
     } yield (deleted && successful)
   }
 
-  def get(id: BSONObjectID)(implicit context: ExecutionContext): Future[Option[TModel]] = {
-    collection.find[BSONDocument, TModel](BSONDocument("_id" -> id)).headOption()
+  def get(id: BSONObjectID)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
+    collection.find[BSONDocument, TModel](BSONDocument("_id" -> id)).headOption().map(model => Left(model))
   }
 
-  def getAll(implicit context: ExecutionContext): Enumerator[TModel] = {
-    collection.find[BSONDocument, TModel](BSONDocument()).enumerate()
+  def getAll(implicit context: ExecutionContext): Either[Enumerator[TModel], Exception] = {
+    val enum = collection.find[BSONDocument, TModel](BSONDocument()).enumerate()
+    Left(enum)
   }
 
-  def search(criteria: ISearchCriteria[BSONDocument])(implicit context: ExecutionContext) = {
+  def search(criteria: ISearchCriteria[BSONDocument])(implicit context: ExecutionContext): Future[Either[ISearchResults[TModel], Exception]] = {
     val sortDoc = criteria.sort map {
       sort => BSONDocument(sort.field -> BSONInteger(sort.direction))
     }
@@ -94,7 +104,7 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
           case None =>
             collection.find[TModel](QueryBuilder(Some(criteria.query), sortDoc, projectionDoc = projection)).enumerate()
         }
-        MongoSearchResults[TModel](count, enumerator)
+        Left(MongoSearchResults[TModel](count, enumerator))
 
     }
   }
