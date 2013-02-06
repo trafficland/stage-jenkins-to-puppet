@@ -25,7 +25,9 @@ class MachinesRepositoryIntegrationSpec
     clean
   }
 
-  def clean() = Await.result(db.collection(collectionName).remove(query = BSONDocument(), firstMatchOnly = false), 10 seconds)
+  def clean() = Await.result(cleanAsync(), 10 seconds)
+
+  def cleanAsync() = db.collection(collectionName).remove(query = BSONDocument(), firstMatchOnly = false)
 
   override def afterAll(configMap: Map[String, Any]) {
     db.connection.close()
