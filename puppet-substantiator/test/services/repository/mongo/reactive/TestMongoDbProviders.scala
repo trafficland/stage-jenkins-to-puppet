@@ -1,20 +1,26 @@
 package services.repository.mongo.reactive
 
-import impls.MachinesRepository
+import services.repository.mongo.reactive.impls._
 import models.mongo.reactive._
 import play.api.Configuration
 import org.scalatest.mock.MockitoSugar.mock
 
-class TestMachineRepository extends MachinesRepository with TestMongoDbProvider {
-  val config = mock[Configuration]
-  val configuration = config
-}
-
 trait TestMachineRepositoryProvider
   extends IMongoRepositoryProvider[Machine] {
 
-  override  def repository = new TestMachineRepository()
+  override lazy val repository = new MachinesRepository with TestMongoDbProvider {
+    val config = mock[Configuration]
+    val configuration = config
+  }
+}
 
+trait TestAppsRepositoryProvider
+  extends IMongoRepositoryProvider[App] {
+
+  override lazy val repository = new AppsRepository with TestMongoDbProvider {
+    val config = mock[Configuration]
+    val configuration = config
+  }
 }
 
 

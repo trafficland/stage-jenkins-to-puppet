@@ -11,7 +11,6 @@ object ApplicationBuild extends Build {
   val compileDependencies = Seq(
     "com.chuusai" %% "shapeless" % "1.2.3",
     "org.reactivemongo" %% "reactivemongo" % "0.8",
-    "play.modules.reactivemongo" %% "play2-reactivemongo" % "0.1-SNAPSHOT" cross CrossVersion.full,
     "org.scalatest" %% "scalatest" % "2.0.M5b",
     "org.mockito" % "mockito-core" % "1.9.0"
   )
@@ -36,7 +35,6 @@ object ApplicationBuild extends Build {
       outDir: File =>
         writeVersion(outDir)
     },
-
     testOptions in Test := Seq(
       Tests.Setup {
         () => System.setProperty("config.file", "conf/test.conf")
@@ -55,7 +53,11 @@ object ApplicationBuild extends Build {
     ),
     fork in Test := false,
     fork in IntTests := false,
-    fork in AllTests := false
+    fork in AllTests := false,
+    parallelExecution in Test := false,
+    parallelExecution in IntTests := false,
+    parallelExecution in AllTests := false
+
   ).dependsOn(gitHubDependencies: _*)
 
   def writeVersion(outDir: File) = {

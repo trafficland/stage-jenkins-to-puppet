@@ -16,7 +16,7 @@ case class AppMachineState(val machineName: String, val actual: String = "EMPTY"
 object AppMachineState {
 
   implicit object AppMachineBSONReader extends IBSONReaderExtended[AppMachineState] {
-    def fromBSON(document: BSONDocument) = {
+    override def fromBSON(document: BSONDocument) = {
       val doc = document.toTraversable
 
       AppMachineState(
@@ -27,7 +27,7 @@ object AppMachineState {
   }
 
   implicit object AppMachineStateBSONWriter extends IBSONWriterExtended[AppMachineState] {
-    def toBSON(entity: AppMachineState) =
+    override def toBSON(entity: AppMachineState) =
       BSONDocument(
         "machineName" -> BSONString(entity.machineName),
         "actual" -> BSONString(entity.actual)

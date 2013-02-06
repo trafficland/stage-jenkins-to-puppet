@@ -22,8 +22,10 @@ class MachinesRepositoryIntegrationSpec
   override def collectionName = "machines"
 
   after {
-    Await.result(db.collection(collectionName).remove(query = BSONDocument(), firstMatchOnly = false), 10 seconds)
+    clean
   }
+
+  def clean() = Await.result(db.collection(collectionName).remove(query = BSONDocument(), firstMatchOnly = false), 10 seconds)
 
   override def afterAll(configMap: Map[String, Any]) {
     db.connection.close()
@@ -33,14 +35,14 @@ class MachinesRepositoryIntegrationSpec
   implicit val writer = Machine.MachineBSONWriter
 
   def createEntity = {
-    new Machine(Some(BSONObjectID.generate), "testName1?")
+    new Machine(Some(BSONObjectID.generate), "testMachineName1?")
   }
 
   def createEntities(numberOfEntities: Int) = {
     var counter = 1
     val entities = (0 until numberOfEntities) map {
-      index =>   {
-       val mac = new Machine(Some(BSONObjectID.generate), "testName" + counter)
+      index => {
+        val mac = new Machine(Some(BSONObjectID.generate), "testMachineName" + counter)
         counter += 1
         mac
       }

@@ -79,7 +79,8 @@ trait RepositoryBehaviors[TModel <: IModel[BSONObjectID]] {
           results <- repository.getAll.run(Iteratee.getChunks)
         } yield results
 
-        Await.result(futureResult, 10 seconds) should have(length(20))
+        val res = Await.result(futureResult, 10 seconds)
+        res should have(length(20))
       }
     }
 

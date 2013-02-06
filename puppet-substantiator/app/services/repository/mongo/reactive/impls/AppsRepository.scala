@@ -9,7 +9,7 @@ trait IAppsRepository extends MongoBaseRepository[App] with IMongoUniqueCheckRep
 abstract class AppsRepository
   extends IAppsRepository {
 
-  override protected def collectionName = "machines"
+  override protected def collectionName = "apps"
 
   implicit val reader = App.AppBSONReader
   implicit val writer = App.AppBSONWriter
