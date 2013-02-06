@@ -5,6 +5,7 @@
 GET     /apps                               controllers.AppsController.index
 GET     /apps/:id                           controllers.AppsController.get(id: String)
 POST    /apps                               controllers.AppsController.create
+POST    /apps/save                          controllers.AppsController.save
 POST    /apps/search                        controllers.AppsController.search
 PUT     /apps/:id                           controllers.AppsController.edit(id: String)
 DELETE  /apps/:id                           controllers.AppsController.remove(id: String)
@@ -13,6 +14,7 @@ POST    /apps/uniqueCheck                   controllers.AppsController.uniqueChe
 GET     /machines                           controllers.MachinesController.index
 GET     /machines/:id                       controllers.MachinesController.get(id: String)
 POST    /machines                           controllers.MachinesController.create
+POST    /machines/save                      controllers.MachinesController.save
 POST    /machines/search                    controllers.MachinesController.search
 PUT     /machines/:id                       controllers.MachinesController.edit(id: String)
 DELETE  /machines/:id                       controllers.MachinesController.remove(id: String)

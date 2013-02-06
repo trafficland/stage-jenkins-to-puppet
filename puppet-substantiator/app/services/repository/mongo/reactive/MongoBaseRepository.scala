@@ -46,29 +46,40 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
 
   }
 
-  def create(entity: TModel)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
+  def create(entity: TModel)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] =
     for {
       _ <- collection.insert[TModel](entity)
       inserted <- onCreated(entity)
     } yield (inserted)
-  }
 
-  def update(entity: TModel)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
-    get(entity.id.get) flatMap {
-      either =>
-        val optModel = either match {
-          case Left(model) => (model, None)
-          case Right(ex) => (None, Some(ex))
-        }
-        optModel._1 match {
-          case Some(originalEntity) =>
-            for {
-              _ <- collection.update[BSONDocument, TModel](BSONDocument("_id" -> entity.id.get), entity)
-              updated <- onUpdated(originalEntity, entity)
-            } yield (updated)
+  def update(entity: TModel, doUpsert: Boolean = false)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
+    if (!doUpsert)
+      get(entity.id.get) flatMap {
+        either =>
+          val optModel = either match {
+            case Left(model) => (model, None)
+            case Right(ex) => (None, Some(ex))
+          }
+          optModel._1 match {
+            case Some(originalEntity) =>
+              for {
+                _ <- collection.update[BSONDocument, TModel](BSONDocument("_id" -> entity.id.get), entity)
+                updated <- onUpdated(originalEntity, entity)
+              } yield updated
 
-          case None => Future(Right(optModel._2.get))
-        }
+            case None =>
+              optModel._2 match {
+                case Some(error) => Future(Right(error))
+                case None => Future(Left(None))
+              }
+          }
+      }
+    else {
+      for {
+        _ <- collection.update[BSONDocument, TModel](BSONDocument("_id" -> entity.id.get), entity, upsert = doUpsert)
+        updated <- onUpdated(entity, entity)
+      } yield updated
+
     }
   }
 
@@ -86,12 +97,11 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
     collection.find[BSONDocument, TModel](BSONDocument("_id" -> id)).headOption().map(model => Left(model))
   }
 
-  def getAll(implicit context: ExecutionContext): Either[Enumerator[TModel], Exception] = {
-    val enum = collection.find[BSONDocument, TModel](BSONDocument()).enumerate()
-    Left(enum)
+  def getAll(implicit context: ExecutionContext): Enumerator[TModel] = {
+    collection.find[BSONDocument, TModel](BSONDocument()).enumerate()
   }
 
-  def search(criteria: ISearchCriteria[BSONDocument])(implicit context: ExecutionContext): Future[Either[ISearchResults[TModel], Exception]] = {
+  def search(criteria: ISearchCriteria[BSONDocument])(implicit context: ExecutionContext): Future[ISearchResults[TModel]] = {
     val sortDoc = criteria.sort map {
       sort => BSONDocument(sort.field -> BSONInteger(sort.direction))
     }
@@ -104,7 +114,7 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
           case None =>
             collection.find[TModel](QueryBuilder(Some(criteria.query), sortDoc, projectionDoc = projection)).enumerate()
         }
-        Left(MongoSearchResults[TModel](count, enumerator))
+        MongoSearchResults[TModel](count, enumerator)
 
     }
   }

@@ -2,12 +2,9 @@ package services.repository.mongo.reactive
 
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec}
 import org.scalatest.matchers.ShouldMatchers
-import play.api.libs.iteratee.{Iteratee, Enumerator}
-import reactivemongo.bson._
-import reactivemongo.bson.handlers.DefaultBSONHandlers._
 import models.mongo.reactive._
+import concurrent._
 import concurrent.ExecutionContext.Implicits.global
-import concurrent.Await
 import concurrent.duration._
 
 class MachinesRepositoryIntegrationSpec
@@ -15,43 +12,39 @@ class MachinesRepositoryIntegrationSpec
   with BeforeAndAfter
   with BeforeAndAfterAll
   with ShouldMatchers
+  with IMachineRepoHelper
   with TestMongoDbProvider
   with TestMachineRepositoryProvider
   with RepositoryBehaviors[Machine] {
-
-  override def collectionName = "machines"
 
   after {
     clean
   }
 
-  def clean() = Await.result(cleanAsync(), 10 seconds)
-
-  def cleanAsync() = db.collection(collectionName).remove(query = BSONDocument(), firstMatchOnly = false)
-
   override def afterAll(configMap: Map[String, Any]) {
     db.connection.close()
   }
 
-  implicit val reader = Machine.MachineBSONReader
-  implicit val writer = Machine.MachineBSONWriter
+  "searching for machine names " should {
+    "fail with empty database" in {
+      val entity = createEntity
+      val testList = List("test1", "test2", "test3")
+      val resultMap = Await.result(repository.machinesExistByNames(testList), 20 seconds)
 
-  def createEntity = {
-    new Machine(Some(BSONObjectID.generate), "testMachineName1?")
-  }
-
-  def createEntities(numberOfEntities: Int) = {
-    var counter = 1
-    val entities = (0 until numberOfEntities) map {
-      index => {
-        val mac = new Machine(Some(BSONObjectID.generate), "testMachineName" + counter)
-        counter += 1
-        mac
-      }
+      resultMap.keys.toList should equal(testList)
+      resultMap.values.forall(_ == false) should be(true)
     }
 
-    db(collectionName).insert[Machine](Enumerator(entities: _*))
-  }
+    "pass with entities" in {
+      val entity = createEntity
+      Await.result(createEntities(3),10 seconds )
+      val insertedList = Await.result(repository.getAllMem(),10 seconds )
+      val testList = insertedList.map(_.name)
+      val resultMap = Await.result(repository.machinesExistByNames(testList), 20 seconds)
 
+      resultMap.keys.toList should equal(testList)
+      resultMap.values.forall(_ == true) should be(true)
+    }
+  }
   behave like baseModelRepository
 }

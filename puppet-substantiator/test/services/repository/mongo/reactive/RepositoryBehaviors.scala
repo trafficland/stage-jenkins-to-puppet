@@ -26,7 +26,11 @@ trait RepositoryBehaviors[TModel <: IModel[BSONObjectID]] {
       "return the entity after saving" in {
         val entity = createEntity
         val either = Await.result(repository.create(entity), 10 seconds)
-        either.left.get should be('defined)
+        val model = either match{
+          case Left(model) => model
+          case Right(ex) => None
+        }
+        model should be('defined)
       }
     }
 
@@ -39,8 +43,37 @@ trait RepositoryBehaviors[TModel <: IModel[BSONObjectID]] {
         } yield updated
 
         val either = Await.result(futureResult, 10 seconds)
-        either.left.get should be('defined)
+        val model = either match{
+          case Left(model) => model
+          case Right(ex) => None
+        }
+        model should be('defined)
 
+      }
+    }
+
+    "save" should {
+      "return the entity after saving VIA CREATION" in {
+        val entity = createEntity
+        val either = Await.result(repository.save(entity), 10 seconds)
+        either match {
+          case Left(model) => model should be('defined)
+          case Right(ex) => throw ex
+        }
+      }
+      "return the entity after saving VIA UPDATE" in {
+        val entity = createEntity
+        val futureResult = for {
+          _ <- repository.create(entity)
+          updated <- repository.save(entity)
+        } yield updated
+
+        val either = Await.result(futureResult, 10 seconds)
+        val model = either match{
+          case Left(model) => model
+          case Right(ex) => None
+        }
+        model should be('defined)
       }
     }
 
@@ -89,10 +122,7 @@ trait RepositoryBehaviors[TModel <: IModel[BSONObjectID]] {
       "return all entities" in {
         val futureResult = for {
           _ <- createEntities(20)
-          results <- repository.getAll match {
-            case Left(enum) => enum.run(Iteratee.getChunks)
-            case Right(ex) => throw ex
-          }
+          results <- repository.getAll.run(Iteratee.getChunks)
         } yield results
 
         val res = Await.result(futureResult, 10 seconds)
@@ -105,11 +135,8 @@ trait RepositoryBehaviors[TModel <: IModel[BSONObjectID]] {
         val futureResult = for {
           _ <- createEntities(20)
           result <- repository.search(MongoSearchCriteria(BSONDocument(), None, Some(Paging(0, 10))))
-          list <- result match {
-            case Left(searchRes) => searchRes.results.run(Iteratee.getChunks)
-            case Right(ex) => throw ex
-          }
-        } yield (result.left.get, list)
+          list <- result.results.run(Iteratee.getChunks)
+        } yield (result, list)
 
 
         val result = Await.result(futureResult, 10 seconds)
@@ -121,11 +148,8 @@ trait RepositoryBehaviors[TModel <: IModel[BSONObjectID]] {
         val futureResult = for {
           _ <- createEntities(20)
           result <- repository.search(MongoSearchCriteria(BSONDocument(), None, Some(Paging(10, 10))))
-          list <- result match {
-            case Left(searchRes) => searchRes.results.run(Iteratee.getChunks)
-            case Right(ex) => throw ex
-          }
-        } yield (result.left.get, list)
+          list <- result.results.run(Iteratee.getChunks)
+        } yield (result, list)
 
 
         val result = Await.result(futureResult, 10 seconds)

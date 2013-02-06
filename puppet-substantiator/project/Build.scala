@@ -56,7 +56,8 @@ object ApplicationBuild extends Build {
     fork in AllTests := false,
     parallelExecution in Test := false,
     parallelExecution in IntTests := false,
-    parallelExecution in AllTests := false
+    parallelExecution in AllTests := false,
+    javaOptions in Runtime += "-Dconfig.file=conf/test.conf"
 
   ).dependsOn(gitHubDependencies: _*)
 

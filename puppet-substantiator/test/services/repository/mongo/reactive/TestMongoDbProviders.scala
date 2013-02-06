@@ -20,6 +20,12 @@ trait TestAppsRepositoryProvider
   override lazy val repository = new AppsRepository with TestMongoDbProvider {
     val config = mock[Configuration]
     val configuration = config
+    val gConfig = config
+
+    override lazy val machineRepo = new MachinesRepository with TestMongoDbProvider {
+      val config = mock[Configuration]
+      val configuration = gConfig
+    }
   }
 }
 

@@ -13,11 +13,11 @@ trait IMachinesRepository extends MongoBaseRepository[Machine] with IMongoUnique
     (a, b) => b :: a
   }
 
-  def getByName(name: String)(implicit context: ExecutionContext): Future[Either[ISearchResults[Machine], Exception]]
+  def getByName(name: String)(implicit context: ExecutionContext): Future[ISearchResults[Machine]]
 
   def machineExists(name: String)(implicit context: ExecutionContext): Future[Boolean]
 
-  def machinesExistByNames(names: List[String])(implicit context: ExecutionContext): Future[Either[Map[String, Boolean], Exception]]
+  def machinesExistByNames(names: List[String])(implicit context: ExecutionContext): Future[Map[String, Boolean]]
 }
 
 abstract class MachinesRepository
@@ -28,50 +28,34 @@ abstract class MachinesRepository
   implicit val reader = Machine.MachineBSONReader
   implicit val writer = Machine.MachineBSONWriter
 
-  def getByName(name: String)
-               (implicit context: ExecutionContext): Future[Either[ISearchResults[Machine], Exception]] = {
+  def getByName(name: String)(implicit context: ExecutionContext): Future[ISearchResults[Machine]] = {
     search(MongoSearchCriteria(BSONDocument("name" -> BSONString(name)), None, Some(Paging(0, 10))))
   }
 
   def machineExists(name: String)(implicit context: ExecutionContext): Future[Boolean] = {
     for {
-      eitherResults <- getByName(name)
-    } yield {
-      eitherResults match {
-        case Left(results) =>
-          results.count > 0
-        case Right(ex) => false
-      }
+      results <- getByName(name)
+    } yield results.count > 0
     }
-  }
 
   def machinesExistByNames(names: List[String])
-                          (implicit context: ExecutionContext): Future[Either[Map[String, Boolean], Exception]] = {
+                          (implicit context: ExecutionContext): Future[Map[String, Boolean]] = {
     val multipleNameCriteria = MongoSearchCriteria(BSONDocument("name" -> BSONDocument(
       "$in" -> BSONArray(names.map(s => new BSONString(s)): _*)
     )), None, None)
 
     val futResults = search(multipleNameCriteria)
-    try {
       for {
-        eitherResults <- futResults
-        machineSeq <- {
-          eitherResults match {
-            case Left(searchRes) =>
-              searchRes.results.run[List[Machine]](machineIteratee).map(m => m)
-            case Right(ex) =>
-              throw ex
-          }
-        }
-      } yield {
-        val res = names.map(name => (name, machineSeq.exists(m => m.name == name))).toMap
-        Left(res)
-      }
-    }
-    catch {
-      case e: Exception =>
-        future(Right(e))
-    }
+      results <- futResults
+      machineSeq <- results.results.run[List[Machine]](machineIteratee).map(m => m)
+    } yield (names.map(name => (name, machineSeq.exists(m => m.name == name))).toMap)
+  }
+
+  def getAllMem()(implicit context: ExecutionContext) ={
+    val enum = getAll
+    for {
+      machineSeq <- enum.run[List[Machine]](machineIteratee).map(m => m)
+    } yield (machineSeq)
   }
 }
 

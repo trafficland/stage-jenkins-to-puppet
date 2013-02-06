@@ -18,14 +18,9 @@ abstract class RestController[TModel <: IMongoModel]
 
   def index = Action {
     request =>
-      repository.getAll match {
-        case Left(stream) =>
-          Ok.stream(
-            Enumerator("[") andThen modelToSerializedJsArray(stream) andThen Enumerator("]") andThen Enumerator.eof[String]
-          )
-        case Right(ex) =>
-          InternalServerError(ex.getMessage)
-      }
+      Ok.stream(
+        Enumerator("[") andThen modelToSerializedJsArray(repository.getAll) andThen Enumerator("]") andThen Enumerator.eof[String]
+      )
 
   }
 
@@ -107,6 +102,38 @@ abstract class RestController[TModel <: IMongoModel]
       }
   }
 
+  def save = Action(parse.json) {
+    request =>
+      request.body.asOpt[TModel] match {
+        case Some(model) =>
+          model.id match {
+            case Some(modelId) =>
+              if (model.isValid) {
+                Async {
+                  //forcing creation or update
+                  repository.save(model) map {
+                    either =>
+                      either match {
+                        case Left(optModel) => optModel match {
+                          case Some(saved) => Ok(Json.toJson[TModel](saved))
+                          case None => NotFound
+                        }
+                        case Right(ex) => InternalServerError(ex.getMessage)
+                      }
+                  }
+                }
+              } else {
+                InternalServerError(Json.toJson[TModel](model))
+              }
+
+            case None =>
+              NotFound
+          }
+        case None =>
+          InternalServerError("Unable to parse json")
+      }
+  }
+
   def remove(id: String) = Action {
     Async {
       repository.remove(new BSONObjectID(id)) map {
@@ -124,19 +151,13 @@ abstract class RestController[TModel <: IMongoModel]
       Async {
         repository.search(criteria) map {
           results =>
-            results match {
-              case Left(searchResults) =>
-                val enumerator =
-                  Enumerator( """{"resultCount":%d,"results":[""".format(searchResults.count))
-                    .andThen(modelToSerializedJsArray(searchResults.results))
-                    .andThen(Enumerator("]}"))
-                    .andThen(Enumerator.eof[String])
+            val enumerator =
+              Enumerator( """{"resultCount":%d,"results":[""".format(results.count))
+                .andThen(modelToSerializedJsArray(results.results))
+                .andThen(Enumerator("]}"))
+                .andThen(Enumerator.eof[String])
 
-                Ok.stream(enumerator)
-              case Right(ex) =>
-                InternalServerError(ex.getMessage)
-            }
-
+            Ok.stream(enumerator)
         }
       }
   }
