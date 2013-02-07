@@ -6,8 +6,10 @@ object BasicState {
 
   trait IState
 
-  trait IStateData {
+  trait ITargetStateData {
     val target: ActorRef
   }
+
+  trait IStateData
 
 }

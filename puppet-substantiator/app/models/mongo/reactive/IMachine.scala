@@ -24,8 +24,8 @@ object Machine {
 
       new Machine(
         doc.getAs[BSONObjectID]("_id"),
-        doc.getAs[BSONString]("name").map(_.value).getOrElse(throw errorFrom("BSONRead", "name")),
-        doc.getAs[BSONBoolean]("isAlive").map(_.value).getOrElse(throw errorFrom("BSONRead", "name"))
+        doc.getAs[BSONString]("key").map(_.value).getOrElse(throw errorFrom("BSONRead", "key")),
+        doc.getAs[BSONBoolean]("isAlive").map(_.value).getOrElse(throw errorFrom("BSONRead", "key"))
       )
     }
   }
@@ -34,7 +34,7 @@ object Machine {
     def toBSON(entity: Machine) =
       BSONDocument(
         "_id" -> entity.id.getOrElse(BSONObjectID.generate),
-        "name" -> BSONString(entity.name),
+        "key" -> BSONString(entity.name),
         "isAlive" -> BSONBoolean(entity.isAlive)
       )
   }
@@ -45,7 +45,7 @@ object Machine {
         (json \ "_id").asOpt[String] map {
           id => new BSONObjectID(id)
         },
-        (json \ "name").as[String],
+        (json \ "key").as[String],
         (json \ "isAlive").as[Boolean]
       ))
     }
@@ -54,7 +54,7 @@ object Machine {
   implicit object MachineJSONWriter extends Writes[Machine]{
     def writes(entity: Machine): JsValue = {
       val list = scala.collection.mutable.Buffer(
-        "name" -> JsString(entity.name),
+        "key" -> JsString(entity.name),
         "disabled" -> JsBoolean(entity.isAlive))
 
       if (entity.id.isDefined)
@@ -68,9 +68,9 @@ object Machine {
 
       var doc = BSONDocument()
 
-      (json \ "name").asOpt[String] foreach {
+      (json \ "key").asOpt[String] foreach {
         name =>
-          doc = doc append ("name" -> new BSONString(name))
+          doc = doc append ("key" -> new BSONString(name))
       }
 
       (json \ "isAlive").asOpt[Boolean] foreach {
@@ -82,6 +82,6 @@ object Machine {
     }
   }
 
-  implicit object MachineUniqueCheckReader extends UniqueKeyReader("name")
+  implicit object MachineUniqueCheckReader extends UniqueKeyReader("key")
 
 }

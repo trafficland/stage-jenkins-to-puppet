@@ -12,7 +12,8 @@ object ApplicationBuild extends Build {
     "com.chuusai" %% "shapeless" % "1.2.3",
     "org.reactivemongo" %% "reactivemongo" % "0.8",
     "org.scalatest" %% "scalatest" % "2.0.M5b",
-    "org.mockito" % "mockito-core" % "1.9.0"
+    "org.mockito" % "mockito-core" % "1.9.0",
+    "com.typesafe.akka" %% "akka-testkit" % "2.1.0"
   )
 
   val gitHubDependencies: Array[ClasspathDep[ProjectReference]] =

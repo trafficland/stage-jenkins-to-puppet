@@ -21,7 +21,7 @@ object AppMachineState {
 
       AppMachineState(
         doc.getAs[BSONString]("machineName").map(_.value).getOrElse(throw errorFrom("BSONRead", "machineName")),
-        doc.getAs[BSONString]("actual").map(_.value).getOrElse(throw errorFrom("BSONRead", "name"))
+        doc.getAs[BSONString]("actual").map(_.value).getOrElse(throw errorFrom("BSONRead", "key"))
       )
     }
   }

@@ -49,7 +49,7 @@ with IAppsRepositoryProvider {
   def validate(name: String, delayMilliSeconds: Int) = Action {
     Async {
       val httpResult = for {
-        result <- repository.search(MongoSearchCriteria(BSONDocument("name" -> BSONString(name)), None, Some(Paging(0, 1))))
+        result <- repository.search(MongoSearchCriteria(BSONDocument("key" -> BSONString(name)), None, Some(Paging(0, 1))))
         apps <-
         if (result.count > 0) {
           result.results.run[List[App]](repository.modelIteratee).map(m => m)

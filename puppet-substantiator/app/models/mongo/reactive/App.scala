@@ -35,7 +35,7 @@ object App {
       val doc = document.toTraversable
       App(
         doc.getAs[BSONObjectID]("_id"),
-        doc.getAs[BSONString]("name").map(_.value).getOrElse(throw errorFrom("BSONRead", "name")),
+        doc.getAs[BSONString]("key").map(_.value).getOrElse(throw errorFrom("BSONRead", "key")),
         doc.getAs[BSONString]("expected").map(_.value).getOrElse(throw errorFrom("BSONRead", "expected")),
         bsonReaderAppMach.fromBSONArray(doc.getAs[BSONArray]("actualCluster").getOrElse(throw errorFrom("BSONRead", "actualCluster")))
       )
@@ -46,7 +46,7 @@ object App {
     def toBSON(entity: App) =
       BSONDocument(
         "_id" -> entity.id.getOrElse(BSONObjectID.generate),
-        "name" -> BSONString(entity.name),
+        "key" -> BSONString(entity.name),
         "expected" -> BSONString(entity.expected),
         "actualCluster" -> bsonWriterAppMach.toBSONArray(entity.actualCluster)
       )
@@ -58,7 +58,7 @@ object App {
         (json \ "_id").asOpt[String] map {
           id => new BSONObjectID(id)
         },
-        (json \ "name").as[String],
+        (json \ "key").as[String],
         (json \ "expected").as[String],
         jsonReaderAppMac.readsArray((json \ "actualCluster").as[JsArray])
       ))
@@ -68,7 +68,7 @@ object App {
   implicit object AppJSONWriter extends Writes[App] {
     def writes(entity: App): JsValue = {
       val list = scala.collection.mutable.Buffer(
-        "name" -> JsString(entity.name),
+        "key" -> JsString(entity.name),
         "expected" -> JsString(entity.expected),
         "actualCluster" -> jsonWriterAppMach.writesArray(entity.actualCluster))
 
@@ -83,9 +83,9 @@ object App {
 
       var doc = BSONDocument()
 
-      (json \ "name").asOpt[String] foreach {
+      (json \ "key").asOpt[String] foreach {
         name =>
-          doc = doc append ("name" -> new BSONString(name))
+          doc = doc append ("key" -> new BSONString(name))
       }
 
       (json \ "isAlive").asOpt[Boolean] foreach {
@@ -97,6 +97,6 @@ object App {
     }
   }
 
-  implicit object AppUniqueCheckReader extends UniqueKeyReader("name")
+  implicit object AppUniqueCheckReader extends UniqueKeyReader("key")
 
 }
