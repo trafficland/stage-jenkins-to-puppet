@@ -1,6 +1,8 @@
 package controllers
 
 import play.api._
+import play.api.libs.json._
+import libs.concurrent.Akka
 import libs.json.JsBoolean
 import play.api.mvc._
 import models._
@@ -11,8 +13,10 @@ import concurrent.ExecutionContext.Implicits.global
 import concurrent._
 import reactivemongo.bson.{BSONString, BSONDocument}
 import services.repository.Paging
-import shapeless.Reverse
-import play.core.Router
+import akka.actor._
+import services.actors.ValidatorActor
+import services.actors.ValidatorActorMessages.StartValidation
+import services.evaluations.AppEvaluations.AppEvaluate
 
 abstract class AppsController extends RestController[App]
 with IAppsRepositoryProvider {
@@ -21,6 +25,16 @@ with IAppsRepositoryProvider {
   implicit val jsonWriter = App.AppJSONWriter
   implicit val criteriaReader = App.AppCriteriaReader
   implicit val uniqueCheckReader = App.AppUniqueCheckReader
+
+  implicit val playApp = play.api.Play.current
+  val maybeActorName = play.api.Play.configuration.getString("validationActorName")
+  val actorName = maybeActorName match {
+    case Some(s) => s
+    case None => "validator"
+  }
+
+  val system = Akka.system
+  val validatorActorRef = system.actorOf(Props(() => new ValidatorActor(global), actorName))
 
   def uniqueCheck = Action(parse.json) {
     request =>
@@ -32,10 +46,9 @@ with IAppsRepositoryProvider {
       }
   }
 
-  def validate(name: String, delay: Int) = Action {
+  def validate(name: String, delayMilliSeconds: Int) = Action {
     Async {
-      Thread.sleep(delay)
-      val checkApp = for {
+      val httpResult = for {
         result <- repository.search(MongoSearchCriteria(BSONDocument("name" -> BSONString(name)), None, Some(Paging(0, 1))))
         apps <-
         if (result.count > 0) {
@@ -46,18 +59,14 @@ with IAppsRepositoryProvider {
       } yield {
         apps.headOption match {
           case Some(app) =>
-            if (app.actualCluster.forall(_.actual == app.expected))
-              Ok("Expected values matched to value: " + app.expected)
-            else {
-              val machinesListString = app.actualCluster.map(_.machineName).flatten mkString ", "
-              Redirect(routes.ScriptController.rollBack(app.name))
-              Conflict("Expected app value: " + app.expected + machinesListString)
-            }
+            validatorActorRef ! StartValidation(delayMilliSeconds, AppEvaluate(app), system)
+            Ok("Application found! Validation beinging for app: " + Json.toJson(app).toString() + "\n" +
+              "This is the applications current state not the evaluation state!")
           case None =>
             NotFound
         }
       }
-      checkApp
+      httpResult
     }
   }
 
