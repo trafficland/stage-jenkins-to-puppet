@@ -57,33 +57,39 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
 
   def handelExtraRemove(key: String): Unit = {}
 
+  final lazy val _partialUnhandled = partialUnHandled
+
+  protected def partialUnHandled: StateFunction = {
+    {
+      // common code for both states
+      case Event(Add(key, obj), Todo(ref, currentMap)) =>
+        handelExtraAdd(key)
+        goto(Active) using Todo(ref, currentMap + (key -> obj))
+      case Event(Remove(key), Todo(ref, currentMap)) => {
+        val newMap =
+          if (currentMap.contains(key))
+            currentMap - key
+          else
+            currentMap
+        if (newMap.isEmpty)
+          goto(Idle)
+        else {
+          handelExtraRemove(key)
+          goto(Active) using Todo(ref, newMap)
+        }
+      }
+      case Event(_, Todo(_, _)) =>
+        //Could be in idle state, not putting logic in idle as it will never go active
+        stay
+      case Event(e, s) =>
+        log.warning("received unhandled request {} in state {}/{}", e, stateName, s)
+        stay
+    }
+  }
+
   // unhandled elided ...
   // takes care of all state action events
-  whenUnhandled {
-    // common code for both states
-    case Event(Add(key, obj), Todo(ref, currentMap)) =>
-      handelExtraAdd(key)
-      goto(Active) using Todo(ref, currentMap + (key -> obj))
-    case Event(Remove(key), Todo(ref, currentMap)) => {
-      val newMap =
-        if (currentMap.contains(key))
-          currentMap - key
-        else
-          currentMap
-      if (newMap.isEmpty)
-        goto(Idle)
-      else {
-        handelExtraRemove(key)
-        goto(Active) using Todo(ref, newMap)
-      }
-    }
-    case Event(_, Todo(_, _)) =>
-      //Could be in idle state, not putting logic in idle as it will never go active
-      stay
-    case Event(e, s) =>
-      log.warning("received unhandled request {} in state {}/{}", e, stateName, s)
-      stay
-  }
+  whenUnhandled(_partialUnhandled)
 
   onTransition {
     case Active -> Idle ⇒
