@@ -9,10 +9,6 @@ import reactivemongo.bson.{BSONArray, BSONString, BSONDocument}
 import play.api.libs.iteratee.Iteratee
 
 trait IMachinesRepository extends MongoBaseRepository[Machine] with IMongoUniqueCheckRepository[Machine] {
-  val machineIteratee = Iteratee.fold[Machine, List[Machine]](List.empty[Machine]) {
-    (a, b) => b :: a
-  }
-
   def getByName(name: String)(implicit context: ExecutionContext): Future[ISearchResults[Machine]]
 
   def machineExists(name: String)(implicit context: ExecutionContext): Future[Boolean]
@@ -47,14 +43,14 @@ abstract class MachinesRepository
     val futResults = search(multipleNameCriteria)
       for {
       results <- futResults
-      machineSeq <- results.results.run[List[Machine]](machineIteratee).map(m => m)
+      machineSeq <- results.results.run[List[Machine]](modelIteratee).map(m => m)
     } yield (names.map(name => (name, machineSeq.exists(m => m.name == name))).toMap)
   }
 
   def getAllMem()(implicit context: ExecutionContext) ={
     val enum = getAll
     for {
-      machineSeq <- enum.run[List[Machine]](machineIteratee).map(m => m)
+      machineSeq <- enum.run[List[Machine]](modelIteratee).map(m => m)
     } yield (machineSeq)
   }
 }

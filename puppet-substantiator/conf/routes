@@ -20,6 +20,7 @@ PUT     /machines/:id                       controllers.MachinesController.edit(
 DELETE  /machines/:id                       controllers.MachinesController.remove(id: String)
 POST    /machines/uniqueCheck               controllers.MachinesController.uniqueCheck
 
+GET     /rollback                           controllers.ScriptController.rollBack(appName: String)
 
 # Home page
 GET     /version                            controllers.Application.version

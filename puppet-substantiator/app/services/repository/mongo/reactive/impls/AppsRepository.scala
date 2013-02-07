@@ -4,9 +4,11 @@ import models.mongo.reactive._
 import util.ConfigurationProvider
 import services.repository.mongo.reactive._
 import concurrent._
+import play.api.libs.iteratee.Iteratee
 
 trait IAppsRepository extends MongoBaseRepository[App] with IMongoUniqueCheckRepository[App] {
   protected def machineRepo: IMachinesRepository with IMongoDbProvider
+
 }
 
 abstract class AppsRepository
