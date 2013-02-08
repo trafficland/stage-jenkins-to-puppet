@@ -17,6 +17,7 @@ import akka.actor._
 import services.actors.ValidatorActor
 import services.actors.ValidatorActorMessages.StartValidation
 import services.evaluations.AppEvaluations.AppEvaluate
+import _root_.util.actors.fsm.{CancellableMapFSM}
 
 abstract class AppsController extends RestController[App]
 with IAppsRepositoryProvider {
@@ -27,14 +28,21 @@ with IAppsRepositoryProvider {
   implicit val uniqueCheckReader = App.AppUniqueCheckReader
 
   implicit val playApp = play.api.Play.current
-  val maybeActorName = play.api.Play.configuration.getString("validationActorName")
-  val actorName = maybeActorName match {
+  val optValidatorActorName = play.api.Play.configuration.getString("validationActorName")
+  val optSchedActorName = play.api.Play.configuration.getString("cancelActorName")
+
+  val validatorName = optValidatorActorName match {
+    case Some(s) => s
+    case None => "validator"
+  }
+  val schedulerName = optSchedActorName match {
     case Some(s) => s
     case None => "validator"
   }
 
   val system = Akka.system
-  val validatorActorRef = system.actorOf(Props(() => new ValidatorActor(global), actorName))
+  val schedule = system.actorOf(Props(() => new CancellableMapFSM(1000), validatorName))
+  val validatorActorRef = system.actorOf(Props(() => new ValidatorActor(global, schedule), schedulerName))
 
   def uniqueCheck = Action(parse.json) {
     request =>
@@ -68,6 +76,11 @@ with IAppsRepositoryProvider {
       }
       httpResult
     }
+  }
+
+  def cancelValidation(name: String) = {
+    import _root_.util.actors.fsm.CancellableMapFSMDomainProvider.domain._
+    schedule ! Remove(name)
   }
 
 }

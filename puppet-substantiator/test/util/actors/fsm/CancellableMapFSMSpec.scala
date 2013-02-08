@@ -17,7 +17,7 @@ class CancellableMapFSMSpec(_system: ActorSystem)
     system.shutdown()
   }
 
-  implicit val localDomain = CancellableMapFSMProvider.domain
+  implicit val localDomain = CancellableMapFSMDomainProvider.domain
 
   import localDomain._
 

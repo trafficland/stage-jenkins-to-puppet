@@ -53,7 +53,7 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
       goto(Idle) using t.copy(map = Map.empty[String, T])
   }
 
-  def handelExtraAdd(key: String): Unit = {}
+  def handelExtraAdd(key: String,obj:T): Unit = {}
 
   def handelExtraRemove(key: String): Unit = {}
 
@@ -63,7 +63,7 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
     {
       // common code for both states
       case Event(Add(key, obj), Todo(ref, currentMap)) =>
-        handelExtraAdd(key)
+        handelExtraAdd(key,obj)
         goto(Active) using Todo(ref, currentMap + (key -> obj))
       case Event(Remove(key), Todo(ref, currentMap)) => {
         val newMap =

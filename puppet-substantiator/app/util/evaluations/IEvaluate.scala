@@ -8,6 +8,8 @@ trait IEvaluate[R] {
 
   def evaluate: IEvaluated[R]
 
+  def name:String
+
   def failAction(result: R)
 
   def passAction(result: R)
