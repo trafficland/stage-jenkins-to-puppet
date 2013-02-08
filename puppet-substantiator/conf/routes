@@ -2,8 +2,8 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /apps/validate                      controllers.AppsController.validate(name: String,delay: Int)
-DELETE  /apps/validate                      controllers.AppsController.cancelValidation(name: String)
+GET     /apps/validate/:name/:delay         controllers.AppsController.validate(name: String,delay: Int)
+DELETE  /apps/validate/:name                controllers.AppsController.cancelValidation(name: String)
 GET     /apps                               controllers.AppsController.index
 GET     /apps/:id                           controllers.AppsController.get(id: String)
 POST    /apps                               controllers.AppsController.create
@@ -22,7 +22,7 @@ PUT     /machines/:id                       controllers.MachinesController.edit(
 DELETE  /machines/:id                       controllers.MachinesController.remove(id: String)
 POST    /machines/uniqueCheck               controllers.MachinesController.uniqueCheck
 
-GET     /rollback                           controllers.ScriptController.rollBack(appName: String)
+GET     /rollback/:appName                  controllers.ScriptController.rollBack(appName: String)
 
 # Home page
 GET     /version                            controllers.Application.version

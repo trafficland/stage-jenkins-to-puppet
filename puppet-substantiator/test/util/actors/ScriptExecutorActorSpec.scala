@@ -7,9 +7,7 @@ import org.scalatest.matchers.{ShouldMatchers, MustMatchers}
 import org.slf4j.Logger
 import org.scalatest.mock.MockitoSugar.mock
 import org.mockito.Mockito._
-import org.mockito.Matchers._
-import org.mockito.ArgumentCaptor
-import collection.JavaConversions._
+import org.mockito._
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
