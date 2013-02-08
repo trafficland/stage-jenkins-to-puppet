@@ -14,8 +14,12 @@ trait ICancellableDelay extends Cancellable{
   def delayMillisecond:Int
 }
 
-case class CancellableDelay(override val delayMillisecond:Int,cancel:Cancellable) extends ICancellableDelay{
-  def isCancelled = cancel.isCancelled
+case class CancellableDelay(override val delayMillisecond:Int,cancelObj:Cancellable) extends ICancellableDelay{
+  def isCancelled = cancelObj.isCancelled
+
+  def cancel() {
+    cancelObj.cancel()
+  }
 }
 
 object CancellableMapFSMDomainProvider extends IMapFSMDomainProvider[ICancellableDelay] {

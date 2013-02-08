@@ -16,8 +16,10 @@ import services.repository.Paging
 import akka.actor._
 import services.actors.ValidatorActor
 import services.actors.ValidatorActorMessages.StartValidation
-import services.evaluations.AppEvaluations.AppEvaluate
+import services.evaluations.AppEvaluate
 import _root_.util.actors.fsm.{CancellableMapFSM}
+import _root_.util.OptionHelper._
+import play.api.Play.configuration
 
 abstract class AppsController extends RestController[App]
 with IAppsRepositoryProvider {
@@ -28,21 +30,14 @@ with IAppsRepositoryProvider {
   implicit val uniqueCheckReader = App.AppUniqueCheckReader
 
   implicit val playApp = play.api.Play.current
-  val optValidatorActorName = play.api.Play.configuration.getString("validationActorName")
-  val optSchedActorName = play.api.Play.configuration.getString("cancelActorName")
+  lazy val validatorName = getOptionOrDefault(configuration.getString("validationActorName"), "validationActorName")
+  lazy val schedulerName = getOptionOrDefault(configuration.getString("cancelActorName"), "scheduler")
+  lazy val delayMilli = getOptionOrDefault(configuration.getInt("actor.schedule.delayMilli"), 1000)
 
-  val validatorName = optValidatorActorName match {
-    case Some(s) => s
-    case None => "validator"
-  }
-  val schedulerName = optSchedActorName match {
-    case Some(s) => s
-    case None => "validator"
-  }
+  lazy val system = Akka.system
+  lazy val schedule = system.actorOf(Props(() => new CancellableMapFSM(delayMilli), validatorName))
+  lazy val validatorActorRef = system.actorOf(Props(() => new ValidatorActor(global, schedule), schedulerName))
 
-  val system = Akka.system
-  val schedule = system.actorOf(Props(() => new CancellableMapFSM(1000), validatorName))
-  val validatorActorRef = system.actorOf(Props(() => new ValidatorActor(global, schedule), schedulerName))
 
   def uniqueCheck = Action(parse.json) {
     request =>
@@ -78,9 +73,10 @@ with IAppsRepositoryProvider {
     }
   }
 
-  def cancelValidation(name: String) = {
+  def cancelValidation(name: String) = Action {
     import _root_.util.actors.fsm.CancellableMapFSMDomainProvider.domain._
     schedule ! Remove(name)
+    Ok("Cancellation sent for name: " + name)
   }
 
 }

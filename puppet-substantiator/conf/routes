@@ -2,6 +2,8 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+GET     /apps/validate                      controllers.AppsController.validate(name: String,delay: Int)
+DELETE  /apps/validate                      controllers.AppsController.cancelValidation(name: String)
 GET     /apps                               controllers.AppsController.index
 GET     /apps/:id                           controllers.AppsController.get(id: String)
 POST    /apps                               controllers.AppsController.create

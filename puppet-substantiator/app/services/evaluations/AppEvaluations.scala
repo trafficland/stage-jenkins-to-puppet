@@ -5,8 +5,6 @@ import models.mongo.reactive._
 import play.api.mvc.Results._
 import controllers._
 
-object AppEvaluations {
-
   case class AppEvaluate(app: App) extends IEvaluate[App] {
     def evaluate: IEvaluated[App] = {
       if (app.actualCluster.forall(_.actual == app.expected))
@@ -22,6 +20,7 @@ object AppEvaluations {
     def passAction(result: App) {
       //send email on pass?
     }
-  }
+
+    def name = app.name
 
 }
