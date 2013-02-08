@@ -8,8 +8,8 @@ import play.api.libs.concurrent.Akka
 import play.api.Play.configuration
 import play.api.Logger._
 import akka.actor.Props
-import services.actors.ScriptExecutorActor
-import services.actors.ScriptExecutorActor._
+import _root_.util.actors.ScriptExecutorActor
+import _root_.util.actors.ScriptExecutorActor._
 
 /*
 End point to call IO Actor to run scripts

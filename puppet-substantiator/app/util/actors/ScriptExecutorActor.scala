@@ -1,4 +1,4 @@
-package services.actors
+package util.actors
 
 import akka.actor.{Props, Actor}
 import sys.process._
@@ -14,21 +14,29 @@ object ScriptExecutorActor {
 
 }
 
-class ScriptExecutorActor(logger: Logger) extends Actor {
+class ScriptExecutorActor(logger: Logger, toConsole: Boolean = false, rethrow: Boolean = false) extends Actor {
 
   import ScriptExecutorActor._
-
 
   def receive = {
     case Script(scriptString, args) =>
       //execute!
       try {
         val toRun = Seq(scriptString) ++ args
-        toRun !
+        if (logger.isDebugEnabled)
+          logger.debug(toRun !!)
+        else {
+          if (toConsole)
+            Console.println(toRun !!)
+          else
+            toRun !
+        }
       }
       catch {
         case ex: Exception =>
           logger.error("Script Execution Error! With Exception: ", ex)
+          if (rethrow)
+            throw ex
 
       }
   }

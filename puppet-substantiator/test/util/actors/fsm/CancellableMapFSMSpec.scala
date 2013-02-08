@@ -9,7 +9,7 @@ import util.actors.fsm.BasicState._
 class CancellableMapFSMSpec(_system: ActorSystem)
   extends TestKit(_system) with ImplicitSender
   with WordSpec with MustMatchers with BeforeAndAfterAll
-  with BeforeAndAfter with ShouldMatchers with IMapFSMSPec[Cancellable, CancellableMapFSM] {
+  with BeforeAndAfter with ShouldMatchers with IMapFSMSPec[ICancellableDelay, CancellableMapFSM] {
 
   def this() = this(ActorSystem("CancellableMapFSMSpec"))
 
@@ -21,7 +21,7 @@ class CancellableMapFSMSpec(_system: ActorSystem)
 
   import localDomain._
 
-  def create = new Cancellable {
+  def create(delay: Int) = CancellableDelay(delay, new Cancellable {
     var localCancel = false
 
     def isCancelled = localCancel
@@ -29,7 +29,9 @@ class CancellableMapFSMSpec(_system: ActorSystem)
     def cancel() {
       localCancel = true
     }
-  }
+  })
+
+  def create() = create(5000)
 
   def initialize() = {
     val fsm = TestFSMRef[IState, IStateData, CancellableMapFSM](new CancellableMapFSM(3000))
@@ -41,7 +43,7 @@ class CancellableMapFSMSpec(_system: ActorSystem)
   "adding" should {
     "put fsm in Active state with a single add" in {
       val fsm = initialize()
-      val put = create
+      val put = create(5000)
       fsm ! Add("test1", put)
       fsm.stateName should be(Active)
       getStateMap(fsm)(localDomain)("test1") should be(put)
@@ -49,8 +51,8 @@ class CancellableMapFSMSpec(_system: ActorSystem)
 
     "contain two items when two are added" in {
       val fsm = initialize()
-      fsm ! Add("test1", create)
-      fsm ! Add("test2", create)
+      fsm ! Add("test1", create(5000))
+      fsm ! Add("test2", create(5000))
       fsm.stateName should be(Active)
       val size = fsm.stateData match {
         case Todo(_, map) => map.size
@@ -60,8 +62,8 @@ class CancellableMapFSMSpec(_system: ActorSystem)
     }
     "contain one item when two of the same are added" in {
       val fsm = initialize()
-      fsm ! Add("test1", create)
-      fsm ! Add("test1", create)
+      fsm ! Add("test1", create(5000))
+      fsm ! Add("test1", create(5000))
       fsm.stateName should be(Active)
       val size = fsm.stateData match {
         case Todo(_, map) => map.size
@@ -73,7 +75,7 @@ class CancellableMapFSMSpec(_system: ActorSystem)
   "removal" should {
     "a single active should put state into idle" in {
       val fsm = initialize()
-      fsm ! Add("test1", create)
+      fsm ! Add("test1", create(5000))
       fsm ! Remove("test1")
       fsm.stateName should be(Idle)
       getStateMap(fsm)(localDomain).size should be(1)

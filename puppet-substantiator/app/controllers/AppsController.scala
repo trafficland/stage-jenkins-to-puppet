@@ -14,8 +14,8 @@ import concurrent._
 import reactivemongo.bson.{BSONString, BSONDocument}
 import services.repository.Paging
 import akka.actor._
-import services.actors.ValidatorActor
-import services.actors.ValidatorActorMessages.StartValidation
+import _root_.util.actors._
+import _root_.util.actors.ValidatorActorMessages._
 import services.evaluations.AppEvaluate
 import _root_.util.actors.fsm.{CancellableMapFSM}
 import _root_.util.OptionHelper._

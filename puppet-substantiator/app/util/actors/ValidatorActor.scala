@@ -1,12 +1,10 @@
-package services.actors
+package util.actors
 
 import akka.actor._
 import scala.concurrent.duration._
-import services.actors.ValidatorActorMessages._
 import util.evaluations.IEvaluate
 import concurrent.ExecutionContext
 import util.actors.fsm.CancellableDelay
-
 
 object ValidatorActorMessages {
 
@@ -22,6 +20,7 @@ object ValidatorActorMessages {
 
 }
 
+import ValidatorActorMessages._
 
 class ValidatorActor(execCtx: ExecutionContext, scheduleMaintainer: ActorRef) extends Actor {
   implicit val ctx = execCtx
