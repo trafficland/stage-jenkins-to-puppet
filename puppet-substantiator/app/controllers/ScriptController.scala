@@ -25,7 +25,7 @@ abstract class ScriptController extends Controller {
   lazy val optScriptFileName = {
     try {
       Some(getOptionOrDefault(play.api.Play.configuration.getString("script.file.location.rollback"),
-        "./private./scripts/rollback.sh"))
+        "./private/scripts/rollback.sh"))
     }
     catch {
       case ex: Exception =>
@@ -43,7 +43,8 @@ abstract class ScriptController extends Controller {
             Some(scriptPathAndName)
           }
           catch {
-            case ex: Exception => None
+            case ex: Exception =>
+              None
           }
           someFile match {
             case Some(file) =>

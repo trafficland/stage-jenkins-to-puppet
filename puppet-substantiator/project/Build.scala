@@ -16,8 +16,8 @@ object ApplicationBuild extends Build {
     "com.typesafe.akka" %% "akka-testkit" % "2.1.0"
   )
 
-  val gitHubDependencies: Array[ClasspathDep[ProjectReference]] =
-    Array(RootProject(uri("https://github.com/nmccready/scala-erasure-experiments.git")))
+//  val gitHubDependencies: Array[ClasspathDep[ProjectReference]] =
+//    Array(RootProject(uri("https://github.com/nmccready/scala-erasure-experiments.git")))
 
   val appDependencies = compileDependencies
 
@@ -60,7 +60,8 @@ object ApplicationBuild extends Build {
     parallelExecution in AllTests := false,
     javaOptions in Runtime += "-Dconfig.file=conf/test.conf"
 
-  ).dependsOn(gitHubDependencies: _*)
+  )
+//    .dependsOn(gitHubDependencies: _*)
 
   def writeVersion(outDir: File) = {
     val file = outDir / "controllers/AppInfo.scala"

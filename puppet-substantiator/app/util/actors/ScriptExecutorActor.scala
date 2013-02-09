@@ -9,9 +9,7 @@ Likley to be a IO actor to execute scripts
 Scripts to be stored on File system or mongo db? Only a read operation so FS could be ok
  */
 object ScriptExecutorActor {
-
   case class Script(fileName: String, args: Seq[String])
-
 }
 
 class ScriptExecutorActor(logger: Logger, toConsole: Boolean = false, rethrow: Boolean = false) extends Actor {
