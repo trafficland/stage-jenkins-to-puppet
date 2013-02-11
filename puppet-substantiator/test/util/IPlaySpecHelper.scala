@@ -7,7 +7,7 @@ import play.api.Configuration
 import com.typesafe.config.ConfigFactory
 import play.api.mvc._
 import scala.reflect.runtime.universe._
-import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.libs.json._
 import concurrent._
 import concurrent.ExecutionContext.global
 import concurrent.duration._
@@ -21,7 +21,7 @@ trait IPlaySpecHelper {
     def configuration: Configuration
   }
 
-  def timeoutSeconds = 2 seconds
+  def timeoutSeconds = 5 seconds
 
   def createRunningApp[T](configLocation: String = "")(run: => T): T = {
     configLocation match {
@@ -57,16 +57,27 @@ trait IPlaySpecHelper {
     val result = checkForAsyncResult(anyResult)
     val content = contentAsString(result)
     val jsonContent = Json.parse(content)
-    (status(result), (jsonContent \ "errors").asOpt[JsValue].isEmpty)
+    (status(result), (jsonContent \ "errors").asOpt[Boolean] == None)
+  }
+
+  def resultToStatusContentBool(anyResult: Result, fieldToCheck: String, compareTo: String): (Int, Boolean) = {
+    val result = checkForAsyncResult(anyResult)
+    val content = contentAsString(result)
+    val jsonContent = Json.parse(content)
+    (status(result), (jsonContent \ fieldToCheck).asOpt[String].get == compareTo)
   }
 
   def checkForAsyncResult(anyResult: Result): Result = {
     anyResult match {
-      case async: AsyncResult =>
-        Await.result[Result](async.unflatten, timeoutSeconds)
+      case AsyncResult(fut) =>
+        Await.result[Result](fut, timeoutSeconds)
       case _ =>
         anyResult
     }
+  }
+
+  def await[T](fut: Future[T]): T = {
+    Await.result[T](fut, timeoutSeconds)
   }
 
 

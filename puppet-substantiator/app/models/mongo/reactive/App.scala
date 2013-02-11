@@ -15,7 +15,7 @@ trait IApp extends IMongoModel {
   def actualCluster: List[AppMachineState]
 }
 
-case class App(override val id: Option[BSONObjectID],
+case class App(override val id: Option[BSONObjectID] = Some(BSONObjectID.generate),
                override val name: String,
                override val expected: String,
                override val actualCluster: List[AppMachineState]) extends IApp {

@@ -4,6 +4,7 @@ import reactivemongo.bson._
 import play.api.libs.json._
 import models.Model._
 import models.IReadersWriters
+import play.api.http.Writeable
 
 trait IMachine extends IMongoModel {
   def name: String
@@ -11,8 +12,8 @@ trait IMachine extends IMongoModel {
   def isAlive: Boolean
 }
 
-class Machine(override val id: Option[BSONObjectID],
-              override val name: String,
+class Machine(override val name: String,
+              override val id: Option[BSONObjectID] = Some(BSONObjectID.generate),
               override val isAlive: Boolean = true) extends IMachine {
 
 }
@@ -31,8 +32,8 @@ object Machine extends IMachineReadersWriters {
       val doc = document.toTraversable
 
       new Machine(
-        doc.getAs[BSONObjectID]("_id"),
         doc.getAs[BSONString]("name").map(_.value).getOrElse(throw errorFrom("BSONRead", "name")),
+        doc.getAs[BSONObjectID]("_id"),
         doc.getAs[BSONBoolean]("isAlive").map(_.value).getOrElse(throw errorFrom("BSONRead", "name"))
       )
     }
@@ -50,10 +51,10 @@ object Machine extends IMachineReadersWriters {
   implicit object MachineJSONReader extends Reads[Machine] {
     def reads(json: JsValue) = {
       JsSuccess(new Machine(
+        (json \ "name").as[String],
         (json \ "_id").asOpt[String] map {
           id => new BSONObjectID(id)
         },
-        (json \ "name").as[String],
         (json \ "isAlive").as[Boolean]
       ))
     }
@@ -63,8 +64,7 @@ object Machine extends IMachineReadersWriters {
     def writes(entity: Machine): JsValue = {
       val list = scala.collection.mutable.Buffer(
         "name" -> JsString(entity.name),
-        "disabled" -> JsBoolean(entity.isAlive))
-
+        "isAlive" -> JsBoolean(entity.isAlive))
       if (entity.id.isDefined)
         list.+=("_id" -> JsString(entity.id.get.stringify))
       JsObject(list.toSeq)

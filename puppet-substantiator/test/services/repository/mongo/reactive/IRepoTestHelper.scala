@@ -34,14 +34,14 @@ trait IMachineRepoHelper extends IRepoTestHelper[Machine] {
   override val collectionName: String = "machines"
 
   def createEntity = {
-    new Machine(Some(BSONObjectID.generate), "testMachineName1?")
+    new Machine("testMachineName1?")
   }
 
   def createEntities(numberOfEntities: Int) = {
     val entities = (0 until numberOfEntities) map {
       index => {
         val count = index + 1
-        val mac = new Machine(Some(BSONObjectID.generate), "testMachineName" + count)
+        val mac = new Machine("testMachineName" + count)
         mac
       }
     }

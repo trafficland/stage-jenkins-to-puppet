@@ -14,9 +14,9 @@ class MachineControllerIntegrationSpec
 
   def createEntities(numberOfEntities: Int): Future[Int] = future(1)
 
-  def createValidEntity: Machine = new Machine(Some(BSONObjectID.generate), "test1")
+  def createValidEntity: Machine = new Machine("test1")
 
-  def createInvalidEntity: Machine = new Machine(Some(BSONObjectID.generate), "invalid")
+  def createInvalidEntity: Machine = new Machine("invalid", None)
 
   override val entityName = "machines"
 
@@ -25,8 +25,8 @@ class MachineControllerIntegrationSpec
 
   ("MachineController" should {
 
-    "MachineFakeTest1" in {
+    "MachineFakeTest1" in new ICleanDatabase {
       true
     }
-  }).add(baseShould)
+  }) :: baseShould
 }

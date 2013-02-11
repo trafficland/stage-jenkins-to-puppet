@@ -30,12 +30,18 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
 
   protected def onCreated(model: TModel)
                          (implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
-    get(model.id.get)
+    model.id match {
+      case Some(id) => get(id)
+      case None => Future(Left(None))
+    }
   }
 
   protected def onUpdated(originalModel: TModel, updatedModel: TModel)
                          (implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
-    get(updatedModel.id.get)
+    updatedModel.id match {
+      case Some(id) => get(id)
+      case None => Future(Left(None))
+    }
   }
 
   protected def onDeleted(either: Either[Option[TModel], Exception])(implicit context: ExecutionContext): Future[Boolean] = {
@@ -47,10 +53,15 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
   }
 
   def create(entity: TModel)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] =
-    for {
-      _ <- collection.insert[TModel](entity)
-      inserted <- onCreated(entity)
-    } yield (inserted)
+    entity.id match {
+      case Some(id) =>
+        for {
+          _ <- collection.insert[TModel](entity)
+          inserted <- onCreated(entity)
+        } yield (inserted)
+      case None =>
+        Future(Left(None))
+    }
 
   def update(entity: TModel, doUpsert: Boolean = false)(implicit context: ExecutionContext): Future[Either[Option[TModel], Exception]] = {
     if (!doUpsert)
