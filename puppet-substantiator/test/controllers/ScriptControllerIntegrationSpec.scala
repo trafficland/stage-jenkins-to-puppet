@@ -14,8 +14,8 @@ trait IScriptControllerTest {
   def ourlogger: Logger
 }
 
-object ControllerFactory {
-  def createController(optFileName: Option[String], useOriginal: Boolean = false): ScriptController = {
+object ScriptControllerFactory {
+  def create(optFileName: Option[String], useOriginal: Boolean = false): ScriptController = {
     if (!useOriginal)
       new ScriptController() with IScriptControllerTest {
         override lazy val optScriptFileName: Option[String] = optFileName
@@ -31,13 +31,13 @@ object ControllerFactory {
 
 class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper {
 
-  import ControllerFactory._
+  import ScriptControllerFactory._
 
   "ScriptController" should {
 
     "send 500 missing script" in {
       createRunningApp("test") {
-        val mockController = createController(None)
+        val mockController = create(None)
         val action = mockController.rollBack("appName")
         val status = resultToStatusContentTuple[String](action.apply(FakeRequest(GET, """/rollback/"appName"""")))
         status must equalTo(INTERNAL_SERVER_ERROR, Some("No script defined to look up!"))
@@ -46,7 +46,7 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
 
     "send 500 missing wrong script" in {
       createRunningApp("test") {
-        val mockController = createController(Some("oops"))
+        val mockController = create(Some("oops"))
         val action = mockController.rollBack("appName")
         val status = resultToStatusContentTuple[String](action.apply(FakeRequest(GET, """/rollback/"appName"""")))
         status must equalTo(INTERNAL_SERVER_ERROR, Some("Script not Found!"))
@@ -54,7 +54,7 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
     }
     "send 200 config script correct" in {
       createRunningApp("test") {
-        val mockController = createController(None, true)
+        val mockController = create(None, true)
         val action = mockController.rollBack("appName")
         val status = resultToStatusContentTuple[String](action.apply(FakeRequest(GET, """/rollback/"appName"""")))
         status must equalTo(OK, Some("Execute Rollback script here!"))

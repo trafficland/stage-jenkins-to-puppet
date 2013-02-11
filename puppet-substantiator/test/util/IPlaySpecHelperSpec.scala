@@ -2,7 +2,6 @@ package util
 
 import org.specs2.mutable._
 import play.api.mvc._
-import scala.Some
 
 class IPlaySpecHelperSpec extends Specification with IPlaySpecHelper with Controller{
 

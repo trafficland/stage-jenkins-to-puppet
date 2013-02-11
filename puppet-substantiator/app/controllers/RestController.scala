@@ -53,7 +53,8 @@ abstract class RestController[TModel <: IMongoModel]
                 either =>
                   either match {
                     case Left(optModel) => optModel match {
-                      case Some(saved) => Ok(Json.toJson[TModel](saved))
+                      case Some(saved) =>
+                        Ok(Json.toJson[TModel](saved))
                       case None => InternalServerError("Unable to retrieve saved model")
                     }
                     case Right(ex) => InternalServerError(ex.getMessage)

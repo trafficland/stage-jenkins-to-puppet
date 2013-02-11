@@ -3,6 +3,7 @@ package models.mongo.reactive
 import reactivemongo.bson._
 import play.api.libs.json._
 import models.Model._
+import models.IReadersWriters
 
 trait IMachine extends IMongoModel {
   def name: String
@@ -16,7 +17,14 @@ class Machine(override val id: Option[BSONObjectID],
 
 }
 
-object Machine {
+trait IMachineReadersWriters extends IReadersWriters[Machine] {
+  override implicit lazy val jsonReader = Machine.MachineJSONReader
+  override implicit lazy val jsonWriter = Machine.MachineJSONWriter
+  override implicit lazy val bsonReader = Machine.MachineBSONReader
+  override implicit lazy val bsonWriter = Machine.MachineBSONWriter
+}
+
+object Machine extends IMachineReadersWriters {
 
   implicit object MachineBSONReader extends IBSONReaderExtended[Machine] {
     def fromBSON(document: BSONDocument) = {
@@ -24,8 +32,8 @@ object Machine {
 
       new Machine(
         doc.getAs[BSONObjectID]("_id"),
-        doc.getAs[BSONString]("key").map(_.value).getOrElse(throw errorFrom("BSONRead", "key")),
-        doc.getAs[BSONBoolean]("isAlive").map(_.value).getOrElse(throw errorFrom("BSONRead", "key"))
+        doc.getAs[BSONString]("name").map(_.value).getOrElse(throw errorFrom("BSONRead", "name")),
+        doc.getAs[BSONBoolean]("isAlive").map(_.value).getOrElse(throw errorFrom("BSONRead", "name"))
       )
     }
   }
@@ -34,7 +42,7 @@ object Machine {
     def toBSON(entity: Machine) =
       BSONDocument(
         "_id" -> entity.id.getOrElse(BSONObjectID.generate),
-        "key" -> BSONString(entity.name),
+        "name" -> BSONString(entity.name),
         "isAlive" -> BSONBoolean(entity.isAlive)
       )
   }
@@ -45,16 +53,16 @@ object Machine {
         (json \ "_id").asOpt[String] map {
           id => new BSONObjectID(id)
         },
-        (json \ "key").as[String],
+        (json \ "name").as[String],
         (json \ "isAlive").as[Boolean]
       ))
     }
   }
 
-  implicit object MachineJSONWriter extends Writes[Machine]{
+  implicit object MachineJSONWriter extends Writes[Machine] {
     def writes(entity: Machine): JsValue = {
       val list = scala.collection.mutable.Buffer(
-        "key" -> JsString(entity.name),
+        "name" -> JsString(entity.name),
         "disabled" -> JsBoolean(entity.isAlive))
 
       if (entity.id.isDefined)
@@ -68,9 +76,9 @@ object Machine {
 
       var doc = BSONDocument()
 
-      (json \ "key").asOpt[String] foreach {
+      (json \ "name").asOpt[String] foreach {
         name =>
-          doc = doc append ("key" -> new BSONString(name))
+          doc = doc append ("name" -> new BSONString(name))
       }
 
       (json \ "isAlive").asOpt[Boolean] foreach {
@@ -82,6 +90,6 @@ object Machine {
     }
   }
 
-  implicit object MachineUniqueCheckReader extends UniqueKeyReader("key")
+  implicit object MachineUniqueCheckReader extends UniqueKeyReader("name")
 
 }
