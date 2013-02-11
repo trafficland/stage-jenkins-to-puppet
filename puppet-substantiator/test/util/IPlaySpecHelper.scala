@@ -42,8 +42,6 @@ trait IPlaySpecHelper {
       case Some(jsonReader) =>
         (status(result), Some(jsonReader.reads(Json.parse(contentAsString(result))).asInstanceOf[T]))
       case None =>
-        (-1, None)
-      case None =>
         typeOf[T] match {
           case t if t =:= typeOf[String] =>
             (status(result), Some(contentAsString(result).asInstanceOf[T]))
