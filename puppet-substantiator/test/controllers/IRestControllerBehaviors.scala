@@ -79,7 +79,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
         createRunningApp("test") {
           val result = checkForAsyncResult(route(request).get)
-          val hasStatus = status(result) == 500
+          val hasStatus = status(result) == INTERNAL_SERVER_ERROR
           //val hasErrors = (Json.parse(contentAsString(result)) \ "errors").asOpt[JsValue].isDefined
           hasStatus //&& hasErrors
         }
@@ -107,25 +107,104 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
           }
         }
       }
-      "return the invalid entity with errors" in {
+      "return the invalid entity with errors" in new ICleanDatabase {
         val entity = createValidEntity
         val invalid = createInvalidEntity
         await(db(collectionName).insert[TModel](entity))
-        val request = new FakeRequest(POST, "/%s".format(collectionName),
+        val request = new FakeRequest(PUT, "/%s/%s".format(collectionName, entity.id.get.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(invalid))
         createRunningApp("test") {
           val result = checkForAsyncResult(route(request).get)
-          val hasStatus = status(result) == 500
-          //val hasErrors = (Json.parse(contentAsString(result)) \ "errors").asOpt[JsValue].isDefined
-          hasStatus //&& hasErrors
+          status(result) should be equalTo NOT_FOUND
 
         }
       }
-    })
+      "return a 404 when the original entity cannot be found" in new ICleanDatabase {
+        val entity = createValidEntity
+        val request = new FakeRequest(PUT, "/%s/%s".format(collectionName, entity.id.get.stringify),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(createValidEntity))
+        createRunningApp("test") {
+          val result = checkForAsyncResult(route(request).get)
+          status(result) must be equalTo NOT_FOUND
+        }
+      }
+    },
+    "DELETE to /%s/:id".format(entityName) should {
+      "delete the entity with the given id and return a status of NO_CONTENT(204)" in new ICleanDatabase {
+        val entity = createValidEntity
+
+        val request = new FakeRequest(DELETE, "/%s/%s".format(collectionName, entity.id.get.stringify),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(createValidEntity))
+        createRunningApp("test") {
+          await(db(collectionName).insert[TModel](entity))
+          val result = checkForAsyncResult(route(request).get)
+          status(result) should be equalTo NO_CONTENT
+        }
+      }
+      "return a NO_CONTENT (204) status when the entity does not exist" in new ICleanDatabase {
+        val request = new FakeRequest(DELETE, "/%s/%s".format(collectionName, BSONObjectID.generate.stringify),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(createValidEntity))
+        createRunningApp("test") {
+          val result = checkForAsyncResult(route(request).get)
+          status(result) should be equalTo NO_CONTENT
+        }
+      }
+    },
+
+    "GET to /%s".format(entityName) should {
+      "return all entities" in new ICleanDatabase {
+        val request = new FakeRequest(GET, "/%s".format(collectionName),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
+        createRunningApp("test") {
+          await(createEntities(20))
+          val result = checkForAsyncResult(route(request).get)
+          status(result) must be equalTo OK
+          val list = chunksToModelList(result.asInstanceOf[ChunkedResult[String]])
+          list.size should be equalTo 20
+        }
+      }
+      "return an empty array when no entities exist" in new ICleanDatabase {
+        val request = new FakeRequest(GET, "/%s".format(collectionName),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
+        createRunningApp("test") {
+          val result = checkForAsyncResult(route(request).get)
+          status(result) must be equalTo OK
+          val list = chunksToModelList(result.asInstanceOf[ChunkedResult[String]])
+          list.size should be equalTo 0
+        }
+      }
+    },
+    "GET to /%s/:id".format(entityName) should {
+      "return the entity with the given :id" in new ICleanDatabase {
+        val entity = createValidEntity
+        val request = new FakeRequest(GET, "/%s/%s".format(collectionName, entity.id.get.stringify),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
+        createRunningApp("test") {
+          await(db(collectionName).insert[TModel](entity))
+          val result = checkForAsyncResult(route(request).get)
+          status(result) should be equalTo OK
+          Json.parse(contentAsString(result)).asOpt[TModel] should beSome[TModel]
+        }
+      }
+      "return a 404 status when the entity does not exist" in new ICleanDatabase {
+        val entity = createValidEntity
+        val request = new FakeRequest(GET, "/%s/%s".format(collectionName, entity.id.get.stringify),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
+        createRunningApp("test") {
+          val result = checkForAsyncResult(route(request).get)
+          status(result) should be equalTo NOT_FOUND
+          contentAsString(result) must be equalTo ""
+        }
+      }
+      step(cleanup)
+    }
+  )
 
   override lazy val db = {
     createRunningApp("test") {
       MongoConnection(app.configuration.getStringList("mongodb.servers").get.toList)(app.configuration.getString("mongodb.db").get)
     }
   }
+
+  def cleanup = db.connection.close()
 }

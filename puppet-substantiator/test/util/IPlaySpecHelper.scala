@@ -8,6 +8,7 @@ import com.typesafe.config.ConfigFactory
 import play.api.mvc._
 import scala.reflect.runtime.universe._
 import play.api.libs.json._
+import play.api.libs.iteratee._
 import concurrent._
 import concurrent.ExecutionContext.global
 import concurrent.duration._
@@ -74,6 +75,32 @@ trait IPlaySpecHelper {
       case _ =>
         anyResult
     }
+  }
+
+  def handleChunkedResult(chunkedResult: ChunkedResult[String]): String = {
+
+    var str = ""
+    val buildList = Iteratee.fold[String, Unit](0) {
+      (list, a) => str = str + a
+    }
+    val promisedIteratee = chunkedResult.chunks(buildList).asInstanceOf[Promise[Iteratee[String, Unit]]]
+    val fut = for {
+      now <- promisedIteratee.future
+      unit <- now.run
+    }
+    yield (unit)
+    await(fut)
+    new String(str)
+  }
+
+  def jsonStringToModelList[A](str: String)(implicit jsonReader: Reads[A]): List[A] = {
+    Json.parse(str).asOpt[JsArray].get
+      .value.flatMap(jsonReader.reads(_).asOpt).toList
+  }
+
+  def chunksToModelList[A](chunkedResult: ChunkedResult[String])(implicit jsonReader: Reads[A]): List[A] = {
+    val string = handleChunkedResult(chunkedResult)
+    jsonStringToModelList(string)
   }
 
   def await[T](fut: Future[T]): T = {
