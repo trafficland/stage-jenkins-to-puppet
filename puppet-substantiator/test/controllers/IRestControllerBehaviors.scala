@@ -8,17 +8,19 @@ import scala.concurrent._
 import concurrent.duration._
 import play.api.test._
 import play.api.test.Helpers._
-import services.repository.mongo.reactive.TestMongoDbProvider
 import reactivemongo.bson._
 import reactivemongo.bson.handlers.DefaultBSONHandlers._
 import models.IReadersWriters
 import models.mongo.reactive.IMongoModel
 import play.api.mvc._
 import play.api.libs.json._
+import services.repository.IDbProvider
+import reactivemongo.api.{MongoConnection, DefaultDB}
+import collection.JavaConversions._
 
 trait IRestControllerBehaviors[TModel <: IMongoModel]
   extends Specification with IPlaySpecHelper
-  with IReadersWriters[TModel] with TestMongoDbProvider with Controller {
+  with IReadersWriters[TModel] with IDbProvider[DefaultDB] with Controller {
 
   def createEntities(numberOfEntities: Int): Future[Int]
 
@@ -120,4 +122,10 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
         }
       }
     })
+
+  override lazy val db = {
+    createRunningApp("test") {
+      MongoConnection(app.configuration.getStringList("mongodb.servers").get.toList)(app.configuration.getString("mongodb.db").get)
+    }
+  }
 }
