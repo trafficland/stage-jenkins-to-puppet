@@ -4,6 +4,8 @@ import reactivemongo.bson.handlers._
 import play.api.libs.json._
 import reactivemongo.bson._
 import models.Model._
+import models.IReadersWriters
+import models.json.{IWritesExtended, IReadsExtended}
 
 
 trait IApp extends IMongoModel {
@@ -15,60 +17,69 @@ trait IApp extends IMongoModel {
   def actualCluster: List[AppMachineState]
 }
 
-case class App(override val id: Option[BSONObjectID] = Some(BSONObjectID.generate),
-               override val name: String,
-               override val expected: String,
-               override val actualCluster: List[AppMachineState]) extends IApp {
+case class App(
+                override val name: String,
+                override val expected: String,
+                override val actualCluster: List[AppMachineState],
+                override val id: Option[BSONObjectID] = Some(BSONObjectID.generate)) extends IApp {
 
 }
 
-object App {
+trait IAppReadersWriters extends IReadersWriters[App] {
+  override implicit val bsonReader = App.AppBSONReader
+  override implicit val bsonWriter = App.AppBSONWriter
+  override implicit val jsonReader = App.AppJSONReader
+  override implicit val jsonWriter = App.AppJSONWriter
 
-  protected implicit val bsonReaderAppMach = AppMachineState.AppMachineBSONReader
-  protected implicit val bsonWriterAppMach = AppMachineState.AppMachineStateBSONWriter
+  implicit val bsonReaderAppMach = AppMachineState.AppMachineBSONReader
+  implicit val bsonWriterAppMach = AppMachineState.AppMachineStateBSONWriter
+  implicit val jsonReaderAppmach = AppMachineState.AppMachineJSONReader
+  implicit val jsonWriterAppMach = AppMachineState.AppMachineJSONWriter
 
-  protected implicit val jsonReaderAppMac = AppMachineState.AppMachineJSONReader
-  protected implicit val jsonWriterAppMach = AppMachineState.AppMachineJSONWriter
+}
 
-  implicit object AppBSONReader extends BSONReader[App] {
+object App extends IAppReadersWriters {
+
+  implicit object AppBSONReader extends IBSONReaderExtended[App] {
     def fromBSON(document: BSONDocument) = {
       val doc = document.toTraversable
       App(
-        doc.getAs[BSONObjectID]("_id"),
-        doc.getAs[BSONString]("key").map(_.value).getOrElse(throw errorFrom("BSONRead", "key")),
+        doc.getAs[BSONString]("name").map(_.value).getOrElse(throw errorFrom("BSONRead", "name")),
         doc.getAs[BSONString]("expected").map(_.value).getOrElse(throw errorFrom("BSONRead", "expected")),
-        bsonReaderAppMach.fromBSONArray(doc.getAs[BSONArray]("actualCluster").getOrElse(throw errorFrom("BSONRead", "actualCluster")))
+        bsonReaderAppMach.fromBSONArray(doc.getAs[BSONArray]("actualCluster").getOrElse(throw errorFrom("BSONRead", "actualCluster"))),
+        doc.getAs[BSONObjectID]("_id")
       )
     }
   }
 
-  implicit object AppBSONWriter extends BSONWriter[App] {
+  implicit object AppBSONWriter extends IBSONWriterExtended[App] {
     def toBSON(entity: App) =
       BSONDocument(
         "_id" -> entity.id.getOrElse(BSONObjectID.generate),
-        "key" -> BSONString(entity.name),
+        "name" -> BSONString(entity.name),
         "expected" -> BSONString(entity.expected),
         "actualCluster" -> bsonWriterAppMach.toBSONArray(entity.actualCluster)
       )
   }
 
-  implicit object AppJSONReader extends Reads[App] {
+  implicit object AppJSONReader extends IReadsExtended[App] {
     def reads(json: JsValue) = {
       JsSuccess(App(
+        (json \ "name").as[String],
+        (json \ "expected").as[String],
+        jsonReaderAppmach.readsArray((json \ "actualCluster").as[JsArray])
+        ,
         (json \ "_id").asOpt[String] map {
           id => new BSONObjectID(id)
-        },
-        (json \ "key").as[String],
-        (json \ "expected").as[String],
-        jsonReaderAppMac.readsArray((json \ "actualCluster").as[JsArray])
-      ))
+        })
+      )
     }
   }
 
-  implicit object AppJSONWriter extends Writes[App] {
+  implicit object AppJSONWriter extends IWritesExtended[App] {
     def writes(entity: App): JsValue = {
       val list = scala.collection.mutable.Buffer(
-        "key" -> JsString(entity.name),
+        "name" -> JsString(entity.name),
         "expected" -> JsString(entity.expected),
         "actualCluster" -> jsonWriterAppMach.writesArray(entity.actualCluster))
 
@@ -83,9 +94,9 @@ object App {
 
       var doc = BSONDocument()
 
-      (json \ "key").asOpt[String] foreach {
+      (json \ "name").asOpt[String] foreach {
         name =>
-          doc = doc append ("key" -> new BSONString(name))
+          doc = doc append ("name" -> new BSONString(name))
       }
 
       (json \ "isAlive").asOpt[Boolean] foreach {
@@ -97,6 +108,6 @@ object App {
     }
   }
 
-  implicit object AppUniqueCheckReader extends UniqueKeyReader("key")
+  implicit object AppUniqueCheckReader extends UniqueKeyReader("name")
 
 }

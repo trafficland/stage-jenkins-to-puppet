@@ -2,6 +2,7 @@ package models.mongo.reactive
 
 import play.api.libs.json._
 import reactivemongo.bson._
+import reactivemongo.bson.handlers._
 import models.Model._
 import models.json.{IWritesExtended, IReadsExtended}
 
@@ -15,7 +16,7 @@ case class AppMachineState(val machineName: String, val actual: String = "EMPTY"
 
 object AppMachineState {
 
-  implicit object AppMachineBSONReader extends IBSONReaderExtended[AppMachineState] {
+  implicit object AppMachineBSONReader extends BSONReader[AppMachineState] with IBSONReaderExtended[AppMachineState]   {
     override def fromBSON(document: BSONDocument) = {
       val doc = document.toTraversable
 
@@ -40,7 +41,6 @@ object AppMachineState {
         (json \ "machineName").as[String],
         (json \ "actual").as[String]
       ))
-    override def readsArray(array: JsArray): List[AppMachineState] = array.value.flatMap(reads(_).asOpt).toList
   }
 
   implicit object AppMachineJSONWriter extends IWritesExtended[AppMachineState] {
@@ -49,7 +49,6 @@ object AppMachineState {
         "machineName" -> JsString(entity.machineName),
         "actual" -> JsString(entity.actual)
       ))
-    override def writesArray(objs: List[AppMachineState]): JsArray = JsArray(objs.map(writes))
   }
 
 }

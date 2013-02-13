@@ -58,7 +58,7 @@ trait IAppsRepoHelper extends IRepoTestHelper[App] {
   def machineRepoHelper: IMachineRepoHelper
 
   def createEntity = {
-    new App(Some(BSONObjectID.generate), "app1?", "1.0.0", List(
+    new App("app1?", "1.0.0", List(
       AppMachineState("testMachineName1", "0.0.1"),
       AppMachineState("testMachineName2", "0.0.1")))
   }
@@ -67,7 +67,7 @@ trait IAppsRepoHelper extends IRepoTestHelper[App] {
     (0 until numberOfEntities) map {
       index => {
         val count = index + 1
-        new App(Some(BSONObjectID.generate), "app" + count, "1.0.0", List(
+        new App("app" + count, "1.0.0", List(
           AppMachineState("testMachineName1", "0.0.1"),
           AppMachineState("testMachineName2", "0.0.1")))
       }

@@ -5,6 +5,7 @@ import play.api.libs.json._
 import models.Model._
 import models.IReadersWriters
 import play.api.http.Writeable
+import models.json.{IReadsExtended, IWritesExtended}
 
 trait IMachine extends IMongoModel {
   def name: String
@@ -48,7 +49,7 @@ object Machine extends IMachineReadersWriters {
       )
   }
 
-  implicit object MachineJSONReader extends Reads[Machine] {
+  implicit object MachineJSONReader extends IReadsExtended[Machine] {
     def reads(json: JsValue) = {
       JsSuccess(new Machine(
         (json \ "name").as[String],
@@ -60,7 +61,7 @@ object Machine extends IMachineReadersWriters {
     }
   }
 
-  implicit object MachineJSONWriter extends Writes[Machine] {
+  implicit object MachineJSONWriter extends IWritesExtended[Machine] {
     def writes(entity: Machine): JsValue = {
       val list = scala.collection.mutable.Buffer(
         "name" -> JsString(entity.name),

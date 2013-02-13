@@ -41,13 +41,9 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
   //    }
   //  }
 
-  val collections = Seq("apps", "machines")
-
   trait ICleanDatabase extends After {
     def after =
-      Await.result(Future.traverse(collections)(name => db.collection(name).remove(BSONDocument(), firstMatchOnly = false)),
-        FiniteDuration(10, "seconds")
-      )
+      Await.result(db.collection(collectionName).remove(BSONDocument(), firstMatchOnly = false), FiniteDuration(10, "seconds"))
   }
 
   def baseShould: List[Fragments] = List[Fragments](
@@ -58,18 +54,9 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
         val request = new FakeRequest(POST, "/%s".format(collectionName),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
         createRunningApp("test") {
-          route(request) match {
-            case Some(result) =>
-              val tuple = resultToStatusContentBool(result, "_id", entity.id.get.stringify)
-              tuple match {
-                case (OK, true) =>
-                  true
-                case (_, _) =>
-                  false
-              }
-            case None =>
-              false
-          }
+          val result = checkForAsyncResult(route(request).get)
+          status(result) should be equalTo (OK)
+          resultToFieldComparison(result, "_id", entity.id.get.stringify) should be equalTo true
         }
       }
 
@@ -93,18 +80,9 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
         createRunningApp("test") {
           await(db(collectionName).insert[TModel](entity))
-          route(request) match {
-            case Some(result) =>
-              val tuple = resultToStatusContentBool(result, "_id", entity.id.get.stringify)
-              tuple match {
-                case (OK, true) =>
-                  true
-                case (_, _) =>
-                  false
-              }
-            case None =>
-              false
-          }
+          val result = checkForAsyncResult(route(request).get)
+          status(result) should be equalTo (OK)
+          resultToFieldComparison(result, "_id", entity.id.get.stringify) should be equalTo true
         }
       }
       "return the invalid entity with errors" in new ICleanDatabase {

@@ -39,6 +39,7 @@ class MachinesRepositoryIntegrationSpec
       val entity = createEntity
       Await.result(createEntities(3),10 seconds )
       val insertedList = Await.result(repository.getAllMem(),10 seconds )
+      insertedList.size should be(3)
       val testList = insertedList.map(_.name)
       val resultMap = Await.result(repository.machinesExistByNames(testList), 20 seconds)
 

@@ -25,7 +25,7 @@ abstract class MachinesRepository
   implicit val writer = Machine.MachineBSONWriter
 
   def getByName(name: String)(implicit context: ExecutionContext): Future[ISearchResults[Machine]] = {
-    search(MongoSearchCriteria(BSONDocument("key" -> BSONString(name)), None, Some(Paging(0, 10))))
+    search(MongoSearchCriteria(BSONDocument("name" -> BSONString(name)), None, Some(Paging(0, 10))))
   }
 
   def machineExists(name: String)(implicit context: ExecutionContext): Future[Boolean] = {
@@ -36,7 +36,7 @@ abstract class MachinesRepository
 
   def machinesExistByNames(names: List[String])
                           (implicit context: ExecutionContext): Future[Map[String, Boolean]] = {
-    val multipleNameCriteria = MongoSearchCriteria(BSONDocument("key" -> BSONDocument(
+    val multipleNameCriteria = MongoSearchCriteria(BSONDocument("name" -> BSONDocument(
       "$in" -> BSONArray(names.map(s => new BSONString(s)): _*)
     )), None, None)
 

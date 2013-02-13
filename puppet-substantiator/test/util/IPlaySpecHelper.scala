@@ -61,11 +61,11 @@ trait IPlaySpecHelper {
     (status(result), (jsonContent \ "errors").asOpt[Boolean] == None)
   }
 
-  def resultToStatusContentBool(anyResult: Result, fieldToCheck: String, compareTo: String): (Int, Boolean) = {
+  def resultToFieldComparison(anyResult: Result, fieldToCheck: String, compareTo: String): Boolean = {
     val result = checkForAsyncResult(anyResult)
     val content = contentAsString(result)
     val jsonContent = Json.parse(content)
-    (status(result), (jsonContent \ fieldToCheck).asOpt[String].get == compareTo)
+    (jsonContent \ fieldToCheck).asOpt[String].get == compareTo
   }
 
   def checkForAsyncResult(anyResult: Result): Result = {
