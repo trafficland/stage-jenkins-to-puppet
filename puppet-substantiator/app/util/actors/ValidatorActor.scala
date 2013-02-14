@@ -6,7 +6,7 @@ import util.evaluations.IEvaluate
 import concurrent.ExecutionContext
 import util.actors.fsm.CancellableDelay
 
-object ValidatorActorMessages {
+object ValidatorActor {
 
   trait IValidateMsg
 
@@ -20,7 +20,7 @@ object ValidatorActorMessages {
 
 }
 
-import ValidatorActorMessages._
+import ValidatorActor._
 
 class ValidatorActor(execCtx: ExecutionContext, scheduleMaintainer: ActorRef) extends Actor {
   implicit val ctx = execCtx

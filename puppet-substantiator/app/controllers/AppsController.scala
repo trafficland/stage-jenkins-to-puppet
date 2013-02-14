@@ -13,7 +13,7 @@ import concurrent.ExecutionContext.Implicits.global
 import concurrent._
 import reactivemongo.bson.{BSONString, BSONDocument}
 import services.repository.Paging
-import _root_.util.actors.ValidatorActorMessages._
+import _root_.util.actors.ValidatorActor._
 import services.evaluations.AppEvaluate
 import globals.Actors._
 
