@@ -4,9 +4,8 @@ import models.mongo.reactive._
 import util.ConfigurationProvider
 import services.repository.mongo.reactive._
 import concurrent._
-import services.repository.{ISearchResults, Paging, MongoSearchResults}
+import services.repository.{ISearchResults, Paging}
 import reactivemongo.bson.{BSONArray, BSONString, BSONDocument}
-import play.api.libs.iteratee.Iteratee
 
 trait IMachinesRepository extends MongoBaseRepository[Machine] with IMongoUniqueCheckRepository[Machine] {
   def getByName(name: String)(implicit context: ExecutionContext): Future[ISearchResults[Machine]]

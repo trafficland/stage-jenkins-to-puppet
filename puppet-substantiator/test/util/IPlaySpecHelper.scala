@@ -10,19 +10,17 @@ import scala.reflect.runtime.universe._
 import play.api.libs.json._
 import play.api.libs.iteratee._
 import concurrent._
-import concurrent.ExecutionContext.global
 import concurrent.duration._
 
 
 trait IPlaySpecHelper {
-  implicit lazy val app = play.api.Play.current
-  implicit lazy val localGlobal = global
+  implicit val localGlobal = concurrent.ExecutionContext.Implicits.global
 
   trait ITestConfig {
     def configuration: Configuration
   }
 
-  def timeoutSeconds = 5 seconds
+  def timeoutSeconds = 10 seconds
 
   def createRunningApp[T](configLocation: String = "")(run: => T): T = {
     configLocation match {
@@ -78,10 +76,9 @@ trait IPlaySpecHelper {
   }
 
   def handleChunkedResult(chunkedResult: ChunkedResult[String]): String = {
-
     var str = ""
     val buildList = Iteratee.fold[String, Unit](0) {
-      (list, a) => str = str + a
+      (_, a) => str = str + a
     }
     val promisedIteratee = chunkedResult.chunks(buildList).asInstanceOf[Promise[Iteratee[String, Unit]]]
     val fut = for {
@@ -89,7 +86,7 @@ trait IPlaySpecHelper {
       unit <- now.run
     }
     yield (unit)
-    await(fut)
+    Await.result(fut,timeoutSeconds * 5)
     new String(str)
   }
 
@@ -104,7 +101,7 @@ trait IPlaySpecHelper {
   }
 
   def await[T](fut: Future[T]): T = {
-    Await.result[T](fut, timeoutSeconds)
+    Await.result[T](fut, timeoutSeconds * 2)
   }
 
 

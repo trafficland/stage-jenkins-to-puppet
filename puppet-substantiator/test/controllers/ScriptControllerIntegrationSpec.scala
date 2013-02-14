@@ -24,7 +24,7 @@ object ScriptControllerFactory {
     else
       new ScriptController() with IScriptControllerTest {
         override lazy val optScriptFileName: Option[String] = ScriptController.optScriptFileName
-        override lazy val ourlogger: Logger = ScriptController.ourlogger
+        override lazy val ourlogger: Logger = play.api.Logger.logger
       }
   }
 }

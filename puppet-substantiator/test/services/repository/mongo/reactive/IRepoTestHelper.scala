@@ -1,14 +1,14 @@
 package services.repository.mongo.reactive
 
 import concurrent.{Future, Await}
-import reactivemongo.bson.{BSONObjectID, BSONDocument}
-import reactivemongo.bson.handlers.DefaultBSONHandlers._
-import models.IModel
+import concurrent.ExecutionContext.Implicits.global
 import concurrent.duration._
 import reactivemongo.bson.handlers.{BSONWriter, BSONReader}
+import reactivemongo.bson.{BSONObjectID, BSONDocument}
+import reactivemongo.bson.handlers.DefaultBSONHandlers._
 import models.mongo.reactive._
 import play.api.libs.iteratee.Enumerator
-import concurrent.ExecutionContext.Implicits.global
+import models.IModel
 
 trait IRepoTestHelper[TestModel <: IModel[BSONObjectID]] extends IMongoDbProvider {
 
@@ -55,10 +55,14 @@ trait IAppsRepoHelper extends IRepoTestHelper[App] {
 
   override val collectionName: String = "apps"
 
-  def machineRepoHelper: IMachineRepoHelper
+  def appDb = db
+
+  def machineRepoHelper: IMachineRepoHelper = new IMachineRepoHelper {
+    override def db = appDb
+  }
 
   def createEntity = {
-    new App("app1?", "1.0.0", List(
+    new App("app199", "1.0.0", List(
       AppMachineState("testMachineName1", "0.0.1"),
       AppMachineState("testMachineName2", "0.0.1")))
   }
@@ -75,6 +79,7 @@ trait IAppsRepoHelper extends IRepoTestHelper[App] {
   }
 
   def createEntities(numberOfEntities: Int) = {
-    db(collectionName).insert[App](Enumerator(makeSomeEntities(numberOfEntities): _*))
+    val ents = makeSomeEntities(numberOfEntities)
+    db(collectionName).insert[App](Enumerator(ents: _*))
   }
 }

@@ -20,7 +20,6 @@ class AppsRepositoryIntegrationSpec
   with TestAppsRepositoryProvider
   with RepositoryBehaviors[App] {
 
-  val machineRepoHelper = new IMachineRepoHelper() with TestMongoDbProvider with TestMachineRepositoryProvider
 
   before {
     Await.result(machineRepoHelper.createEntities(2), 10 seconds)
@@ -32,7 +31,6 @@ class AppsRepositoryIntegrationSpec
 
   override def afterAll(configMap: Map[String, Any]) {
     machineRepoHelper.clean()
-    machineRepoHelper.db.connection.close()
     db.connection.close()
   }
 

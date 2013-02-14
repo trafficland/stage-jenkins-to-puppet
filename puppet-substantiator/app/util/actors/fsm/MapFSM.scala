@@ -12,7 +12,7 @@ trait IMapFSMDomainProvider[T] {
 class MapFSMDomain[V] {
 
   // received events
-  case class SetTarget(ref: ActorRef)
+  case class SetTarget(ref: Option[ActorRef] = None)
 
   case class Add(key: String, value: V)
 
@@ -31,7 +31,7 @@ class MapFSMDomain[V] {
   //state data
   case object Uninitialized extends IStateData
 
-  case class Todo(target: ActorRef, map: Map[String, V]) extends IStateData
+  case class Todo(target: Option[ActorRef], map: Map[String, V]) extends IStateData
 
 }
 
@@ -94,7 +94,7 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
   onTransition {
     case Active -> Idle ⇒
       stateData match {
-        case Todo(ref, mult) => ref ! Batch(mult)
+        case Todo(ref, mult) => ref.map(_ ! Batch(mult))
       }
   }
   initialize

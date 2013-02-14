@@ -1,26 +1,16 @@
 package controllers
 
 import play.api.mvc._
-import _root_.util.OptionHelper.getOptionOrDefault
-import play.api.libs.concurrent.Akka
-import play.api.Play.configuration
-import play.api.Logger._
-import akka.actor.Props
-import _root_.util.actors.ScriptExecutorActor
-import _root_.util.actors.ScriptExecutorActor._
 import java.io.File
 import scala.io._
+import _root_.util.actors.ScriptExecutorActor._
+import _root_.util.OptionHelper.getOptionOrDefault
+import globals.Actors._
 
 /*
 End point to call IO Actor to run scripts
  */
 abstract class ScriptController extends Controller {
-  implicit val playApp = play.api.Play.current
-
-  lazy val system = Akka.system
-  lazy val ourlogger = logger
-  lazy val scriptActorName = getOptionOrDefault(configuration.getString("actor.scriptExecutor"), "validationActorName")
-  lazy val scriptExecActorRef = system.actorOf(Props(() => new ScriptExecutorActor(ourlogger), scriptActorName))
 
   lazy val optScriptFileName = {
     try {

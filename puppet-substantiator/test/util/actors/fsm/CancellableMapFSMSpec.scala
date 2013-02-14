@@ -35,7 +35,7 @@ class CancellableMapFSMSpec(_system: ActorSystem)
 
   def initialize() = {
     val fsm = TestFSMRef[IState, IStateData, CancellableMapFSM](new CancellableMapFSM(3000))
-    fsm ! SetTarget(fsm.underlying.self)
+    fsm ! SetTarget(Some(fsm.underlying.self))
     fsm
   }
 

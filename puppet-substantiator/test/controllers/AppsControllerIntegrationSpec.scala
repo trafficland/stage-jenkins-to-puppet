@@ -9,7 +9,7 @@ import reactivemongo.api.MongoConnection
 class AppsControllerIntegrationSpec
   extends IAppsRepoHelper
   with IRestControllerBehaviors[App]
-  with IAppReadersWriters  {
+  with IAppReadersWriters {
 
   override def createEntities(numberOfEntities: Int): Future[Int] = {
     super.createEntities(numberOfEntities)
@@ -23,25 +23,27 @@ class AppsControllerIntegrationSpec
 
   override val collectionName = this.entityName
 
-  override lazy val machineRepoHelper = new IMachineRepoHelper() {
-    override lazy val db =
-      createRunningApp("test") {
-        MongoConnection(app.configuration.getStringList("mongodb.servers")
-          .get.toList)(app.configuration.getString("mongodb.db").get)
-      }
-  }
-
-  step(machineRepoHelper.createEntities(2))
+  step({
+    Await.result(machineRepoHelper.createEntities(2), timeoutSeconds * 2)
+  })
   ("AppController" should {
 
     "AppControllerTest1" in new ICleanDatabase {
-      true
+      //            val entity = createValidEntity
+      //            val request = new FakeRequest(GET, "/%s/validate/%s/%s".format(collectionName, "app199", 5000),
+      //              FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
+      //            createRunningApp("test") {
+      //              await(db(collectionName).insert[App](entity), timeoutSeconds * 5)
+      //              val result = checkForAsyncResult(route(request).get)
+      //              status(result) must be equalTo OK
+      //            }
     }
   }) :: baseShould
-  step({
-    machineRepoHelper.clean()
-    machineRepoHelper.db.connection.close()
-  })
 
+
+  override def cleanup = {
+    machineRepoHelper.clean()
+    db.connection.close()
+  }
 
 }

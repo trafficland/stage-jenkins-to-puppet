@@ -54,7 +54,7 @@ class AnyMapFSMSpec(_system: ActorSystem)
 
   def initialize() = {
     val fsm = TestFSMRef[IState, IStateData, AnyMapFSM](new AnyMapFSM())
-    fsm ! SetTarget(fsm.underlying.self)
+    fsm ! SetTarget(Some(fsm.underlying.self))
     fsm
   }
 

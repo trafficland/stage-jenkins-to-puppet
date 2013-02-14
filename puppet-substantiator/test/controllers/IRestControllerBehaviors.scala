@@ -49,6 +49,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
   def baseShould: List[Fragments] = List[Fragments](
 
     "\"POST to /%s/\"".format(entityName) should {
+
       " create a new entity" in new ICleanDatabase {
         val entity = createValidEntity
         val request = new FakeRequest(POST, "/%s".format(collectionName),
@@ -74,6 +75,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
     },
 
     "PUT to /%s/:id".format(entityName) should {
+
       " update the existing entity" in new ICleanDatabase {
         val entity = createValidEntity
         val request = new FakeRequest(PUT, "/%s/%s".format(collectionName, entity.id.get.stringify),
@@ -108,13 +110,13 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
       }
     },
     "DELETE to /%s/:id".format(entityName) should {
+
       "delete the entity with the given id and return a status of NO_CONTENT(204)" in new ICleanDatabase {
         val entity = createValidEntity
-
+        await(db(collectionName).insert[TModel](entity))
         val request = new FakeRequest(DELETE, "/%s/%s".format(collectionName, entity.id.get.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(createValidEntity))
         createRunningApp("test") {
-          await(db(collectionName).insert[TModel](entity))
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo NO_CONTENT
         }
@@ -130,11 +132,12 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
     },
 
     "GET to /%s".format(entityName) should {
+
       "return all entities" in new ICleanDatabase {
         val request = new FakeRequest(GET, "/%s".format(collectionName),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
         createRunningApp("test") {
-          await(createEntities(20))
+          Await.result(createEntities(20), timeoutSeconds * 20)
           val result = checkForAsyncResult(route(request).get)
           status(result) must be equalTo OK
           val list = chunksToModelList(result.asInstanceOf[ChunkedResult[String]])
@@ -179,8 +182,14 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
   )
 
   override lazy val db = {
-    createRunningApp("test") {
-      MongoConnection(app.configuration.getStringList("mongodb.servers").get.toList)(app.configuration.getString("mongodb.db").get)
+    play.api.Play.maybeApplication match {
+      case Some(app) =>
+        MongoConnection(app.configuration.getStringList("mongodb.servers").get.toList)(app.configuration.getString("mongodb.db").get)
+      case None =>
+        createRunningApp("test") {
+          val app = play.api.Play.current
+          MongoConnection(app.configuration.getStringList("mongodb.servers").get.toList)(app.configuration.getString("mongodb.db").get)
+        }
     }
   }
 
