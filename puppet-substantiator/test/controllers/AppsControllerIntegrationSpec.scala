@@ -1,10 +1,13 @@
 package controllers
 
+import _root_.util.actors.fsm.CancellableMapFSMDomainProvider
+import _root_.util.actors.ScriptExecutorActor
 import models.mongo.reactive.{AppMachineState, IAppReadersWriters, IMachineReadersWriters, App, Machine}
 import scala.concurrent._
 import services.repository.mongo.reactive.{IMachineRepoHelper, IAppsRepoHelper}
 import play.api.test._
 import play.api.test.Helpers._
+import globals.Actors
 
 class AppsControllerIntegrationSpec
   extends IAppsRepoHelper
@@ -33,7 +36,10 @@ class AppsControllerIntegrationSpec
       val request = new FakeRequest(GET, "/%s/validate/%s/%s".format(collectionName, "app199", 5000),
         FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
       createRunningApp("test") {
-        Await.result(db(collectionName).insert[App](entity), timeoutSeconds * 5)
+        import CancellableMapFSMDomainProvider.domain._
+        Actors.schedule ! SetTarget(None) // initialize scheduler
+        Actors.scriptExecActorRef ! ScriptExecutorActor.SetLogger(Actors.ourlogger) // initialize scheduler
+        Await.result(db(collectionName).insert[App](entity), timeoutSeconds * 2)
         val result = checkForAsyncResult(route(request).get)
         status(result) must be equalTo OK
       }

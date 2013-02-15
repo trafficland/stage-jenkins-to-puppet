@@ -25,7 +25,7 @@ stagePathWithNewApplication=$stagePath''$applicationNameNew
 #ie: 127.0.0.1:~/stage/proj1/proj1New
 destination=$destinationAddress:$stagePathWithNewApplication
 #pack full scp line
-cmd=scp' '$packageLocation' '$destination
+cmd=scp' -r '$packageLocation' '$destination
 #execute scp
 $cmd
 
