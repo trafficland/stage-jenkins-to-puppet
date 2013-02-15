@@ -22,27 +22,6 @@ class ValidatorActorSpec(_system: ActorSystem)
   import ValidatorActor._
   import _root_.util.actors.fsm.CancellableMapFSMDomainProvider.domain._
 
-  case class TestEvaluate(doFail: Boolean) extends IEvaluate[String] {
-    def evaluate = {
-      if (doFail)
-        Fail("fail")
-      else
-        Pass("pass")
-    }
-
-    def name = "test"
-
-    var state: String = ""
-
-    def failAction(result: String) {
-      state = result
-    }
-
-    def passAction(result: String) {
-      state = result
-    }
-  }
-
   def initialize(): TestActorRef[ValidatorActor] = {
     TestActorRef(new ValidatorActor(global, this.testActor))
   }

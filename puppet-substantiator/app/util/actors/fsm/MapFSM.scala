@@ -12,13 +12,15 @@ trait IMapFSMDomainProvider[T] {
 class MapFSMDomain[V] {
 
   // received events
-  case class SetTarget(ref: Option[ActorRef] = None)
+  case class SetTarget(ref: Option[ActorRef])
 
   case class Add(key: String, value: V)
 
   case class Remove(key: String)
 
   case object Flush
+
+  case object Status
 
   // sent events
   case class Batch(multiple: Map[String, V])
@@ -53,7 +55,7 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
       goto(Idle) using t.copy(map = Map.empty[String, T])
   }
 
-  def handelExtraAdd(key: String,obj:T): Unit = {}
+  def handelExtraAdd(key: String, obj: T): Unit = {}
 
   def handelExtraRemove(key: String): Unit = {}
 
@@ -61,11 +63,14 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
 
   protected def partialUnHandled: StateFunction = {
     {
+      case Event(Status, Todo(ref, map)) =>
+        ref.map(_ ! Batch(map))
+        stay using Todo(ref, map)
       // common code for both states
       case Event(Add(key, obj), Todo(ref, currentMap)) =>
-        handelExtraAdd(key,obj)
+        handelExtraAdd(key, obj)
         goto(Active) using Todo(ref, currentMap + (key -> obj))
-      case Event(Remove(key), Todo(ref, currentMap)) => {
+      case Event(Remove(key), Todo(ref, currentMap)) =>
         val newMap =
           if (currentMap.contains(key))
             currentMap - key
@@ -77,7 +82,6 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
           handelExtraRemove(key)
           goto(Active) using Todo(ref, newMap)
         }
-      }
       case Event(_, Todo(_, _)) =>
         //Could be in idle state, not putting logic in idle as it will never go active
         stay
@@ -91,12 +95,6 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
   // takes care of all state action events
   whenUnhandled(_partialUnhandled)
 
-  onTransition {
-    case Active -> Idle ⇒
-      stateData match {
-        case Todo(ref, mult) => ref.map(_ ! Batch(mult))
-      }
-  }
   initialize
 }
 

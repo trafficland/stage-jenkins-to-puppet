@@ -103,7 +103,7 @@ class CancellableMapFSMSpec(_system: ActorSystem)
       getStateMap(fsm)(localDomain).size should be(200)
     }
 
-    "then flushbe handled and back to idle" in {
+    "then flush should be handled and goes back to idle" in {
       val fsm = initialize()
       createAndInject(200, fsm)
       fsm.stateName should be(Active)
