@@ -24,8 +24,13 @@ stagePathWithNewApplication=$stagePath''$applicationNameNew
 #destination will combine address/hostname to a full stagePath, this will fulfill the scp destination
 #ie: 127.0.0.1:~/stage/proj1/proj1New
 destination=$destinationAddress:$stagePathWithNewApplication
+
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
+  # commands to run on remote host
+  mkdir -p "$stagePath"
+ENDSSH
 #pack full scp line
-cmd=scp' -rp '$packageLocation' '$destination
+cmd=scp' '$packageLocation' '$destination
 #execute scp
 echo $cmd
 $cmd
