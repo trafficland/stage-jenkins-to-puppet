@@ -7,8 +7,9 @@ import reactivemongo.bson.BSONObjectID
 import concurrent.ExecutionContext.Implicits.global
 import models.mongo.reactive.IMongoModel
 import services.repository.mongo.reactive.{IMongoRepositoryProvider, MongoSearchCriteria}
+import scala.concurrent._
 
-abstract class RestController[TModel <: IMongoModel]
+abstract class RestController[TModel <: IMongoModel[TModel]]
   extends Controller
   with IMongoRepositoryProvider[TModel] {
 
@@ -49,7 +50,13 @@ abstract class RestController[TModel <: IMongoModel]
         case Some(model) =>
           if (model.isValid) {
             Async {
-              repository.create(model) map {
+              val toBeInserted: TModel = model.id match {
+                case Some(id) => model
+                case None =>
+                  model.id = Some(BSONObjectID.generate)
+                  model
+              }
+              repository.create(toBeInserted) map {
                 either =>
                   either match {
                     case Left(optModel) => optModel match {
@@ -110,33 +117,30 @@ abstract class RestController[TModel <: IMongoModel]
     request =>
       request.body.asOpt[TModel] match {
         case Some(model) =>
-          model.id match {
-            case Some(modelId) =>
-              if (model.isValid) {
-                Async {
-                  //forcing creation or update
-                  repository.save(model) map {
-                    either =>
-                      either match {
-                        case Left(optModel) => optModel match {
-                          case Some(saved) => Ok(Json.toJson[TModel](saved))
-                          case None => NotFound
-                        }
-                        case Right(ex) => InternalServerError(ex.getMessage)
-                      }
+          if (model.isValid) {
+            Async {
+              repository.save(model) map {
+                either =>
+                  either match {
+                    case Left(optModel) => optModel match {
+                      case Some(saved) =>
+                        Ok(Json.toJson[TModel](saved))
+                      case None =>
+                        NotFound
+                    }
+                    case Right(ex) =>
+                      InternalServerError(ex.getMessage)
                   }
-                }
-              } else {
-                InternalServerError(Json.toJson[TModel](model))
               }
-
-            case None =>
-              NotFound
+            }
+          } else {
+            InternalServerError(Json.toJson[TModel](model))
           }
         case None =>
           InternalServerError("Unable to parse json")
       }
   }
+
 
   def remove(id: String) = Action {
     Async {

@@ -1,28 +1,26 @@
 package models.mongo.reactive
 
-import reactivemongo.bson.handlers._
 import play.api.libs.json._
 import reactivemongo.bson._
 import models.Model._
 import models.IReadersWriters
 import models.json.{IWritesExtended, IReadsExtended}
 
-
-trait IApp extends IMongoModel {
-  def name: String
-
-  def expected: String
-
-  //list of machines to actual App state / actual
-  def actualCluster: List[AppMachineState]
-}
-
 case class App(
-                override val name: String,
-                override val expected: String,
-                override val actualCluster: List[AppMachineState],
-                override val id: Option[BSONObjectID] = Some(BSONObjectID.generate)) extends IApp {
+                var name: String,
+                val expected: String,
+                val actualCluster: List[AppMachineState],
+                override var id: Option[BSONObjectID] = Some(BSONObjectID.generate)) extends IMongoModel[App] {
+  def getWithID = this.copy(id = Some(BSONObjectID.generate))
 
+  def isEqualTo(other: App, useID: Boolean): Boolean = {
+    super.isEqualTo(other, useID) &&
+      expected == other.expected &&
+      name == other.name &&
+      actualCluster.forall(appMach => other.actualCluster.exists(otherAppMach =>
+        otherAppMach.machineName == appMach.machineName &&
+          otherAppMach.actual == appMach.actual))
+  }
 }
 
 trait IAppReadersWriters extends IReadersWriters[App] {

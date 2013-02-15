@@ -1,7 +1,8 @@
 package models
 
 trait IModel[T] {
-  def id: Option[T]
+  var id: Option[T]
+
 }
 
 object Model{

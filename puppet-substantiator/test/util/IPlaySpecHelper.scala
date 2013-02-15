@@ -60,10 +60,14 @@ trait IPlaySpecHelper {
   }
 
   def resultToFieldComparison(anyResult: Result, fieldToCheck: String, compareTo: String): Boolean = {
+    resultToOptField(anyResult,fieldToCheck).get == compareTo
+  }
+
+  def resultToOptField(anyResult: Result, fieldToCheck: String): Option[String] = {
     val result = checkForAsyncResult(anyResult)
     val content = contentAsString(result)
     val jsonContent = Json.parse(content)
-    (jsonContent \ fieldToCheck).asOpt[String].get == compareTo
+    (jsonContent \ fieldToCheck).asOpt[String]
   }
 
   def checkForAsyncResult(anyResult: Result): Result = {

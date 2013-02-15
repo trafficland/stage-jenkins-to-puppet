@@ -14,7 +14,7 @@ import reactivemongo.api.QueryOpts
 import reactivemongo.api.QueryBuilder
 import reactivemongo.bson.BSONInteger
 
-abstract class MongoBaseRepository[TModel <: IMongoModel]
+abstract class MongoBaseRepository[TModel <: IMongoModel[TModel]]
   extends IMongoRepository[TModel]
   with IMongoDbProvider
   with IConfigurationProvider {
@@ -128,5 +128,9 @@ abstract class MongoBaseRepository[TModel <: IMongoModel]
         MongoSearchResults[TModel](count, enumerator)
 
     }
+  }
+
+  def searchSingle(criteria: ISearchCriteria[BSONDocument])(implicit context: ExecutionContext): Future[Option[TModel]] = {
+    collection.find[TModel](QueryBuilder(Some(criteria.query), projectionDoc = projection)).headOption()
   }
 }

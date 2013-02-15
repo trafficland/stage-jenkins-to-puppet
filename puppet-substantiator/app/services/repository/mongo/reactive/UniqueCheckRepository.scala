@@ -7,8 +7,8 @@ import models.mongo.reactive.IMongoModel
 import reactivemongo.bson.{BSONObjectID, BSONDocument}
 import services.repository.{IUniqueCheck, IUniqueCheckRepository}
 
-trait IMongoUniqueCheckRepository[TModel <: IMongoModel]
-  extends IUniqueCheckRepository[BSONObjectID,IMongoModel,BSONDocument] {
+trait IMongoUniqueCheckRepository[TModel <: IMongoModel[TModel]]
+  extends IUniqueCheckRepository[BSONObjectID,IMongoModel[TModel],BSONDocument] {
   this: MongoBaseRepository[TModel] =>
 
   def uniqueCheck(criteria: IUniqueCheck[BSONObjectID, BSONDocument])(implicit context: ExecutionContext):Future[Boolean] = {

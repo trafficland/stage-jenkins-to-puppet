@@ -7,16 +7,14 @@ import models.IReadersWriters
 import play.api.http.Writeable
 import models.json.{IReadsExtended, IWritesExtended}
 
-trait IMachine extends IMongoModel {
-  def name: String
-
-  def isAlive: Boolean
-}
-
-class Machine(override val name: String,
-              override val id: Option[BSONObjectID] = Some(BSONObjectID.generate),
-              override val isAlive: Boolean = true) extends IMachine {
-
+case class Machine(var name: String,
+                   override var id: Option[BSONObjectID] = Some(BSONObjectID.generate),
+                   val isAlive: Boolean = true) extends IMongoModel[Machine] {
+  def isEqualTo(other: Machine, useID: Boolean): Boolean = {
+    super.isEqualTo(other, useID) &&
+      name == other.name &&
+      isAlive == other.isAlive
+  }
 }
 
 trait IMachineReadersWriters extends IReadersWriters[Machine] {
@@ -51,13 +49,14 @@ object Machine extends IMachineReadersWriters {
 
   implicit object MachineJSONReader extends IReadsExtended[Machine] {
     def reads(json: JsValue) = {
-      JsSuccess(new Machine(
+      val m = new Machine(
         (json \ "name").as[String],
         (json \ "_id").asOpt[String] map {
           id => new BSONObjectID(id)
         },
         (json \ "isAlive").as[Boolean]
-      ))
+      )
+      JsSuccess(m)
     }
   }
 

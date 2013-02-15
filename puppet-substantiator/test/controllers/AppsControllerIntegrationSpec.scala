@@ -22,6 +22,8 @@ class AppsControllerIntegrationSpec
 
   def createInvalidEntity: App = new App("invalid", "invalid", List.empty[AppMachineState], None)
 
+  def createValidNoIDEntity:App = createEntity.copy(id = None)
+
   override val entityName = "apps"
 
   override val collectionName = this.entityName

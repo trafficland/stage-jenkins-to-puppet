@@ -18,7 +18,7 @@ import services.repository.IDbProvider
 import reactivemongo.api.{MongoConnection, DefaultDB}
 import collection.JavaConversions._
 
-trait IRestControllerBehaviors[TModel <: IMongoModel]
+trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
   extends Specification with IPlaySpecHelper
   with IReadersWriters[TModel] with IDbProvider[DefaultDB] with Controller {
 
@@ -27,6 +27,8 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
   def createValidEntity: TModel
 
   def createInvalidEntity: TModel
+
+  def createValidNoIDEntity: TModel
 
   def entityName: String
 
@@ -48,6 +50,36 @@ trait IRestControllerBehaviors[TModel <: IMongoModel]
 
   def baseShould: List[Fragments] = List[Fragments](
 
+    "\"POST SAVE to /%s/save\"".format(entityName) should {
+
+      " saving new entity should create" in new ICleanDatabase {
+        val entity = createValidNoIDEntity
+        val request = new FakeRequest(POST, "/%s/save".format(collectionName),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
+        createRunningApp("test") {
+          val result = checkForAsyncResult(route(request).get)
+          status(result) should be equalTo (OK)
+          resultToOptField(result, "_id").isDefined shouldEqual true
+          jsonReader.reads(Json.parse(contentAsString(result))).get.isEqualTo(entity, false)
+        }
+      }
+      " save existing should update values" in new ICleanDatabase {
+        val entity = createValidNoIDEntity
+        val request = new FakeRequest(POST, "/%s/save".format(collectionName),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
+        createRunningApp("test") {
+          val result = checkForAsyncResult(route(request).get)
+          status(result) should be equalTo (OK)
+          resultToOptField(result, "_id").isDefined shouldEqual true
+          jsonReader.reads(Json.parse(contentAsString(result))).get.isEqualTo(entity, false)
+          entity.name = "test1234"
+          val request2 = new FakeRequest(POST, "/%s/save".format(collectionName),
+            FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
+          val result2 = checkForAsyncResult(route(request).get)
+          jsonReader.reads(Json.parse(contentAsString(result2))).get.isEqualTo(entity, true)
+        }
+      }
+    },
     "\"POST to /%s/\"".format(entityName) should {
 
       " create a new entity" in new ICleanDatabase {
