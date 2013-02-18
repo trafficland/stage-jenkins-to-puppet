@@ -25,7 +25,6 @@ with IAppsRepositoryProvider {
   implicit val criteriaReader = App.AppCriteriaReader
   implicit val uniqueCheckReader = App.AppUniqueCheckReader
 
-
   def uniqueCheck = Action(parse.json) {
     request =>
       Async {
@@ -50,7 +49,7 @@ with IAppsRepositoryProvider {
         apps.headOption match {
           case Some(app) =>
             validatorActorRef ! StartValidation(delayMilliSeconds, AppEvaluate(app), Akka.system)
-            Ok("Application found! Validation beinging for app: " + Json.toJson(app).toString() + "\n" +
+            Ok("Application found! Validation beginning for app: " + Json.toJson(app).toString() + "\n" +
               "This is the applications current state not the evaluation state!")
           case None =>
             NotFound
