@@ -1,8 +1,8 @@
 #!/bin/sh
 #curl to add an application and a machine set
-commaDelimitedMachineNameList=$1
-isAliveAll=$2
-serviceUrl=${3:-"localhost:9000"}
+commaDelimitedMachineNameList=${1?mising comma delimmited machine list}
+isAliveAll=${2:-true}
+serviceUrl=${3:-localhost:9000}
 
 machines=(${commaDelimitedMachineNameList//,/ })
 

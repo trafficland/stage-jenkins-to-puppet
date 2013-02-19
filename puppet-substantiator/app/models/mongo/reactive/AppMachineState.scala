@@ -31,29 +31,32 @@ object AppMachineState {
     override def toBSON(entity: AppMachineState) = {
       val doc = BSONDocument(
         "machineName" -> BSONString(entity.machineName))
-      entity.actual.map(actual => doc.append("actual" -> BSONString(actual)))
-      doc
+      entity.actual match {
+        case Some(act) => doc.append("actual" -> BSONString(act))
+        case None => doc
+      }
     }
   }
 
-    implicit object AppMachineJSONReader extends IReadsExtended[AppMachineState] {
-      def reads(json: JsValue) =
-        JsSuccess(new AppMachineState(
-          (json \ "machineName").as[String],
-          (json \ "actual").asOpt[String]
-        ))
-    }
+  implicit object AppMachineJSONReader extends IReadsExtended[AppMachineState] {
+    def reads(json: JsValue) =
+      JsSuccess(new AppMachineState(
+        (json \ "machineName").as[String],
+        (json \ "actual").asOpt[String]
+      ))
+  }
 
-    implicit object AppMachineJSONWriter extends IWritesExtended[AppMachineState] {
-      def writes(entity: AppMachineState): JsValue =
-        JsObject({
-          val seq = Seq("machineName" -> JsString(entity.machineName))
-          entity.actual match {
-            case Some(act) =>
-              seq ++ Seq("actual" -> JsString(act))
-            case None =>
-              seq
-          }
-        })
-    }
+  implicit object AppMachineJSONWriter extends IWritesExtended[AppMachineState] {
+    def writes(entity: AppMachineState): JsValue =
+      JsObject({
+        val seq = Seq("machineName" -> JsString(entity.machineName))
+        entity.actual match {
+          case Some(act) =>
+            seq ++ Seq("actual" -> JsString(act))
+          case None =>
+            seq
+        }
+      })
+  }
+
 }

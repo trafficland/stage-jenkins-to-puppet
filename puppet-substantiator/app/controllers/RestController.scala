@@ -7,7 +7,6 @@ import reactivemongo.bson.BSONObjectID
 import concurrent.ExecutionContext.Implicits.global
 import models.mongo.reactive.IMongoModel
 import services.repository.mongo.reactive.{IMongoRepositoryProvider, MongoSearchCriteria}
-import scala.concurrent._
 
 abstract class RestController[TModel <: IMongoModel[TModel]]
   extends Controller

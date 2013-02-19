@@ -1,9 +1,9 @@
 #!/bin/sh
-applicationName=$1
-stagePath=$2
-extension=$3
-destinationAddress=$4
-extractCmd=$5
+applicationName=${1?missing application name}
+stagePath=${2?missing stage path}
+extension=${3?missing extension}
+destinationAddress=${4?missing destination address}
+extractCmd=${5?missing extraction command like "unzip"}
 #ssh into puppet machine
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
 ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd 'bash -s' <<'ENDSSH'

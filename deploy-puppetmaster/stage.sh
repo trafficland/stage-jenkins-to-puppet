@@ -1,14 +1,20 @@
 #!/bin/sh
 #get correct arguments
-jenkinsJobName=$1 #example proj1-stage
-destinationAddress=$2 #
-stageHome=$3 #example ~/stage/
-applicationName=$4 #example proj1
-extension=${5-.zip} #default extension to zip
-extractCmd=${6-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
+jenkinsJobName=${1?missing jenkins job name} #example proj1-stage
+destinationAddress=${2?missing destination ip or hostname}
+applicationName=${3?missing application name} #example proj1
+stageHome=${4:-'~/stage/'} #example ~/stage/
+extension=${5:-.zip} #default extension to zip
+extractCmd=${6:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
-echo 'Your extension for '$applicationName' is '$extension' . Your extraction cmd is '$extractCmd'.'
+# echo "$jenkinsJobName"
+# echo "$destinationAddress"
+# echo "$applicationName"
+# echo "$stageHome"
+# echo "$extension"
+# echo "$extractCmd"
 
+echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
 applicationNameNew=$applicationName'.new'$extension
 
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
@@ -25,6 +31,8 @@ stagePathWithNewApplication=$stagePath''$applicationNameNew
 #ie: 127.0.0.1:~/stage/proj1/proj1New
 destination=$destinationAddress:$stagePathWithNewApplication
 
+#echo "$destination"
+
 ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
   # commands to run on remote host
   mkdir -p "$stagePath"
@@ -34,6 +42,5 @@ cmd=scp' '$packageLocation' '$destination
 #execute scp
 echo $cmd
 $cmd
-
 
 sh ~/stageRemote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd

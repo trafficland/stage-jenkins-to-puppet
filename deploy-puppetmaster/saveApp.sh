@@ -1,10 +1,10 @@
 #!/bin/sh
 #curl to add an application and a machine set
-appName=$1
-versionExpected=$2
-commaDelimitedMachineNameList=$3
-currentVersion=${4:-} #default none
-serviceUrl=$5
+appName=${1?need application name}
+versionExpected=${2?need expected value}
+commaDelimitedMachineNameList=${3?missing comma delimmited machine name list}
+serviceUrl=${4:-localhost:9000}
+currentVersion=${5:-} #default none
 
 machines=(${commaDelimitedMachineNameList//,/ })
 
@@ -22,10 +22,9 @@ do
     	jsonReadyMachines["$i"]='{"machineName":"'"${machines["$i"]}"'","actual":"'"$currentVersion"'"},'
     else
 
-    	jsonReadyMachines["$i"]='{machineName":"'"${machines["$i"]}"'"},'
+    	jsonReadyMachines["$i"]='{"machineName":"'"${machines["$i"]}"'"},'
     fi
 done
 machineVersionsPaired="${jsonReadyMachines[*]}"
 machinePairLastCommaRemoved="${machineVersionsPaired%?}"
-
 curl_command "$appName" "$versionExpected" "$machinePairLastCommaRemoved" "$serviceUrl"

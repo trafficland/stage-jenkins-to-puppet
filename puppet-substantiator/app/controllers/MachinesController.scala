@@ -2,7 +2,7 @@ package controllers
 
 import play.api.mvc._
 import models.mongo.reactive._
-import services.repository.mongo.reactive.{MongoSearchCriteria, MongoUniqueCheck}
+import services.repository.mongo.reactive.MongoUniqueCheck
 import play.api.libs.json.JsBoolean
 import concurrent.ExecutionContext.Implicits.global
 import services.repository.mongo.reactive.impls.{MachineRepositoryProvider, IMachinesRepositoryProvider}
