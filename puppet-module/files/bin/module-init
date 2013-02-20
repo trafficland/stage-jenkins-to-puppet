@@ -1,0 +1,229 @@
+#!/bin/sh
+#
+# REPLACE_MODULE_NAME_CAPPS Startup script for REPLACE_MODULE_NAME_CAPPS
+#
+# chkconfig: - 85 15
+# description: REPLACE_MODULE_NAME_CAPPS
+# processname: java
+
+# Source function library.
+. /etc/init.d/functions
+
+PROC=`ps aux | grep java`
+PROG="REPLACE_MODULE_NAME_CAPPS"
+PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
+PID=`ps -C 'java -jar /opt/REPLACE_MODULE_NAME/REPLACE_MODULE_NAME*.jar' -o pid h`
+STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/start`
+APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/start`
+OPTDIR="/opt"
+APPDIR="/opt/REPLACE_MODULE_NAME"
+STAGEDIR="/opt/stage/REPLACE_MODULE_NAME"
+ROLLBACKDIR="REPLACE_MODULE_NAME.rollback"
+NOW=`date +"%m-%d-%Y-%H-%M-%S"`
+APP="REPLACE_MODULE_NAME"
+
+fail_if_proc_is_running(){
+        if [ ! -z "$PID" ];  then
+          failure
+          echo
+          RUNNING_PID=$PID
+          echo "Warning: Process is already running, pid: $RUNNING_PID"
+          exit 0;
+        fi
+}
+
+fail_if_proc_is_not_running(){
+        if [ -z  "$PID" ];  then
+          failure
+          echo
+          echo "Warning:  Process was not running!"
+          RET=0
+        else
+          RET=1
+        fi
+        return $RET
+}
+
+check_existing_back_up(){
+                echo "Checking for existing rollback directory..."
+        if [ -d "$APPDIR"'.rollback' ]; then
+                cd $OPTDIR
+                echo
+                echo "Existing Rollback exists!!!"
+                echo
+                echo "Please wait.....Archiving rollback directory..."
+                mv "$ROLLBACKDIR" "$ROLLBACKDIR.$NOW"  && success || failure
+                echo
+                echo "Archving rollback directory was SUCCESSFUL, "$ROLLBACKDIR has been moved to "$ROLLBACKDIR.$NOW..."
+                RETVAL=$?
+        fi
+}
+startstatus()
+{
+                echo -n "Starting $PROG: "
+        fail_if_proc_is_running
+        cd $APPDIR
+        "/opt/REPLACE_MODULE_NAME/start" && success || failure
+        echo
+        echo -n "Please wait 2 seconds.....  "
+        sleep 2
+        echo -n "$PROG status: "
+        if [ -f "$PID_PATH" ];  then
+          success
+          RETVAL=0
+       else
+          failure
+          RETVAL=1
+        fi
+}
+start(){
+        deploy
+        startstatus
+        if [ "$RETVAL" == 0 ];  then
+          success
+          RETVAL=0
+        else
+        rollback
+        echo
+        echo
+	startstatus
+        echo
+        fi
+        echo
+	return $RETVAL
+}
+stop()
+{
+                echo -n "Stopping "$PROG": "
+        fail_if_proc_is_not_running
+        if [ -n "$PID" ];  then
+                kill $PID  && success || failure
+                echo
+                RETVAL=$?
+        fi
+        rm -f $PID_PATH
+                echo
+        return $RETVAL
+}
+
+halt()
+{
+        echo -n "Killing $PROG: "
+        fail_if_proc_is_not_running
+        if [ -n "$PID" ];  then
+          kill -9 $PID && success || failure
+          echo
+        RETVAL=$?
+        fi
+        rm -f $PID_PATH
+        echo
+        return $RETVAL
+}
+
+status()
+{
+        if [ -n "$PID" ];  then
+          echo " $PROG  is running," 
+        RUNNING_PID=$PID  
+        echo "pid: $RUNNING_PID"
+          echo 
+        else
+          echo " $PROG is not running"
+        fi
+}
+
+deploy(){
+
+        if [[ -d "$APPDIR"  && ! -d "$APPDIR/lib" ]]  ; then
+                echo "Program is not installed..."
+                echo
+                echo "Please wait Intial installation in progress"
+                echo
+                cd $OPTDIR
+                rm -rf $APPDIR
+                rsync -az "$STAGEDIR/" "$APPDIR/" && success || failure
+                echo 
+                echo "Installation complete!!!"
+                echo "Please wait... Attempting to start $PROG for the first time!!!"
+                echo
+                RETVAL=$?
+        return $RETVAL
+       elif [ "$STAGETIME" -gt "$APPTIME" ]; then
+                echo "Please wait...Checking for new version of $PROG in Stage..."
+                echo "Found new verson of $PROG in Stage..."
+                echo "Starting migration Please wait..."
+                echo
+                cd $OPTDIR
+                check_existing_back_up
+                echo 
+                echo "Moving $APP to $ROLLBACKDIR"
+                mv $APPDIR $APPDIR'.rollback'
+                echo 
+                echo "Please wait...Copying New version of $PROG from STAGE..."
+                rsync -az "$STAGEDIR/" "$APPDIR/" && success || failure
+                echo 
+                RETVAL=$?
+                echo "Completed copying New version of $PROG directory..."
+                echo "Please wait... Attempting to start new version of $PROG"
+        else
+                echo
+                echo "No new version of $PROG found in Stage...Proceeding to start $PROG"
+                echo
+                RETVAL=$?
+        return $RETVAL
+        fi
+}
+rollback() {
+                echo "$PROG failed to start after deployment..."
+                echo "Please wait... Attempting to revert $PROG to previous state..."
+        if [ -d "$OPTDIR/$ROLLBACKDIR" ] ; then
+                cd $OPTDIR
+                echo
+                echo "Reverting $PROG to previous state from Rollback directory..."
+                mv "$APP" "$APP.BAD.$NOW"
+                cp -r "$ROLLBACKDIR/" "$APP" 
+                echo
+                echo "Please wait!!! Completing Rollback..."
+                rm -rf $ROLLBACKDIR && success || failure
+                echo
+        	#inset wget commands here and
+        	echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c someAddress@gmail.com address2@gmail.com
+	echo "Completed Reverting $PROG to previous state...Successful "
+                RETVAL=$?
+                echo
+        return $RETVAL
+        fi
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    halt)
+        halt
+        ;;
+    status)
+        status
+        ;;
+    restart)
+        /etc/init.d/REPLACE_MODULE_NAME stop
+        echo "Please wait, restarting"
+        sleep 6
+        echo
+        /etc/init.d/REPLACE_MODULE_NAME start
+        ;;
+    deploy)
+        deploy
+        ;; 
+    rollback)
+        rollback
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|halt|status|deploy|rollback}"
+        RETVAL=1
+esac
+exit $RETVAL
+
