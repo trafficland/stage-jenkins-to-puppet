@@ -1,26 +1,26 @@
 #!/bin/sh
 #
-# REPLACE_CAPS_MODULE_NAME Startup script for REPLACE_CAPS_MODULE_NAME
+# CORE2 Startup script for CORE2
 #
 # chkconfig: - 85 15
-# description: REPLACE_CAPS_MODULE_NAME
+# description: CORE2
 # processname: java
 
 # Source function library.
 . /etc/init.d/functions
 
 PROC=`ps aux | grep java`
-PROG="REPLACE_CAPS_MODULE_NAME"
-PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
-PID=`ps -C 'java -jar /opt/REPLACE_MODULE_NAME/REPLACE_MODULE_NAME*.jar' -o pid h`
-STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/start`
-APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/start`
+PROG="CORE2"
+PID_PATH="/opt/core2/RUNNING_PID"
+PID=`ps -C 'java -jar /opt/core2/core2*.jar' -o pid h`
+STAGETIME=`stat -c %Y /opt/stage/core2/start`
+APPTIME=`stat -c %Y /opt/core2/start`
 OPTDIR="/opt"
-APPDIR="/opt/REPLACE_MODULE_NAME"
-STAGEDIR="/opt/stage/REPLACE_MODULE_NAME"
-ROLLBACKDIR="REPLACE_MODULE_NAME.rollback"
+APPDIR="/opt/core2"
+STAGEDIR="/opt/stage/core2"
+ROLLBACKDIR="core2.rollback"
 NOW=`date +"%m-%d-%Y-%H-%M-%S"`
-APP="REPLACE_MODULE_NAME"
+APP="core2"
 
 fail_if_proc_is_running(){
         if [ ! -z "$PID" ];  then
@@ -63,7 +63,7 @@ startstatus()
                 echo -n "Starting $PROG: "
         fail_if_proc_is_running
         cd $APPDIR
-        "/opt/REPLACE_MODULE_NAME/start" && success || failure
+        "/opt/core2/start" && success || failure
         echo
         echo -n "Please wait 2 seconds.....  "
         sleep 2
@@ -187,7 +187,7 @@ rollback() {
                 rm -rf $ROLLBACKDIR && success || failure
                 echo
         	#inset wget commands here and
-        	echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c dummy@gmail.com
+        	echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c test@gmail.com emai2@tl.com
 	echo "Completed Reverting $PROG to previous state...Successful "
                 RETVAL=$?
                 echo
@@ -209,11 +209,11 @@ case "$1" in
         status
         ;;
     restart)
-        /etc/init.d/REPLACE_MODULE_NAME stop
+        /etc/init.d/core2 stop
         echo "Please wait, restarting"
         sleep 6
         echo
-        /etc/init.d/REPLACE_MODULE_NAME start
+        /etc/init.d/core2 start
         ;;
     deploy)
         deploy
