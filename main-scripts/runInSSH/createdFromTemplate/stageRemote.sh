@@ -1,16 +1,16 @@
 #!/bin/sh
+#PLEASE NOTE THIS FILE WAS CREATED BY A TEMPLATE!! TO MODIFY , modify the MODULE AND TEMPLATE!
 applicationName=${1?missing application name}
 stagePath=${2?missing stage path}
 extension=${3?missing extension}
 destinationAddress=${4?missing destination address}
 extractCmd=${5?missing extraction command like "unzip"}
-applicationPortNumber=${5?missing port number for application hosting}
-#ssh into puppet machine
-#http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
-ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
-  # commands to run on remote host
-  
-  ######## Begin local hive replication #TODO - THIS IS PROBABLY being removed, to use git  as rollback
+applicationPortNumber=${6?missing port number for application hosting}
+
+#do something in ssh landSSHCMD 
+$destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
+# commands to run on remote host
+######## Begin local hive replication #TODO - THIS IS PROBABLY being removed, to use git  as rollback
     newAppToBecomeCurrentApp=$applicationName'.new'$extension
     currentApp=$applicationName$extension
     originalBackupApp=$applicationName'.last'$extension
@@ -85,9 +85,9 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
       sed -i 's/NettyServer `dirname $0`/NettyServer `dirname $0` \&/g' ./start
       
       #put a port number into the stat script if it exists
-      if [ $applicationPortNumber ]
+      if [ "$applicationPortNumber" != "9000" ]
       then
-        sed -i 's/play.core.server.NettyServer/\-Dhttp.port\=$applicationPortNumber play.core.server.NettyServer/g' ./start  
+        sed -i 's/play.core.server.NettyServer/-Dhttp.port='"$applicationPortNumber"' play.core.server.NettyServer/g' ./start  
       fi
 
       cd ../
