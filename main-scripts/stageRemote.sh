@@ -7,8 +7,7 @@ extractCmd=${5?missing extraction command like "unzip"}
 applicationPortNumber=${5?missing port number for application hosting}
 #ssh into puppet machine
 #http://stackoverflow.com/questions/305035/how-to-use-ssh-to-run-shell-script-on-a-remote-machine
-ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension \ 
-  destinationAddress=$destinationAddress extractCmd=$extractCmd applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
   # commands to run on remote host
   
   ######## Begin local hive replication #TODO - THIS IS PROBABLY being removed, to use git  as rollback
