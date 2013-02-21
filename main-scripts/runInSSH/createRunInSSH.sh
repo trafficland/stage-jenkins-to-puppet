@@ -32,3 +32,5 @@ sed -i '/REPLACE_WITH_EXEC_CONTENT/{
 	r '"$sshExecutionContent"'
 	N
 }' "$newSshModuleName"
+
+chmod 755 "$newSshModuleName"

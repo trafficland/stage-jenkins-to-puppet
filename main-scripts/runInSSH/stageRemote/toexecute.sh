@@ -75,7 +75,7 @@
       #put a port number into the stat script if it exists
       if [ $applicationPortNumber ]
       then
-        sed -i 's/play.core.server.NettyServer/\-Dhttp.port\=$applicationPortNumber play.core.server.NettyServer/g' ./start  
+        sed -i 's/play.core.server.NettyServer/-Dhttp.port='"$applicationPortNumber"' play.core.server.NettyServer/g' ./start  
       fi
 
       cd ../
