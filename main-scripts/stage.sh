@@ -3,7 +3,7 @@
 jenkinsJobName=${1?missing jenkins job name} #example proj1-stage
 destinationAddress=${2?missing destination ip or hostname}
 applicationName=${3?missing application name} #example proj1
-applicationPortNumber=${4:-} #if this is a play app the default will be empty and the port # will be 9000
+applicationPortNumber=${4:-9000} #if this is a play app the default will be empty and the port # will be 9000
 stageHome=${5:-'~/stage/'} #example ~/stage/
 extension=${6:-.zip} #default extension to zip
 extractCmd=${7:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
@@ -44,4 +44,4 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stageRemote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd
+sh ~/stageRemote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $applicationPortNumber

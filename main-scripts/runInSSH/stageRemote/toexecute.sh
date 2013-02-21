@@ -73,7 +73,7 @@
       sed -i 's/NettyServer `dirname $0`/NettyServer `dirname $0` \&/g' ./start
       
       #put a port number into the stat script if it exists
-      if [ $applicationPortNumber ]
+      if [ "$applicationPortNumber" != "9000" ]
       then
         sed -i 's/play.core.server.NettyServer/-Dhttp.port='"$applicationPortNumber"' play.core.server.NettyServer/g' ./start  
       fi
