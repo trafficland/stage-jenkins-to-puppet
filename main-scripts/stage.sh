@@ -3,9 +3,10 @@
 jenkinsJobName=${1?missing jenkins job name} #example proj1-stage
 destinationAddress=${2?missing destination ip or hostname}
 applicationName=${3?missing application name} #example proj1
-stageHome=${4:-'~/stage/'} #example ~/stage/
-extension=${5:-.zip} #default extension to zip
-extractCmd=${6:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
+applicationPortNumber=${4:-} #if this is a play app the default will be empty and the port # will be 9000
+stageHome=${5:-'~/stage/'} #example ~/stage/
+extension=${6:-.zip} #default extension to zip
+extractCmd=${7:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
 # echo "$jenkinsJobName"
 # echo "$destinationAddress"
@@ -33,7 +34,7 @@ destination=$destinationAddress:$stagePathWithNewApplication
 
 #echo "$destination"
 
-ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath 'bash -s' <<'ENDSSH'
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
   # commands to run on remote host
   mkdir -p "$stagePath"
 ENDSSH
