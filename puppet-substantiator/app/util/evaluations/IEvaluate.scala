@@ -1,26 +1,18 @@
 package util.evaluations
 
+import scala.concurrent._
+
 trait IEvaluate[R] {
 
-  case class Pass(override val result: R) extends IEvaluated[R]
+  abstract class PassFail(override val result: R) extends IEvaluated[R]
+  case class Pass(pResult: R) extends PassFail(pResult)
+  case class Fail(fResult: R) extends PassFail(fResult)
 
-  case class Fail(override val result: R) extends IEvaluated[R]
+  def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[R]]
 
-  def evaluate: IEvaluated[R]
-
-  def name:String
+  def name: String
 
   def failAction(result: R)
 
   def passAction(result: R)
-
-  def run() = {
-    evaluate match {
-      case Pass(result) =>
-        passAction(result)
-      case Fail(result) =>
-        failAction(result)
-      case _ =>
-    }
-  }
 }

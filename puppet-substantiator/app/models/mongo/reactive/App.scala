@@ -9,6 +9,8 @@ import models.json.{IWritesExtended, IReadsExtended}
 case class App(
                 var name: String,
                 val expected: String,
+                val testUrl:String,
+                val port: Option[String] = Some("9000"),
                 val actualCluster: List[AppMachineState],
                 override var id: Option[BSONObjectID] = Some(BSONObjectID.generate)) extends IMongoModel[App] {
   def getWithID = this.copy(id = Some(BSONObjectID.generate))
@@ -44,6 +46,8 @@ object App extends IAppReadersWriters {
       App(
         doc.getAs[BSONString]("name").map(_.value).getOrElse(throw errorFrom("BSONRead", "name")),
         doc.getAs[BSONString]("expected").map(_.value).getOrElse(throw errorFrom("BSONRead", "expected")),
+        doc.getAs[BSONString]("testUrl").map(_.value).getOrElse(throw errorFrom("BSONRead", "testUrl")),
+        doc.getAs[BSONString]("port").map(_.value),
         bsonReaderAppMach.fromBSONArray(doc.getAs[BSONArray]("actualCluster").getOrElse(throw errorFrom("BSONRead", "actualCluster"))),
         doc.getAs[BSONObjectID]("_id")
       )
@@ -56,6 +60,8 @@ object App extends IAppReadersWriters {
         "_id" -> entity.id.getOrElse(BSONObjectID.generate),
         "name" -> BSONString(entity.name),
         "expected" -> BSONString(entity.expected),
+        "testUrl" -> BSONString(entity.testUrl),
+        "port" -> BSONString(entity.expected),
         "actualCluster" -> bsonWriterAppMach.toBSONArray(entity.actualCluster)
       )
   }
@@ -65,6 +71,8 @@ object App extends IAppReadersWriters {
       JsSuccess(App(
         (json \ "name").as[String],
         (json \ "expected").as[String],
+        (json \ "testUrl").as[String],
+        (json \ "port").asOpt[String],
         jsonReaderAppmach.readsArray((json \ "actualCluster").as[JsArray])
         ,
         (json \ "_id").asOpt[String] map {
@@ -79,10 +87,13 @@ object App extends IAppReadersWriters {
       val list = scala.collection.mutable.Buffer(
         "name" -> JsString(entity.name),
         "expected" -> JsString(entity.expected),
+        "testUrl" -> JsString(entity.testUrl),
         "actualCluster" -> jsonWriterAppMach.writesArray(entity.actualCluster))
 
       if (entity.id.isDefined)
         list.+=("_id" -> JsString(entity.id.get.stringify))
+      if (entity.port.isDefined)
+        list.+=("port" -> JsString(entity.port.get))
       JsObject(list.toSeq)
     }
   }
@@ -102,6 +113,10 @@ object App extends IAppReadersWriters {
           doc = doc append ("isAlive" -> new BSONBoolean(isAlive))
       }
 
+      (json \ "port").asOpt[String] foreach {
+        port =>
+          doc = doc append ("port" -> new BSONString(port))
+      }
       doc
     }
   }

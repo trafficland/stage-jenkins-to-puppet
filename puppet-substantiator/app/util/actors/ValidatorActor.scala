@@ -35,7 +35,7 @@ class ValidatorActor(execCtx: ExecutionContext, scheduleMaintainer: ActorRef) ex
       scheduleMaintainer ! Add(eval.name, CancellableDelay(delayMilli, cancel))
     case TickValidation(eval) =>
       scheduleMaintainer ! Remove(eval.name)
-      eval.run()
+      eval.evaluate()
 
   }
 }

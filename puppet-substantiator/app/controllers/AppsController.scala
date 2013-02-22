@@ -14,7 +14,7 @@ import concurrent._
 import reactivemongo.bson.{BSONString, BSONDocument}
 import services.repository.Paging
 import _root_.util.actors.ValidatorActor._
-import services.evaluations.AppEvaluate
+import services.evaluations.{QueryMachinesUpdateAppEvaluate, AppEvaluate}
 import globals.Actors._
 
 abstract class AppsController extends RestController[App]
@@ -48,7 +48,9 @@ with IAppsRepositoryProvider {
       } yield {
         apps.headOption match {
           case Some(app) =>
-            validatorActorRef ! StartValidation(delayMilliSeconds, AppEvaluate(app), Akka.system)
+            //Offset timing so that Query and Updating have a shot to finish first before AppEvaluate Evaluates an Applications State
+            validatorActorRef ! StartValidation(delayMilliSeconds, QueryMachinesUpdateAppEvaluate(app, repository), Akka.system)
+            validatorActorRef ! StartValidation(delayMilliSeconds + 60000, AppEvaluate(app, repository), Akka.system)
             Ok("Application found! Validation beginning for app: " + Json.toJson(app).toString() + "\n" +
               "This is the applications current state not the evaluation state!")
           case None =>
