@@ -5,6 +5,7 @@ import scala.concurrent.duration._
 import util.evaluations.IEvaluate
 import concurrent.ExecutionContext
 import util.actors.fsm.CancellableDelay
+import globals.ActorsProvider._
 
 object ValidatorActor {
 
@@ -22,11 +23,12 @@ object ValidatorActor {
 
 import ValidatorActor._
 
-class ValidatorActor(execCtx: ExecutionContext, scheduleMaintainer: ActorRef) extends Actor {
+class ValidatorActor(execCtx: ExecutionContext) extends Actor {
   implicit val ctx = execCtx
 
   import util.actors.fsm.CancellableMapFSMDomainProvider.domain._
 
+  val scheduleMaintainer: ActorRef = actors().getActor("scheduler")
 
   def receive = {
     case StartValidation(delayMilli, eval, system) =>

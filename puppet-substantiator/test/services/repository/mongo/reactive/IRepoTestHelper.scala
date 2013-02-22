@@ -62,18 +62,18 @@ trait IAppsRepoHelper extends IRepoTestHelper[App] {
   }
 
   def createEntity = {
-    new App("app199", "1.0.0", List(
-      AppMachineState("testMachineName1", "0.0.1"),
-      AppMachineState("testMachineName2", "0.0.1")))
+    new App("app199", "1.0.0", "admin/version", List(
+      AppMachineState("testMachineName1", Some("0.0.1")),
+      AppMachineState("testMachineName2", Some("0.0.1"))))
   }
 
   def makeSomeEntities(numberOfEntities: Int): IndexedSeq[App] = {
     (0 until numberOfEntities) map {
       index => {
         val count = index + 1
-        new App("app" + count, "1.0.0", List(
-          AppMachineState("testMachineName1", "0.0.1"),
-          AppMachineState("testMachineName2", "0.0.1")))
+        new App("app" + count, "1.0.0", "admin/version", List(
+          AppMachineState("testMachineName1", Some("0.0.1")),
+          AppMachineState("testMachineName2", Some("0.0.1"))))
       }
     }
   }

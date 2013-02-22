@@ -1,7 +1,6 @@
 package controllers
 
 import play.api._
-import libs.concurrent.Akka
 import play.api.libs.json._
 import libs.json.JsBoolean
 import play.api.mvc._
@@ -15,7 +14,7 @@ import reactivemongo.bson.{BSONString, BSONDocument}
 import services.repository.Paging
 import _root_.util.actors.ValidatorActor._
 import services.evaluations.{QueryMachinesUpdateAppEvaluate, AppEvaluate}
-import globals.Actors._
+import globals.ActorsProvider._
 
 abstract class AppsController extends RestController[App]
 with IAppsRepositoryProvider {
@@ -48,9 +47,10 @@ with IAppsRepositoryProvider {
       } yield {
         apps.headOption match {
           case Some(app) =>
+            val validatorActorRef = actors().getActor(validatorName)
             //Offset timing so that Query and Updating have a shot to finish first before AppEvaluate Evaluates an Applications State
-            validatorActorRef ! StartValidation(delayMilliSeconds, QueryMachinesUpdateAppEvaluate(app, repository), Akka.system)
-            validatorActorRef ! StartValidation(delayMilliSeconds + 60000, AppEvaluate(app, repository), Akka.system)
+            validatorActorRef ! StartValidation(delayMilliSeconds, QueryMachinesUpdateAppEvaluate(app, repository), actors().system)
+            validatorActorRef ! StartValidation(delayMilliSeconds + 60000, AppEvaluate(app, repository), actors().system)
             Ok("Application found! Validation beginning for app: " + Json.toJson(app).toString() + "\n" +
               "This is the applications current state not the evaluation state!")
           case None =>
@@ -63,7 +63,7 @@ with IAppsRepositoryProvider {
 
   def cancelValidation(name: String) = Action {
     import _root_.util.actors.fsm.CancellableMapFSMDomainProvider.domain._
-    globals.Actors.schedule ! Remove(name)
+    actors().getActor(scheduleName) ! Remove(name)
     Ok("Cancellation sent for name: " + name)
   }
 

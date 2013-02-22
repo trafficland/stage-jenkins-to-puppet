@@ -7,7 +7,7 @@ import scala.concurrent._
 import services.repository.mongo.reactive.{IMachineRepoHelper, IAppsRepoHelper}
 import play.api.test._
 import play.api.test.Helpers._
-import globals.Actors
+import globals.ActorsProvider._
 
 class AppsControllerIntegrationSpec
   extends IAppsRepoHelper
@@ -20,9 +20,9 @@ class AppsControllerIntegrationSpec
 
   def createValidEntity: App = createEntity
 
-  def createInvalidEntity: App = new App("invalid", "invalid", List.empty[AppMachineState], None)
+  def createInvalidEntity: App = new App("invalid", "invalid", "admin/version", List.empty[AppMachineState], None)
 
-  def createValidNoIDEntity:App = createEntity.copy(id = None)
+  def createValidNoIDEntity: App = createEntity.copy(id = None)
 
   override val entityName = "apps"
 
@@ -39,9 +39,11 @@ class AppsControllerIntegrationSpec
         FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
       createRunningApp("test") {
         import CancellableMapFSMDomainProvider.domain._
-        Actors.schedule ! SetTarget(None) // initialize scheduler
-        Actors.scriptExecActorRef ! ScriptExecutorActor.SetLogger(Actors.ourlogger) // initialize scheduler
+        actors(true).getActor("scheduler") ! SetTarget(None) // initialize scheduler
+        actors(true).getActor("scriptor") ! ScriptExecutorActor.SetLogger(actors(true).ourlogger) // initialize scheduler
         Await.result(db(collectionName).insert[App](entity), timeoutSeconds * 2)
+
+        Await.result(future(Thread.sleep(5000)), timeoutSeconds)
         val result = checkForAsyncResult(route(request).get)
         status(result) must be equalTo OK
       }

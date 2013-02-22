@@ -1,6 +1,5 @@
 package util.actors
 
-import _root_.util.evaluations.IEvaluate
 import akka.actor._
 import akka.testkit._
 import org.scalatest._
@@ -23,7 +22,7 @@ class ValidatorActorSpec(_system: ActorSystem)
   import _root_.util.actors.fsm.CancellableMapFSMDomainProvider.domain._
 
   def initialize(): TestActorRef[ValidatorActor] = {
-    TestActorRef(new ValidatorActor(global, this.testActor))
+    TestActorRef(new ValidatorActor(global),name = "scheduler")
   }
 
   "StartValidation " should {
@@ -32,7 +31,7 @@ class ValidatorActorSpec(_system: ActorSystem)
       val test = TestEvaluate(false)
       actorRef ! StartValidation(1000, test, system)
       expectMsgType[Add]
-      test.run()
+      test.evaluate()
       test.state should be("pass")
 
     }
@@ -43,7 +42,7 @@ class ValidatorActorSpec(_system: ActorSystem)
       val test = TestEvaluate(true)
       actorRef ! TickValidation(test)
       expectMsgType[Remove]
-      test.run()
+      test.evaluate()
       test.state should be("fail")
 
     }

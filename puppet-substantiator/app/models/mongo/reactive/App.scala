@@ -10,8 +10,8 @@ case class App(
                 var name: String,
                 val expected: String,
                 val testUrl:String,
-                val port: Option[String] = Some("9000"),
                 val actualCluster: List[AppMachineState],
+                val port: Option[String] = Some("9000"),
                 override var id: Option[BSONObjectID] = Some(BSONObjectID.generate)) extends IMongoModel[App] {
   def getWithID = this.copy(id = Some(BSONObjectID.generate))
 
@@ -47,8 +47,8 @@ object App extends IAppReadersWriters {
         doc.getAs[BSONString]("name").map(_.value).getOrElse(throw errorFrom("BSONRead", "name")),
         doc.getAs[BSONString]("expected").map(_.value).getOrElse(throw errorFrom("BSONRead", "expected")),
         doc.getAs[BSONString]("testUrl").map(_.value).getOrElse(throw errorFrom("BSONRead", "testUrl")),
-        doc.getAs[BSONString]("port").map(_.value),
         bsonReaderAppMach.fromBSONArray(doc.getAs[BSONArray]("actualCluster").getOrElse(throw errorFrom("BSONRead", "actualCluster"))),
+        doc.getAs[BSONString]("port").map(_.value),
         doc.getAs[BSONObjectID]("_id")
       )
     }
@@ -72,9 +72,9 @@ object App extends IAppReadersWriters {
         (json \ "name").as[String],
         (json \ "expected").as[String],
         (json \ "testUrl").as[String],
-        (json \ "port").asOpt[String],
         jsonReaderAppmach.readsArray((json \ "actualCluster").as[JsArray])
         ,
+        (json \ "port").asOpt[String],
         (json \ "_id").asOpt[String] map {
           id => new BSONObjectID(id)
         })

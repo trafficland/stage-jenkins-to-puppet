@@ -66,8 +66,7 @@ trait AppRepositoryProvider
 object AppsRepository
   extends AppsRepository
   with IMongoDbProvider
-  with ConfigurationProvider
-  with AppRepositoryProvider {
+  with ConfigurationProvider {
   protected def machineRepo = MachinesRepository
 }
 

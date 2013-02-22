@@ -1,5 +1,5 @@
 
-import globals.Actors
+import globals.ActorsProvider._
 import play.api._
 import util.actors.{ScriptExecutorActor, fsm}
 
@@ -11,8 +11,9 @@ object Global extends GlobalSettings {
   override def onStart(app: Application) {
     import fsm.CancellableMapFSMDomainProvider.domain._
     if (app.mode != Mode.Test) {
-      Actors.schedule ! SetTarget(None) // initialize scheduler
-      Actors.scriptExecActorRef ! ScriptExecutorActor.SetLogger(Actors.ourlogger) // initialize scheduler
+      actors().createActors()
+      actors().getActor(scheduleName) ! SetTarget(None) // initialize scheduler
+      actors().getActor(scriptorName) ! ScriptExecutorActor.SetLogger(actors().ourlogger) // initialize scheduler
     }
     super.onStart(app)
   }

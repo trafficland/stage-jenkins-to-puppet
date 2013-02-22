@@ -45,8 +45,10 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
         createRunningApp("test") {
           val mockController = create(None)
           val action = mockController.rollBack("appName")
-          val status = resultToStatusContentTuple[String](action.apply(FakeRequest(GET, """/rollback/"appName"""")))
-          status must equalTo(INTERNAL_SERVER_ERROR, Some("No script defined to look up!"))
+          val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))
+
+          status(result) must equalTo(INTERNAL_SERVER_ERROR)
+          contentAsString(result) must equalTo("No script defined to look up!")
         }
       }
 
@@ -54,16 +56,18 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
         createRunningApp("test") {
           val mockController = create(Some("oops"))
           val action = mockController.rollBack("appName")
-          val status = resultToStatusContentTuple[String](action.apply(FakeRequest(GET, """/rollback/"appName"""")))
-          status must equalTo(INTERNAL_SERVER_ERROR, Some("Script not Found!"))
+          val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))
+          status(result) must equalTo(INTERNAL_SERVER_ERROR)
+          contentAsString(result) must equalTo("Script not Found!")
         }
       }
       "send 200 config script correct" in {
         createRunningApp("test") {
           val mockController = create(None, true)
           val action = mockController.rollBack("appName")
-          val status = resultToStatusContentTuple[String](action.apply(FakeRequest(GET, """/rollback/"appName"""")))
-          status must equalTo(OK, Some("Execute Rollback script here!"))
+          val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))
+          status(result) must equalTo(OK)
+          contentAsString(result) must equalTo("Execute Rollback script here!")
         }
       }
     }

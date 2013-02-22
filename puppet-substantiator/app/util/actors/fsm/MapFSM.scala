@@ -66,7 +66,6 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
       case Event(Status, Todo(ref, map)) =>
         ref.map(_ ! Batch(map))
         stay using Todo(ref, map)
-      // common code for both states
       case Event(Add(key, obj), Todo(ref, currentMap)) =>
         handelExtraAdd(key, obj)
         goto(Active) using Todo(ref, currentMap + (key -> obj))
