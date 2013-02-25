@@ -52,7 +52,7 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $applicationPortNumber
+sh ~/staging/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $applicationPortNumber
 #end deployment
 
 
