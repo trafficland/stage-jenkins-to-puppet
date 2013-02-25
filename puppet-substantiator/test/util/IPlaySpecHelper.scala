@@ -19,6 +19,8 @@ trait IPlaySpecHelper {
     def configuration: Configuration
   }
 
+  lazy val testName = "test"
+
   def timeoutSeconds = 10 seconds
 
   def createRunningApp[T](configLocation: String = "")(run: => T): T = {
@@ -27,6 +29,11 @@ trait IPlaySpecHelper {
       case "test" => running(new FakeApplication() with ITestConfig {
         override def configuration: Configuration =
           super.configuration ++ Configuration(ConfigFactory.parseFile(new File("conf/test.conf")))
+
+      })(run)
+      case "test-akka-mock" => running(new FakeApplication() with ITestConfig {
+        override def configuration: Configuration =
+          super.configuration ++ Configuration(ConfigFactory.parseFile(new File("conf/test-akka-mock.conf")))
 
       })(run)
       case s: String => running(FakeApplication(new File(s)))(run)
@@ -42,7 +49,7 @@ trait IPlaySpecHelper {
   }
 
   def resultToFieldComparison(anyResult: Result, fieldToCheck: String, compareTo: String): Boolean = {
-    resultToOptField(anyResult,fieldToCheck).get == compareTo
+    resultToOptField(anyResult, fieldToCheck).get == compareTo
   }
 
   def resultToOptField(anyResult: Result, fieldToCheck: String): Option[String] = {
@@ -72,7 +79,7 @@ trait IPlaySpecHelper {
       unit <- now.run
     }
     yield (unit)
-    Await.result(fut,timeoutSeconds * 5)
+    Await.result(fut, timeoutSeconds * 5)
     new String(str)
   }
 

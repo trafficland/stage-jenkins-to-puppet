@@ -38,8 +38,7 @@ class ScriptExecutorActorSpec(_system: ActorSystem)
 
   def initialize(logger: Logger):TestActorRef[ScriptExecutorActor] = {
     val doThrow = true
-    val ref = TestActorRef(new ScriptExecutorActor(true, doThrow))
-    ref ! ScriptExecutorActor.SetLogger(logger)
+    val ref = TestActorRef(new ScriptExecutorActor(true, doThrow,Some(logger)))
     ref
   }
 

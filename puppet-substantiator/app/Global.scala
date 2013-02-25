@@ -1,5 +1,6 @@
 
-import globals.ActorsProvider._
+import globals.playframework.ActorsProvider
+import ActorsProvider._
 import play.api._
 import util.actors.{ScriptExecutorActor, fsm}
 
@@ -13,7 +14,6 @@ object Global extends GlobalSettings {
     if (app.mode != Mode.Test) {
       actors().createActors()
       actors().getActor(scheduleName) ! SetTarget(None) // initialize scheduler
-      actors().getActor(scriptorName) ! ScriptExecutorActor.SetLogger(actors().ourlogger) // initialize scheduler
     }
     super.onStart(app)
   }

@@ -14,7 +14,8 @@ import reactivemongo.bson.{BSONString, BSONDocument}
 import services.repository.Paging
 import _root_.util.actors.ValidatorActor._
 import services.evaluations.{QueryMachinesUpdateAppEvaluate, AppEvaluate}
-import globals.ActorsProvider._
+import globals.playframework.ActorsProvider
+import ActorsProvider._
 
 abstract class AppsController extends RestController[App]
 with IAppsRepositoryProvider {

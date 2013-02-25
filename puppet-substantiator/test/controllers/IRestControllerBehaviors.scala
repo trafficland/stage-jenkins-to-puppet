@@ -56,7 +56,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         val entity = createValidNoIDEntity
         val request = new FakeRequest(POST, "/%s/save".format(collectionName),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo (OK)
           resultToOptField(result, "_id").isDefined shouldEqual true
@@ -67,7 +67,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         val entity = createValidNoIDEntity
         val request = new FakeRequest(POST, "/%s/save".format(collectionName),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo (OK)
           resultToOptField(result, "_id").isDefined shouldEqual true
@@ -86,7 +86,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         val entity = createValidEntity
         val request = new FakeRequest(POST, "/%s".format(collectionName),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo (OK)
           resultToFieldComparison(result, "_id", entity.id.get.stringify) should be equalTo true
@@ -97,7 +97,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         val entity = createInvalidEntity
         val request = new FakeRequest(POST, "/%s".format(collectionName),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           val hasStatus = status(result) == INTERNAL_SERVER_ERROR
           //val hasErrors = (Json.parse(contentAsString(result)) \ "errors").asOpt[JsValue].isDefined
@@ -112,7 +112,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         val entity = createValidEntity
         val request = new FakeRequest(PUT, "/%s/%s".format(collectionName, entity.id.get.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           await(db(collectionName).insert[TModel](entity))
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo (OK)
@@ -125,7 +125,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         await(db(collectionName).insert[TModel](entity))
         val request = new FakeRequest(PUT, "/%s/%s".format(collectionName, entity.id.get.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(invalid))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo NOT_FOUND
 
@@ -135,7 +135,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         val entity = createValidEntity
         val request = new FakeRequest(PUT, "/%s/%s".format(collectionName, entity.id.get.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(createValidEntity))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) must be equalTo NOT_FOUND
         }
@@ -148,7 +148,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         await(db(collectionName).insert[TModel](entity))
         val request = new FakeRequest(DELETE, "/%s/%s".format(collectionName, entity.id.get.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(createValidEntity))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo NO_CONTENT
         }
@@ -156,7 +156,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
       "return a NO_CONTENT (204) status when the entity does not exist" in new ICleanDatabase {
         val request = new FakeRequest(DELETE, "/%s/%s".format(collectionName, BSONObjectID.generate.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(createValidEntity))
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo NO_CONTENT
         }
@@ -168,7 +168,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
       "return all entities" in new ICleanDatabase {
         val request = new FakeRequest(GET, "/%s".format(collectionName),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
-        createRunningApp("test") {
+        createRunningApp(testName) {
           Await.result(createEntities(20), timeoutSeconds * 20)
           val result = checkForAsyncResult(route(request).get)
           status(result) must be equalTo OK
@@ -179,7 +179,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
       "return an empty array when no entities exist" in new ICleanDatabase {
         val request = new FakeRequest(GET, "/%s".format(collectionName),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) must be equalTo OK
           val list = chunksToModelList(result.asInstanceOf[ChunkedResult[String]])
@@ -192,7 +192,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         val entity = createValidEntity
         val request = new FakeRequest(GET, "/%s/%s".format(collectionName, entity.id.get.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
-        createRunningApp("test") {
+        createRunningApp(testName) {
           await(db(collectionName).insert[TModel](entity))
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo OK
@@ -203,7 +203,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
         val entity = createValidEntity
         val request = new FakeRequest(GET, "/%s/%s".format(collectionName, entity.id.get.stringify),
           FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val result = checkForAsyncResult(route(request).get)
           status(result) should be equalTo NOT_FOUND
           contentAsString(result) must be equalTo ""
@@ -218,7 +218,7 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
       case Some(app) =>
         MongoConnection(app.configuration.getStringList("mongodb.servers").get.toList)(app.configuration.getString("mongodb.db").get)
       case None =>
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val app = play.api.Play.current
           MongoConnection(app.configuration.getStringList("mongodb.servers").get.toList)(app.configuration.getString("mongodb.db").get)
         }

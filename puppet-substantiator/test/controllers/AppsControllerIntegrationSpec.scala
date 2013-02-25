@@ -7,7 +7,8 @@ import scala.concurrent._
 import services.repository.mongo.reactive.{IMachineRepoHelper, IAppsRepoHelper}
 import play.api.test._
 import play.api.test.Helpers._
-import globals.ActorsProvider._
+import globals.playframework.ActorsProvider
+import ActorsProvider._
 
 class AppsControllerIntegrationSpec
   extends IAppsRepoHelper
@@ -28,6 +29,8 @@ class AppsControllerIntegrationSpec
 
   override val collectionName = this.entityName
 
+  override lazy val testName = "test-akka-mock"
+
   step({
     Await.result(machineRepoHelper.createEntities(2), timeoutSeconds * 2)
   })
@@ -37,13 +40,8 @@ class AppsControllerIntegrationSpec
       val entity = createValidEntity
       val request = new FakeRequest(GET, "/%s/validate/%s/%s".format(collectionName, "app199", 5000),
         FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
-      createRunningApp("test") {
-        import CancellableMapFSMDomainProvider.domain._
-        actors(true).getActor("scheduler") ! SetTarget(None) // initialize scheduler
-        actors(true).getActor("scriptor") ! ScriptExecutorActor.SetLogger(actors(true).ourlogger) // initialize scheduler
+      createRunningApp(testName) {
         Await.result(db(collectionName).insert[App](entity), timeoutSeconds * 2)
-
-        Await.result(future(Thread.sleep(5000)), timeoutSeconds)
         val result = checkForAsyncResult(route(request).get)
         status(result) must be equalTo OK
       }

@@ -116,16 +116,16 @@ class AnyMapFSMSpec(_system: ActorSystem)
   "adding many" should {
     "be handled" in {
       val fsm = initialize()
-      createAndInject(200, fsm)
+      createAndInject(50, fsm)
       fsm.stateName should be(Active)
-      getStateMap(fsm)(localDomain).size should be(200)
+      getStateMap(fsm)(localDomain).size should be(50)
     }
 
     "then flushbe handled and back to idle" in {
       val fsm = initialize()
-      createAndInject(200, fsm)
+      createAndInject(50, fsm)
       fsm.stateName should be(Active)
-      getStateMap(fsm)(localDomain).size should be(200)
+      getStateMap(fsm)(localDomain).size should be(50)
       fsm ! Flush
       getStateMap(fsm)(localDomain).size should be(0)
     }

@@ -7,7 +7,8 @@ import org.scalatest.matchers.{ShouldMatchers, MustMatchers}
 import util.IPlaySpecHelper
 import play.api.libs.concurrent.Akka
 import scala.concurrent.duration._
-import globals.ActorsProvider._
+import globals.playframework.ActorsProvider
+import ActorsProvider._
 
 
 class ActorsSpec(_system: ActorSystem)
@@ -22,7 +23,6 @@ class ActorsSpec(_system: ActorSystem)
   }
 
   import ValidatorActor._
-  import _root_.util.actors.fsm.CancellableMapFSMDomainProvider.domain._
 
 
   "SetTarget of schedule actor should return batch " should {

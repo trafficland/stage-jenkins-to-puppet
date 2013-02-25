@@ -36,13 +36,13 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
   "ScriptController" should {
 
     "send 200 config script hosted controller" in {
-      createRunningApp("test") {
+      createRunningApp(testName) {
         val result = route(FakeRequest(GET, """/rollback/"appName"""")).get
         status(result) must equalTo(OK)
         contentAsString(result) must contain("Execute Rollback script here!")
       }
       "send 500 missing script" in {
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val mockController = create(None)
           val action = mockController.rollBack("appName")
           val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))
@@ -53,7 +53,7 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
       }
 
       "send 500 missing wrong script" in {
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val mockController = create(Some("oops"))
           val action = mockController.rollBack("appName")
           val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))
@@ -62,7 +62,7 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
         }
       }
       "send 200 config script correct" in {
-        createRunningApp("test") {
+        createRunningApp(testName) {
           val mockController = create(None, true)
           val action = mockController.rollBack("appName")
           val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))

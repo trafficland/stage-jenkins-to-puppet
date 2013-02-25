@@ -5,7 +5,8 @@ import java.io.File
 import scala.io._
 import _root_.util.actors.ScriptExecutorActor._
 import _root_.util.OptionHelper.getOptionOrDefault
-import globals.ActorsProvider._
+import globals.playframework.ActorsProvider
+import ActorsProvider._
 
 /*
 End point to call IO Actor to run scripts
@@ -14,7 +15,6 @@ abstract class ScriptController extends Controller {
 
   lazy val optScriptFileName = {
     try {
-      import play.api.Play._
       Some(getOptionOrDefault(play.api.Play.configuration.getString("script.file.location.rollback"),
         "./private/scripts/rollback.sh"))
     }

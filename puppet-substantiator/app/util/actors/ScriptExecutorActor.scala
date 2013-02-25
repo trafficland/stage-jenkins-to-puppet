@@ -12,22 +12,18 @@ object ScriptExecutorActor {
 
   case class Script(fileName: String, args: Seq[String])
 
-  case class SetLogger(logger: Logger)
-
 }
 
-case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = false) extends Actor {
+case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = false, logger: Option[Logger] = None) extends Actor {
 
   import ScriptExecutorActor._
-
-  var _logger: Option[Logger] = None
 
   def receive = {
     case Script(scriptString, args) =>
       //execute!
       try {
         val toRun = Seq(scriptString) ++ args
-        _logger match {
+        logger match {
           case Some(logger) =>
             if (logger.isDebugEnabled)
               logger.debug(toRun !!)
@@ -46,7 +42,7 @@ case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = fa
       }
       catch {
         case ex: Exception =>
-          _logger match {
+          logger match {
             case Some(logger) =>
               logger.error("Script Execution Error! With Exception: ", ex)
             case None =>
@@ -57,7 +53,5 @@ case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = fa
             throw ex
 
       }
-    case SetLogger(logger: Logger) =>
-      _logger = Some(logger)
   }
 }

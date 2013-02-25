@@ -21,7 +21,7 @@ class MachineControllerIntegrationSpec
 
   def createValidEntity: Machine = new Machine("test1")
 
-  def createValidNoIDEntity: Machine = new Machine("test1",None)
+  def createValidNoIDEntity: Machine = new Machine("test1", None)
 
   def createInvalidEntity: Machine = new Machine("invalid", None)
 
@@ -29,6 +29,7 @@ class MachineControllerIntegrationSpec
 
   override val collectionName = this.entityName
 
+  override lazy val testName = "test-akka-mock"
 
   ("POST" should {
 
@@ -36,7 +37,7 @@ class MachineControllerIntegrationSpec
       val entity = createValidEntity
       val request = new FakeRequest(POST, "/%s".format(collectionName),
         FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
-      createRunningApp("test") {
+      createRunningApp(testName) {
         val result = checkForAsyncResult(route(request).get)
         status(result) should be equalTo (OK)
         val content = contentAsString(result)
