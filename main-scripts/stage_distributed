@@ -62,7 +62,7 @@ sh ~/staging/stage_remote.sh $applicationName $stagePath $extension $puppetAddre
 #give the operation time to get a machine into the system
 sleep 5
 
-~/staging/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$validatorServiceUrl" "$currentVersion"
+~/staging/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion"
 
 sleep 5
 
