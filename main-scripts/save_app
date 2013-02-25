@@ -3,17 +3,18 @@
 appName=${1?need application name}
 versionExpected=${2?need expected value}
 commaDelimitedMachineNameList=${3?missing comma delimmited machine name list}
+applicationPort=${4?need to specify app port!}
 serviceUrl=${4:-localhost:9000}
-testUrl=${5:-/admin/version}
+testUrl=${5:-'/admin/version'}
 currentVersion=${6:-} #default none
 
 machines=(${commaDelimitedMachineNameList//,/ })
 
 curl_command(){
-	app=$1 expected=$2 cluster=$3 $test=$4 url=$5
+	app=$1 expected=$2 cluster=$3 testu=$4 port=$5 url=$6
 	echo $app $expected $cluster $url
 
-	json='{"name":"'"$app"'","expected":"'"$expected"'","testUrl":"'"$test"'","actualCluster":['"$cluster]"'}'
+	json='{"name":"'"$app"'","expected":"'"$expected"'","testUrl":"'"$testu"'","port":"'"$port"'","actualCluster":['"$cluster]"'}'
 	echo $json
 	curl -v -H "Content-type:application/json" -X POST -d "'"$json"'" http://"$url"/apps/save
 }
@@ -31,4 +32,4 @@ do
 done
 machineVersionsPaired="${jsonReadyMachines[*]}"
 machinePairLastCommaRemoved="${machineVersionsPaired%?}"
-curl_command "$appName" "$versionExpected" "$machinePairLastCommaRemoved" "$testUrl" "$serviceUrl"
+curl_command "$appName" "$versionExpected" "$machinePairLastCommaRemoved" "$testUrl" "$applicationPort" "$serviceUrl"
