@@ -10,7 +10,7 @@ currentVersion=${6:-} #default none
 machines=(${commaDelimitedMachineNameList//,/ })
 
 curl_command(){
-	app=$1 expected=$2 cluster=$3 $test url=$5
+	app=$1 expected=$2 cluster=$3 $test=$4 url=$5
 	echo $app $expected $cluster $url
 
 	json='{"name":"'"$app"'","expected":"'"$expected"'","testUrl":"'"$test"'","actualCluster":['"$cluster]"'}'
