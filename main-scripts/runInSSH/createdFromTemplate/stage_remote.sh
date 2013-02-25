@@ -7,8 +7,8 @@ destinationAddress=${4?missing destination address}
 extractCmd=${5?missing extraction command like "unzip"}
 applicationPortNumber=${6?missing port number for application hosting}
 
-#do something in ssh landSSHCMD 
-$destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
+#do something in ssh land
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
 # commands to run on remote host
 ######## Begin local hive replication #TODO - THIS IS PROBABLY being removed, to use git  as rollback
     newAppToBecomeCurrentApp=$applicationName'.new'$extension
