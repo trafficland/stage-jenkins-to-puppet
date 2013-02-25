@@ -59,7 +59,12 @@ sh ~/staging/stage_remote.sh $applicationName $stagePath $extension $puppetAddre
 #begin validation service interaction
 ~/staging/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
 
+#give the operation time to get a machine into the system
+sleep 5
+
 ~/staging/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$validatorServiceUrl" "$currentVersion"
+
+sleep 5
 
 ~/staging/validate "$validatorServiceUrl" "$applicationName" "$validationDelayMilli"
 #end validation service interaction
