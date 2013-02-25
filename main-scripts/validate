@@ -1,0 +1,14 @@
+#!/bin/sh
+#curl get result and compare it to expected
+serviceUrl=${1?need a url to get from}
+appName=${2?need application name}
+delayMilli=${3?missing expected delay in milliseconds} #if parameter contains spaces they should be enclosed in "" or ''
+
+curl_command(){
+  url=$1
+  app=$2
+  delay=$3
+
+  curl "$url"'/''"'"$app"'"'/"$delay"
+}
+$(curl_command "$serviceUrl" "$appName" "$delayMilli")

@@ -27,7 +27,7 @@ atlassian-ide-plugin.xml
 *.rdb
 
 #OSX
-.DS_STORE 
+.DS_STORE
 
 #Sublime
 .sublime*

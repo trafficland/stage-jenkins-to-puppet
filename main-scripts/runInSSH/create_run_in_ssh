@@ -8,12 +8,12 @@ pathAndmoduleName="$pathToModuleName""$moduleName"
 
 
 newSshModuleName=$moduleName'.sh'
-cp "$pathToRunInSSH_SH"runInSSH.sh  "$newSshModuleName"
+cp "$pathToRunInSSH_SH"run_in_ssh.sh  "$newSshModuleName"
 
 
-sshArgs="$pathAndmoduleName"'/sshargs.sh'
-sshExecutionContent="$pathAndmoduleName"'/toexecute.sh'
-generatedScriptArgs="$pathAndmoduleName"'/topargs.sh'
+sshArgs="$pathAndmoduleName"'/ssh_args.sh'
+sshExecutionContent="$pathAndmoduleName"'/to_execute.sh'
+generatedScriptArgs="$pathAndmoduleName"'/top_args.sh'
 
 sed -i '/REPLACE_WITH_TOP_ARGS/{
 	s/REPLACE_WITH_TOP_ARGS//g

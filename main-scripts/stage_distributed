@@ -1,0 +1,65 @@
+#!/bin/sh
+#get correct arguments
+jenkinsJobName=${1?missing jenkins job name} #example proj1-stage
+puppetAddress=${2?missing destination ip or hostname}
+validatorServiceUrl=${3?missing distrubuted validation service url}
+applicationName=${4?missing application name} #example proj1
+#for save_machine save_app
+commaDelimitedMachineNameList=${5?mising comma delimmited machine list}
+versionExpected=${6?need expected value}
+applicationPortNumber=${7:-9000} #if this is a play app the default will be empty and the port # will be 9000
+isAliveAll=${8:-true}
+currentVersion=${9:-} #default none
+stageHome=${10:-'~/stage/'} #example ~/stage/
+extension=${11:-.zip} #default extension to zip
+extractCmd=${12:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
+validationDelayMilli=${13:-18000000} #30 minutes 1000 x 60 x 30
+
+# echo "$jenkinsJobName"
+# echo "$puppetAddress"
+# echo "$applicationName"
+# echo "$stageHome"
+# echo "$extension"
+# echo "$extractCmd"
+
+echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
+applicationNameNew=$applicationName'.new'$extension
+
+#create the package location by replacing the jenkinsJobName variable with the actual jobName
+packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*$extension
+
+#stagePath will combine the stageHome location to the subdirectory structure we want
+#ie: if stageHome = '~/stage/'' and applicationName = 'proj1'
+#then stagePath = ~/stage/proj1/ 
+stagePath=$stageHome''$applicationName'/'
+#append appNew, #then stagePath = ~/stage/proj1/proj1.new
+stagePathWithNewApplication=$stagePath''$applicationNameNew
+
+#destination will combine address/hostname to a full stagePath, this will fulfill the scp destination
+#ie: 127.0.0.1:~/stage/proj1/proj1New
+destination=$puppetAddress:$stagePathWithNewApplication
+
+#echo "$destination"
+
+#begin deployment
+ssh $puppetAddress applicationName=$applicationName stagePath=$stagePath applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
+  # commands to run on remote host
+  mkdir -p "$stagePath"
+ENDSSH
+#pack full scp line
+cmd=scp' '$packageLocation' '$destination
+#execute scp
+echo $cmd
+$cmd
+
+sh ~/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $applicationPortNumber
+#end deployment
+
+
+#begin validation service interaction
+~/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
+
+~/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$validatorServiceUrl" "$currentVersion"
+
+~/validate "$validatorServiceUrl" "$applicationName" "$validationDelayMilli"
+#end validation service interaction
