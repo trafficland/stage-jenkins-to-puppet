@@ -11,7 +11,10 @@ machines=(${commaDelimitedMachineNameList//,/ })
 curl_command(){
 	app=$1 expected=$2 cluster=$3 url=$4
 	echo $app $expected $cluster $url
-	curl -v -H "Content-type:application/json" -X POST -d '{"name":"'"$app"'","expected":"'"$expected"'","actualCluster":['"$cluster]"'}' http://"$url"/apps/save
+
+	json='{"name":"'"$app"'","expected":"'"$expected"'","actualCluster":['"$cluster]"'}'
+	echo $json
+	curl -v -H "Content-type:application/json" -X POST -d '"$json"' http://"$url"/apps/save
 }
 
 declare -a jsonReadyMachines
