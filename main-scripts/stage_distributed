@@ -52,14 +52,14 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $applicationPortNumber
+sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $applicationPortNumber
 #end deployment
 
 
 #begin validation service interaction
-~/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
+~/staging/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
 
-~/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$validatorServiceUrl" "$currentVersion"
+~/staging/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$validatorServiceUrl" "$currentVersion"
 
-~/validate "$validatorServiceUrl" "$applicationName" "$validationDelayMilli"
+~/staging/validate "$validatorServiceUrl" "$applicationName" "$validationDelayMilli"
 #end validation service interaction
