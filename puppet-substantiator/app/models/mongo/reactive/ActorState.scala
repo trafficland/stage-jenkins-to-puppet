@@ -32,6 +32,8 @@ trait IActorStateReadersWriters
   override implicit val bsonWriter = BSONWriter
   override implicit val jsonReader = JSONReader
   override implicit val jsonWriter = JSONWriter
+  implicit val criteriaReader = CriteriaReader
+  implicit val uniqueCheckReader = UniqueCheckReader
 
   implicit val jsonSprayFormat = jsonFormat4 {
     (name: String, isAlive: Boolean, state: String, id: Option[String]) =>
@@ -115,6 +117,6 @@ object ActorState extends IActorStateReadersWriters {
     }
   }
 
-  implicit object ActorStateUniqueCheckReader extends UniqueKeyReader("name")
+  implicit object UniqueCheckReader extends UniqueKeyReader("name")
 
 }

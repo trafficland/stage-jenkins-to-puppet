@@ -9,7 +9,7 @@ import models.json.{IWritesExtended, IReadsExtended}
 case class App(
                 var name: String,
                 val expected: String,
-                val testUrl:String,
+                val testUrl: String,
                 val actualCluster: List[AppMachineState],
                 val port: Option[String] = Some("9000"),
                 override var id: Option[BSONObjectID] = Some(BSONObjectID.generate)) extends IMongoModel[App] {
@@ -28,21 +28,29 @@ case class App(
 }
 
 trait IAppReadersWriters extends IReadersWriters[App] {
-  override implicit val bsonReader = App.AppBSONReader
-  override implicit val bsonWriter = App.AppBSONWriter
-  override implicit val jsonReader = App.AppJSONReader
-  override implicit val jsonWriter = App.AppJSONWriter
 
-  implicit val bsonReaderAppMach = AppMachineState.AppMachineBSONReader
-  implicit val bsonWriterAppMach = AppMachineState.AppMachineStateBSONWriter
-  implicit val jsonReaderAppmach = AppMachineState.AppMachineJSONReader
-  implicit val jsonWriterAppMach = AppMachineState.AppMachineJSONWriter
+  import App._
+
+  override implicit val bsonReader = BSONReader
+  override implicit val bsonWriter = BSONWriter
+  override implicit val jsonReader = JSONReader
+  override implicit val jsonWriter = JSONWriter
+
+  implicit val criteriaReader = CriteriaReader
+  implicit val uniqueCheckReader = UniqueCheckReader
+
+  import AppMachineState._
+
+  implicit val bsonReaderAppMach = AppMachineBSONReader
+  implicit val bsonWriterAppMach = AppMachineStateBSONWriter
+  implicit val jsonReaderAppmach = AppMachineJSONReader
+  implicit val jsonWriterAppMach = AppMachineJSONWriter
 
 }
 
 object App extends IAppReadersWriters {
 
-  implicit object AppBSONReader extends IBSONReaderExtended[App] {
+  implicit object BSONReader extends IBSONReaderExtended[App] {
     def fromBSON(document: BSONDocument) = {
       val doc = document.toTraversable
       App(
@@ -56,7 +64,7 @@ object App extends IAppReadersWriters {
     }
   }
 
-  implicit object AppBSONWriter extends IBSONWriterExtended[App] {
+  implicit object BSONWriter extends IBSONWriterExtended[App] {
     def toBSON(entity: App) =
       BSONDocument(
         "_id" -> entity.id.getOrElse(BSONObjectID.generate),
@@ -68,7 +76,7 @@ object App extends IAppReadersWriters {
       )
   }
 
-  implicit object AppJSONReader extends IReadsExtended[App] {
+  implicit object JSONReader extends IReadsExtended[App] {
     def reads(json: JsValue) = {
       JsSuccess(App(
         (json \ "name").as[String],
@@ -84,7 +92,7 @@ object App extends IAppReadersWriters {
     }
   }
 
-  implicit object AppJSONWriter extends IWritesExtended[App] {
+  implicit object JSONWriter extends IWritesExtended[App] {
     def writes(entity: App): JsValue = {
       val list = scala.collection.mutable.Buffer(
         "name" -> JsString(entity.name),
@@ -100,7 +108,7 @@ object App extends IAppReadersWriters {
     }
   }
 
-  implicit object AppCriteriaReader extends BaseCriteriaReader {
+  implicit object CriteriaReader extends BaseCriteriaReader {
     def criteria(json: JsValue) = {
 
       var doc = BSONDocument()
@@ -123,6 +131,6 @@ object App extends IAppReadersWriters {
     }
   }
 
-  implicit object AppUniqueCheckReader extends UniqueKeyReader("name")
+  implicit object UniqueCheckReader extends UniqueKeyReader("name")
 
 }

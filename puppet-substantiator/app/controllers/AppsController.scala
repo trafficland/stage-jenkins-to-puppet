@@ -5,7 +5,7 @@ import play.api.libs.json._
 import libs.json.JsBoolean
 import play.api.mvc._
 import models._
-import mongo.reactive.App
+import mongo.reactive.{IAppReadersWriters, App}
 import services.repository.mongo.reactive.impls.{AppRepositoryProvider, IAppsRepositoryProvider}
 import services.repository.mongo.reactive.{MongoSearchCriteria, MongoUniqueCheck}
 import concurrent.ExecutionContext.Implicits.global
@@ -19,11 +19,6 @@ import ActorsProvider._
 
 abstract class AppsController extends RestController[App]
 with IAppsRepositoryProvider {
-
-  implicit val jsonReader = App.AppJSONReader
-  implicit val jsonWriter = App.AppJSONWriter
-  implicit val criteriaReader = App.AppCriteriaReader
-  implicit val uniqueCheckReader = App.AppUniqueCheckReader
 
   def uniqueCheck = Action(parse.json) {
     request =>

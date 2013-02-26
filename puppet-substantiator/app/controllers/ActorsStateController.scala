@@ -1,15 +1,17 @@
 package controllers
 
 import play.api.mvc._
-import models.mongo.reactive._
+import models.mongo.reactive.ActorState
 import services.repository.mongo.reactive.MongoUniqueCheck
 import play.api.libs.json.JsBoolean
 import concurrent.ExecutionContext.Implicits.global
-import services.repository.mongo.reactive.impls.{MachineRepositoryProvider, IMachinesRepositoryProvider}
+import services.repository.mongo.reactive.impls.{IActorsStateRepositoryProvider, ActorsStateRepositoryProvider}
 
 
-abstract class MachinesController extends RestController[Machine]
-with IMachinesRepositoryProvider {
+abstract class ActorsStateController
+  extends RestController[ActorState]
+  with IActorsStateRepositoryProvider {
+
   def uniqueCheck = Action(parse.json) {
     request =>
       Async {
@@ -21,6 +23,6 @@ with IMachinesRepositoryProvider {
   }
 }
 
-object MachinesController
-  extends MachinesController
-  with MachineRepositoryProvider
+object ActorsStateController
+  extends ActorsStateController
+  with ActorsStateRepositoryProvider

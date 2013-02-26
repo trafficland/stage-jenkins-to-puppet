@@ -6,7 +6,9 @@ import services.repository.mongo.reactive._
 import concurrent._
 import reactivemongo.bson.{BSONArray, BSONString, BSONDocument}
 
-trait IMachinesRepository extends MongoBaseRepository[Machine] with IMongoUniqueCheckRepository[Machine] {
+trait IMachinesRepository
+  extends MongoBaseRepository[Machine]
+  with IMongoUniqueCheckRepository[Machine] with IMachineReadersWriters {
   def getByName(name: String)(implicit context: ExecutionContext): Future[Option[Machine]]
 
   def machineExists(name: String)(implicit context: ExecutionContext): Future[Boolean]
@@ -18,9 +20,6 @@ abstract class MachinesRepository
   extends IMachinesRepository {
 
   override protected def collectionName = "machines"
-
-  implicit val reader = Machine.MachineBSONReader
-  implicit val writer = Machine.MachineBSONWriter
 
   def machineExists(name: String)(implicit context: ExecutionContext): Future[Boolean] = {
     for {
@@ -50,7 +49,8 @@ abstract class MachinesRepository
 }
 
 trait IMachinesRepositoryProvider
-  extends IMongoRepositoryProvider[Machine] {
+  extends IMongoRepositoryProvider[Machine]
+  with IMachineReadersWriters {
 
   def repository: IMachinesRepository
 }

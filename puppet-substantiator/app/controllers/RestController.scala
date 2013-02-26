@@ -24,6 +24,22 @@ abstract class RestController[TModel <: IMongoModel[TModel]]
 
   }
 
+  def name(name: String) = Action {
+    request =>
+      Async {
+        for {
+          opt <- repository.getByName(name)
+        } yield {
+          opt match {
+            case Some(model) =>
+              Ok(Json.toJson[TModel](model))
+            case None =>
+              NotFound
+          }
+        }
+      }
+  }
+
   def get(id: String) = Action {
     request =>
       Async {

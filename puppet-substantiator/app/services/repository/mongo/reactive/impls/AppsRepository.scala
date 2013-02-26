@@ -11,12 +11,9 @@ trait IAppsRepository extends MongoBaseRepository[App] with IMongoUniqueCheckRep
 }
 
 abstract class AppsRepository
-  extends IAppsRepository {
+  extends IAppsRepository with IAppReadersWriters {
 
   override protected def collectionName = "apps"
-
-  implicit val reader = App.AppBSONReader
-  implicit val writer = App.AppBSONWriter
 
   def ifMachinesExistExecute(entity: App,
                              func: App => Future[Either[Option[App], Exception]])
@@ -52,7 +49,8 @@ abstract class AppsRepository
 }
 
 trait IAppsRepositoryProvider
-  extends IMongoRepositoryProvider[App] {
+  extends IMongoRepositoryProvider[App]
+  with IAppReadersWriters {
 
   def repository: IAppsRepository
 }

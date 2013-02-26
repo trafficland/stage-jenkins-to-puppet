@@ -18,15 +18,19 @@ case class Machine(var name: String,
 }
 
 trait IMachineReadersWriters extends IReadersWriters[Machine] {
-  override implicit lazy val jsonReader = Machine.MachineJSONReader
-  override implicit lazy val jsonWriter = Machine.MachineJSONWriter
-  override implicit lazy val bsonReader = Machine.MachineBSONReader
-  override implicit lazy val bsonWriter = Machine.MachineBSONWriter
+  import Machine._
+  override implicit lazy val jsonReader = JSONReader
+  override implicit lazy val jsonWriter = JSONWriter
+  override implicit lazy val bsonReader = BSONReader
+  override implicit lazy val bsonWriter = BSONWriter
+
+  implicit val criteriaReader = CriteriaReader
+  implicit val uniqueCheckReader = UniqueCheckReader
 }
 
 object Machine extends IMachineReadersWriters {
 
-  implicit object MachineBSONReader extends IBSONReaderExtended[Machine] {
+  implicit object BSONReader extends IBSONReaderExtended[Machine] {
     def fromBSON(document: BSONDocument) = {
       val doc = document.toTraversable
 
@@ -38,7 +42,7 @@ object Machine extends IMachineReadersWriters {
     }
   }
 
-  implicit object MachineBSONWriter extends IBSONWriterExtended[Machine] {
+  implicit object BSONWriter extends IBSONWriterExtended[Machine] {
     def toBSON(entity: Machine) =
       BSONDocument(
         "_id" -> entity.id.getOrElse(BSONObjectID.generate),
@@ -47,7 +51,7 @@ object Machine extends IMachineReadersWriters {
       )
   }
 
-  implicit object MachineJSONReader extends IReadsExtended[Machine] {
+  implicit object JSONReader extends IReadsExtended[Machine] {
     def reads(json: JsValue) = {
       val m = new Machine(
         (json \ "name").as[String],
@@ -60,7 +64,7 @@ object Machine extends IMachineReadersWriters {
     }
   }
 
-  implicit object MachineJSONWriter extends IWritesExtended[Machine] {
+  implicit object JSONWriter extends IWritesExtended[Machine] {
     def writes(entity: Machine): JsValue = {
       val list = scala.collection.mutable.Buffer(
         "name" -> JsString(entity.name),
@@ -71,7 +75,7 @@ object Machine extends IMachineReadersWriters {
     }
   }
 
-  implicit object MachineCriteriaReader extends BaseCriteriaReader {
+  implicit object CriteriaReader extends BaseCriteriaReader {
     def criteria(json: JsValue) = {
 
       var doc = BSONDocument()
@@ -90,6 +94,6 @@ object Machine extends IMachineReadersWriters {
     }
   }
 
-  implicit object MachineUniqueCheckReader extends UniqueKeyReader("name")
+  implicit object UniqueCheckReader extends UniqueKeyReader("name")
 
 }

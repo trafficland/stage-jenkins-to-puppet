@@ -12,8 +12,8 @@ import models.IModel
 
 trait IRepoTestHelper[TestModel <: IModel[BSONObjectID]] extends IMongoDbProvider {
 
-  implicit val reader: BSONReader[TestModel]
-  implicit val writer: BSONWriter[TestModel]
+  implicit val bsonReader: BSONReader[TestModel]
+  implicit val bsonWriter: BSONWriter[TestModel]
 
   def createEntity: TestModel
 
@@ -26,10 +26,7 @@ trait IRepoTestHelper[TestModel <: IModel[BSONObjectID]] extends IMongoDbProvide
   def cleanAsync() = db.collection(collectionName).remove(query = BSONDocument(), firstMatchOnly = false)
 }
 
-trait IMachineRepoHelper extends IRepoTestHelper[Machine] {
-
-  implicit val reader: BSONReader[Machine] = Machine.MachineBSONReader
-  implicit val writer: BSONWriter[Machine] = Machine.MachineBSONWriter
+trait IMachineRepoHelper extends IRepoTestHelper[Machine] with IMachineReadersWriters {
 
   override val collectionName: String = "machines"
 
@@ -49,9 +46,7 @@ trait IMachineRepoHelper extends IRepoTestHelper[Machine] {
   }
 }
 
-trait IAppsRepoHelper extends IRepoTestHelper[App] {
-  implicit val reader: BSONReader[App] = App.AppBSONReader
-  implicit val writer: BSONWriter[App] = App.AppBSONWriter
+trait IAppsRepoHelper extends IRepoTestHelper[App] with IAppReadersWriters {
 
   override val collectionName: String = "apps"
 
@@ -84,14 +79,9 @@ trait IAppsRepoHelper extends IRepoTestHelper[App] {
   }
 }
 
-trait IActorsStateRepoHelper extends IRepoTestHelper[ActorState] {
+trait IActorsStateRepoHelper extends IRepoTestHelper[ActorState] with IActorStateReadersWriters {
 
-  import ActorState._
-
-  implicit val reader = BSONReader
-  implicit val writer = BSONWriter
-
-  override val collectionName: String = "actorsstate"
+  override val collectionName: String = "actors"
 
   def createEntity = {
     new ActorState("test999", true, "some state")

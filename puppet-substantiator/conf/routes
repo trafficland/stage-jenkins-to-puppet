@@ -4,6 +4,7 @@
 
 GET     /apps/validate/:name/:delay         controllers.AppsController.validate(name: String,delay: Int)
 DELETE  /apps/validate/:name                controllers.AppsController.cancelValidation(name: String)
+GET     /apps/name/:name                    controllers.AppsController.name(name: String)
 GET     /apps                               controllers.AppsController.index
 GET     /apps/:id                           controllers.AppsController.get(id: String)
 POST    /apps                               controllers.AppsController.create
@@ -15,6 +16,7 @@ POST    /apps/uniqueCheck                   controllers.AppsController.uniqueChe
 
 GET     /machines                           controllers.MachinesController.index
 GET     /machines/:id                       controllers.MachinesController.get(id: String)
+GET     /machines/name/:name                controllers.MachinesController.name(name: String)
 POST    /machines                           controllers.MachinesController.create
 POST    /machines/save                      controllers.MachinesController.save
 POST    /machines/search                    controllers.MachinesController.search
@@ -22,8 +24,22 @@ PUT     /machines/:id                       controllers.MachinesController.edit(
 DELETE  /machines/:id                       controllers.MachinesController.remove(id: String)
 POST    /machines/uniqueCheck               controllers.MachinesController.uniqueCheck
 
+GET     /actors                             controllers.ActorsStateController.index
+GET     /actors/:id                         controllers.ActorsStateController.get(id: String)
+GET     /actors/name/:name                  controllers.ActorsStateController.name(name: String)
+POST    /actors                             controllers.ActorsStateController.create
+POST    /actors/save                        controllers.ActorsStateController.save
+POST    /actors/search                      controllers.ActorsStateController.search
+PUT     /actors/:id                         controllers.ActorsStateController.edit(id: String)
+DELETE  /actors/:id                         controllers.ActorsStateController.remove(id: String)
+POST    /actors/uniqueCheck                 controllers.ActorsStateController.uniqueCheck
+
 GET     /rollback/:appName                  controllers.ScriptController.rollBack(appName: String)
 
+#############################################################################################
+# Actor Hooks #NOT ROUTING
+# GET /actorHook/scheduled      util.actors.http.SystemStateHttpActor
+#############################################################################################
 # Home page
 GET     /version                            controllers.Application.version
 GET     /                                   controllers.Application.version

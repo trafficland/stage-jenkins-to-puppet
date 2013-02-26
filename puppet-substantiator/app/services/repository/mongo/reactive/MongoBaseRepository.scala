@@ -19,8 +19,8 @@ abstract class MongoBaseRepository[TModel <: IMongoModel[TModel]]
   with IMongoDbProvider
   with IConfigurationProvider {
 
-  implicit val reader: BSONReader[TModel]
-  implicit val writer: BSONWriter[TModel]
+  implicit val bsonReader: BSONReader[TModel]
+  implicit val bsonWriter: BSONWriter[TModel]
 
   protected def collectionName: String
 
