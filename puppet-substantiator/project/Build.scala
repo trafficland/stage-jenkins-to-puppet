@@ -7,19 +7,37 @@ object ApplicationBuild extends Build {
   val appName = "puppet-substantiator"
   val appVersion = "1.0.0-SNAPSHOT".toReleaseFormat()
 
+  object Dependencies {
 
-  val compileDependencies = Seq(
-    "com.chuusai" %% "shapeless" % "1.2.3",
-    "org.reactivemongo" %% "reactivemongo" % "0.8",
-    "org.scalatest" %% "scalatest" % "2.0.M5b",
-    "org.mockito" % "mockito-core" % "1.9.0",
-    "com.typesafe.akka" %% "akka-testkit" % "2.1.0"
-  )
+    object V {
+      val spray = "1.1-M7"
+      val sprayJson="1.2.3"
+      val reactiveMongo = "0.8"
+      val scalaTest = "2.0.M5b"
+      val mockito = "1.9.0"
+      val akka = "2.1.0"
+    }
 
-//  val gitHubDependencies: Array[ClasspathDep[ProjectReference]] =
-//    Array(RootProject(uri("https://github.com/nmccready/scala-erasure-experiments.git")))
+    import V._
 
-  val appDependencies = compileDependencies
+    val compileDependencies = Seq(
+      "org.reactivemongo" %% "reactivemongo" % reactiveMongo,
+      "org.scalatest" %% "scalatest" % scalaTest,
+      "org.mockito" % "mockito-core" % mockito,
+      "com.typesafe.akka" %% "akka-testkit" % akka,
+      "io.spray" % "spray-can" % spray,
+      "io.spray" % "spray-http" % spray,
+      "io.spray" % "spray-util" % spray,
+      "io.spray" % "spray-httpx" % spray,
+      "io.spray" %% "spray-json" % sprayJson
+    )
+  }
+
+
+  //  val gitHubDependencies: Array[ClasspathDep[ProjectReference]] =
+  //    Array(RootProject(uri("https://github.com/nmccready/scala-erasure-experiments.git")))
+
+  val appDependencies = Dependencies.compileDependencies
 
   val main = play.Project(appName, appVersion, appDependencies)
     .configs(IntTests)
@@ -30,7 +48,8 @@ object ApplicationBuild extends Build {
     resolvers ++= Seq(
       "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/",
       "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/",
-      "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
+      "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
+      "spray repo" at "http://repo.spray.io"
     ),
     sourceGenerators in Compile <+= sourceManaged in Compile map {
       outDir: File =>
@@ -61,7 +80,7 @@ object ApplicationBuild extends Build {
     javaOptions in Runtime += "-Dconfig.file=conf/test.conf"
 
   )
-//    .dependsOn(gitHubDependencies: _*)
+  //    .dependsOn(gitHubDependencies: _*)
 
   def writeVersion(outDir: File) = {
     val file = outDir / "controllers/AppInfo.scala"

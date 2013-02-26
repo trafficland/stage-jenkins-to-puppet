@@ -29,4 +29,13 @@ trait TestAppsRepositoryProvider
   }
 }
 
+trait TestActorsStateRepositoryProvider
+  extends IMongoRepositoryProvider[ActorState] {
+
+  override lazy val repository = new ActorsStateRepository with TestMongoDbProvider {
+    val config = mock[Configuration]
+    val configuration = config
+  }
+}
+
 

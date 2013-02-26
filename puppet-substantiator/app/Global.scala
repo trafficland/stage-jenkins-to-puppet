@@ -10,10 +10,8 @@ object Global extends GlobalSettings {
   }
 
   override def onStart(app: Application) {
-    import fsm.CancellableMapFSMDomainProvider.domain._
     if (app.mode != Mode.Test) {
       actors().createActors()
-      actors().getActor(scheduleName) ! SetTarget(None) // initialize scheduler
     }
     super.onStart(app)
   }

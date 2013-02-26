@@ -19,6 +19,8 @@ case class App(
     super.isEqualTo(other, useID) &&
       expected == other.expected &&
       name == other.name &&
+      testUrl == other.testUrl &&
+      port == other.port &&
       actualCluster.forall(appMach => other.actualCluster.exists(otherAppMach =>
         otherAppMach.machineName == appMach.machineName &&
           otherAppMach.actual == appMach.actual))

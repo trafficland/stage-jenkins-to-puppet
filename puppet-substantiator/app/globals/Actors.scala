@@ -24,4 +24,5 @@ trait IActorNames{
   val scriptorName = "scriptor"
   val scheduleName = "scheduler"
   val validatorName = "validator"
+  val httpServerName= "httpstate"
 }

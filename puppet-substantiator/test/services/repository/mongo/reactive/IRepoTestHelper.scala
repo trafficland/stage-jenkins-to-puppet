@@ -83,3 +83,27 @@ trait IAppsRepoHelper extends IRepoTestHelper[App] {
     db(collectionName).insert[App](Enumerator(ents: _*))
   }
 }
+
+trait IActorsStateRepoHelper extends IRepoTestHelper[ActorState] {
+
+  import ActorState._
+
+  implicit val reader = BSONReader
+  implicit val writer = BSONWriter
+
+  override val collectionName: String = "actorsstate"
+
+  def createEntity = {
+    new ActorState("test999", true, "some state")
+  }
+
+  def createEntities(numberOfEntities: Int) = {
+    val entities = (0 until numberOfEntities) map {
+      index => {
+        val count = index + 1
+        ActorState("test" + count, true, "some state")
+      }
+    }
+    db(collectionName).insert[ActorState](Enumerator(entities: _*))
+  }
+}
