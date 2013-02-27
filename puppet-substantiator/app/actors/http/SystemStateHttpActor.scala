@@ -115,5 +115,5 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
   }
 
   def deleteScheduled(map: Map[String, ICancellableDelay]) =
-    HttpDialog(httpClient, host, port).send(HttpRequest(method = HttpMethods.DELETE, uri = "/actors/scheduled")).end
+    HttpDialog(httpClient, host, port).send(HttpRequest(method = HttpMethods.DELETE, uri = "/actors/name/scheduled")).end
 }
