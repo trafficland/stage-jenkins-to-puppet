@@ -27,6 +27,7 @@ POST    /machines/uniqueCheck               controllers.MachinesController.uniqu
 GET     /actors                             controllers.ActorsStateController.index
 GET     /actors/:id                         controllers.ActorsStateController.get(id: String)
 GET     /actors/name/:name                  controllers.ActorsStateController.name(name: String)
+DELETE  /actors/name/:name                  controllers.ActorsStateController.deleteByName(name: String)
 POST    /actors                             controllers.ActorsStateController.create
 POST    /actors/save                        controllers.ActorsStateController.save
 POST    /actors/search                      controllers.ActorsStateController.search

@@ -12,12 +12,16 @@ import models.mongo.reactive.ActorStateDomain._
 import spray.json.{BasicFormats}
 import concurrent.ExecutionContext.Implicits.global
 import actors.context.{IActorNames, IActorContextProvider}
+import actors.fsm.ICancellableDelay
 
 class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
   extends Actor
   with SprayActorLogging with IActorNames with BasicFormats {
 
   import actors.fsm.CancellableMapFSMDomainProvider.domain._
+
+  val host = serviceUrl.split(':')(0)
+  val port = serviceUrl.split(':')(1).toInt
 
   val httpClient = DefaultHttpClient(provider.actors().system)
 
@@ -54,44 +58,7 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
             </body>
           </html>.toString
         ))
-    case Batch(map) =>
-      //send state to actors repository service
-      val state = map.map(m => (("{app:" + m._1 + ',' + "isCancelled:" + m._2.isCancelled + '}'))).toList.reduce(_ + "," + _)
-      val ent = HttpEntity {
-        Some {
-          HttpBody(ContentType.`application/json`,
-            jsonSprayFormat.write(
-              ActorState("scheduler",
-                true,
-                state)
-            ).compactPrint)
-        }
-      }
-      val host = serviceUrl.split(':')(0)
-      val port = serviceUrl.split(':')(1).toInt
-
-      val responseF =
-        HttpDialog(httpClient, host, port)
-          .send(
-          HttpRequest(method = HttpMethods.POST,
-            uri = "/actors/save",
-            headers =
-              HttpHeaders.`Content-Type`(ContentType.`application/json`) :: Nil,
-            entity = ent)
-        )
-          .end
-      for {
-        response <- responseF
-      }
-      yield {
-        log.info(
-          """|Result from host:
-            |status : {}
-            |headers: {}
-            |body   : {}""".stripMargin,
-          response.status, response.headers.mkString("\n  ", "\n  ", ""), response.entity.asString
-        )
-      }
+    case Batch(map) => handleScheduled(map)
     case _ =>
       sender ! HttpResponse.apply(status = StatusCodes.Accepted,
         entity = HttpBody(MediaTypes.`text/html`,
@@ -105,4 +72,48 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
           </html>.toString
         ))
   }
+
+  def handleScheduled(map: Map[String, ICancellableDelay]) =
+    map.size > 0 match {
+      case true => saveScheduled(map)
+      case false => deleteScheduled(map)
+
+    }
+
+  def saveScheduled(map: Map[String, ICancellableDelay]) = {
+    val state = map.map(m => (("{app:" + m._1 + ',' + "isCancelled:" + m._2.isCancelled + '}'))).toList.reduce(_ + "," + _)
+    val ent = HttpEntity {
+      Some {
+        HttpBody(ContentType.`application/json`,
+          jsonSprayFormat.write(
+            ActorState("scheduler",
+              true,
+              state)
+          ).compactPrint)
+      }
+    }
+    val responseF = HttpDialog(httpClient, host, port).send {
+      HttpRequest(method = HttpMethods.POST,
+        uri = "/actors/save",
+        headers =
+          HttpHeaders.`Content-Type`(ContentType.`application/json`) :: Nil,
+        entity = ent)
+    }.end
+
+    for {
+      response <- responseF
+    }
+    yield {
+      log.info(
+        """|Result from host:
+          |status : {}
+          |headers: {}
+          |body   : {}""".stripMargin,
+        response.status, response.headers.mkString("\n  ", "\n  ", ""), response.entity.asString
+      )
+    }
+  }
+
+  def deleteScheduled(map: Map[String, ICancellableDelay]) =
+    HttpDialog(httpClient, host, port).send(HttpRequest(method = HttpMethods.DELETE, uri = "/actors/scheduled")).end
 }

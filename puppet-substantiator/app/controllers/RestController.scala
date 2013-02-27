@@ -7,6 +7,7 @@ import reactivemongo.bson.BSONObjectID
 import concurrent.ExecutionContext.Implicits.global
 import models.mongo.reactive.IMongoModel
 import services.repository.mongo.reactive.{IMongoRepositoryProvider, MongoSearchCriteria}
+import concurrent._
 
 abstract class RestController[TModel <: IMongoModel[TModel]]
   extends Controller
@@ -38,6 +39,27 @@ abstract class RestController[TModel <: IMongoModel[TModel]]
           }
         }
       }
+  }
+
+  def deleteByName(name: String) = Action {
+    Async {
+      for {
+        opt <- repository.getByName(name)
+        deleted <- opt match {
+          case Some(model) =>
+            model.id match {
+              case Some(id) => repository.remove(id)
+              case None => Future(false)
+            }
+          case None =>
+            Future(false)
+        }
+      } yield {
+        if (deleted)
+          Status(204)
+        else InternalServerError
+      }
+    }
   }
 
   def get(id: String) = Action {
