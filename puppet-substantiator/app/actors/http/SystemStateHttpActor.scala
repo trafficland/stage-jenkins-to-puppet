@@ -86,7 +86,7 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
       Some {
         HttpBody(ContentType.`application/json`,
           jsonSprayFormat.write(
-            ActorState("scheduler",
+            ActorState(scheduleName,
               true,
               state)
           ).compactPrint)
@@ -115,5 +115,5 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
   }
 
   def deleteScheduled(map: Map[String, ICancellableDelay]) =
-    HttpDialog(httpClient, host, port).send(HttpRequest(method = HttpMethods.DELETE, uri = "/actors/name/scheduled")).end
+    HttpDialog(httpClient, host, port).send(HttpRequest(method = HttpMethods.DELETE, uri = "/actors/name/" + scheduleName)).end
 }
