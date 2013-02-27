@@ -78,7 +78,7 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
           else
             currentMap
         if (newMap.isEmpty)
-          goto(Idle)
+          goto(Idle) using Todo(ref, newMap)
         else {
           handelExtraRemove(key)
           goto(Active) using Todo(ref, newMap)
