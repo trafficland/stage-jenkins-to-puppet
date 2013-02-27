@@ -9,10 +9,12 @@ curl_command(){
   app=$2
   delay=$3
 
-  echo '/////////////////Begin Validate Endpoint/////////'
+  echo '/////////////////--Begin--Validate--Endpoint/////////'
 
+  echo 'curl '"$url"'/apps/validate/'"$app"'/'"$delay"
+  
   curl "$url"'/apps/validate/'"$app"'/'"$delay"
 
-  echo '/////////////////END Validate Enpoint////////////'
+  echo '/////////////////END--Validate--Enpoint////////////'
 }
 $(curl_command "$serviceUrl" "$appName" "$delayMilli")
