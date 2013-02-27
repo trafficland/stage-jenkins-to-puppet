@@ -1,0 +1,9 @@
+rootOfStageJenkins=${1?need to know where scripts are!}
+whereToLink={$2?need where to link to!}
+
+ln -s "$rootOfStageJenkins"/stage-jenkins-to-puppet/main-scripts/stage "$whereToLink"
+ln -s "$rootOfStageJenkins"/stage-jenkins-to-puppet/main-scripts/stage_distributed "$whereToLink"
+ln -s "$rootOfStageJenkins"/stage-jenkins-to-puppet/main-scripts/save_app "$whereToLink"
+ln -s "$rootOfStageJenkins"/stage-jenkins-to-puppet/main-scripts/save_machine "$whereToLink"
+ln -s "$rootOfStageJenkins"/stage-jenkins-to-puppet/main-scripts/validate "$whereToLink"
+ln -s "$rootOfStageJenkins"/stage-jenkins-to-puppet/main-scripts/runInSSH/createdFromTemplate/stage_remote.sh "$whereToLink"
