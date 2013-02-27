@@ -36,7 +36,8 @@ trait IActorStateReadersWriters
   implicit val uniqueCheckReader = UniqueCheckReader
 
   implicit val jsonSprayFormat = MongoSprayFormats.ActoStateFormat
-  implicit val stringBoolMapFormat = mapFormat[String, Boolean](StringJsonFormat, BooleanJsonFormat)
+  implicit val stringStringMapFormat = mapFormat[String, String](StringJsonFormat, StringJsonFormat)
+  implicit val stringStringArrayFormat = arrayFormat[(String,String)]
 
 }
 

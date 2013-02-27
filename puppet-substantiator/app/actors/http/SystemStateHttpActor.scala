@@ -56,7 +56,7 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
         ))
     case Batch(map) =>
       //send state to actors repository service
-      val state = stringBoolMapFormat.write(map.map(m => (m._1 -> m._2.isCancelled)))
+      val state = stringStringArrayFormat.write(map.map(m => (("app:" + m._1) -> ("isCancelled:" + m._2.isCancelled))).toArray)
         .asJsObject("unable to convert!").compactPrint
       val ent = HttpEntity {
         Some {
@@ -75,7 +75,7 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
         HttpDialog(httpClient, host, port)
           .send(
           HttpRequest(method = HttpMethods.POST,
-            uri = "/actors",
+            uri = "save/actors",
             headers =
               HttpHeaders.`Content-Type`(ContentType.`application/json`) :: Nil,
             entity = ent)
