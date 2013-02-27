@@ -1,4 +1,4 @@
-package util.actors
+package actors
 
 import akka.actor.{Props, Actor}
 import sys.process._

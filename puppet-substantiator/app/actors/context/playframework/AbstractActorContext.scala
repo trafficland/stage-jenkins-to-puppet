@@ -1,23 +1,18 @@
-package globals.playframework
+package actors.context.playframework
 
 import play.api.Logger._
 import util.OptionHelper._
 import play.api.libs.concurrent.Akka
 import akka.actor.{ActorRef, ActorSystem, Props}
-import util.actors.fsm.CancellableMapFSM
-import util.actors.http.SystemStateHttpActor
-import util.actors.{ScriptExecutorActor, ValidatorActor}
+import actors.fsm.CancellableMapFSM
+import actors.http.SystemStateHttpActor
 import concurrent.ExecutionContext.Implicits._
-import globals._
-import spray.can.server.{HttpServer, ServerSettings, SprayCanHttpServerApp}
-import controllers.routes
+import spray.can.server.{HttpServer, SprayCanHttpServerApp}
 import play.api.mvc._
-import play.api.test.Helpers._
-import play.api.test.{FakeHeaders, FakeRequest}
-import concurrent.Await
-import concurrent.duration._
+import actors.{ValidatorActor, ScriptExecutorActor}
+import actors.context.IActorContext
 
-abstract class AbstractActors extends IActors with SprayCanHttpServerApp with Controller {
+abstract class AbstractActorContext extends IActorContext with SprayCanHttpServerApp with Controller {
 
   implicit lazy val playApp = play.api.Play.current
   implicit lazy val configuration = play.api.Play.configuration
@@ -30,20 +25,20 @@ abstract class AbstractActors extends IActors with SprayCanHttpServerApp with Co
 
   def createActors(): Unit = {
     val dispatcherName = "akka.actor.default-dispatcher"
-    val scheduler = system.actorOf(Props(() => new CancellableMapFSM(delayMilli)).withDispatcher(dispatcherName), name = ActorsProvider.scheduleName)
-    system.actorOf(Props(() => new ValidatorActor(global, ActorsProvider)).withDispatcher(dispatcherName), name = ActorsProvider.validatorName)
-    system.actorOf(Props(() => new ScriptExecutorActor(logger = Some(logger))).withDispatcher(dispatcherName), name = ActorsProvider.scriptorName)
+    val scheduler = system.actorOf(Props(() => new CancellableMapFSM(delayMilli)).withDispatcher(dispatcherName), name = ActorContextProvider.scheduleName)
+    system.actorOf(Props(() => new ValidatorActor(global, ActorContextProvider)).withDispatcher(dispatcherName), name = ActorContextProvider.validatorName)
+    system.actorOf(Props(() => new ScriptExecutorActor(logger = Some(logger))).withDispatcher(dispatcherName), name = ActorContextProvider.scriptorName)
 
     val absUrl = getOptionOrDefault(configuration.getString("playBaseUrl"),"localhost:9000")
     val httpActor = system.actorOf(Props(() =>
-      new SystemStateHttpActor(ActorsProvider, absUrl))
-      .withDispatcher(dispatcherName), name = ActorsProvider.httpStateHandlerName)
+      new SystemStateHttpActor(ActorContextProvider, absUrl))
+      .withDispatcher(dispatcherName), name = ActorContextProvider.httpStateHandlerName)
 
     val server = newHttpServer(httpActor)
     server ! HttpServer.Unbind
     server ! Bind(interface = listeningInterface, port = listeningPort)
 
-    import util.actors.fsm.CancellableMapFSMDomainProvider.domain._
+    import actors.fsm.CancellableMapFSMDomainProvider.domain._
     scheduler ! SetTarget(Some(httpActor)) // initialize scheduler
   }
 

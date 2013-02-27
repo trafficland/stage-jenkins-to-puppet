@@ -1,40 +1,59 @@
-package util.actors.fsm
+package actors.fsm
 
 import akka.actor._
 import akka.testkit._
 import org.scalatest._
 import org.scalatest.matchers.{ShouldMatchers, MustMatchers}
-import util.actors.fsm.BasicState._
+import BasicState._
 
-class CancellableMapFSMSpec(_system: ActorSystem)
+trait IMapFSMSPec[T, FSM <: MapFSM[T]] {
+
+  def getStateMap(fsm: TestFSMRef[IState, IStateData, FSM])(implicit domain: MapFSMDomain[T]) = {
+    import domain._
+
+    fsm.stateData match {
+      case Todo(_, map) => map
+      case _ => Map.empty[String, T]
+    }
+  }
+
+  def createPairs(size: Int): Seq[(String, T)] = {
+    (0 until size) map {
+      i =>
+        val count = i + 1
+        "test" + count -> create
+    }
+  }
+
+  def createAndInject(size: Int, fsm: TestFSMRef[IState, IStateData, FSM])(implicit domain: MapFSMDomain[T]) = {
+    import domain._
+    createPairs(size).foreach(pair => fsm ! Add(pair._1, pair._2))
+  }
+
+  def create: T
+}
+
+class AnyMapFSMSpec(_system: ActorSystem)
   extends TestKit(_system) with ImplicitSender
   with WordSpec with MustMatchers with BeforeAndAfterAll
-  with BeforeAndAfter with ShouldMatchers with IMapFSMSPec[ICancellableDelay, CancellableMapFSM] {
+  with BeforeAndAfter with ShouldMatchers with IMapFSMSPec[Any, AnyMapFSM] {
 
-  def this() = this(ActorSystem("CancellableMapFSMSpec"))
+  def this() = this(ActorSystem("AnyMapFSMSpec"))
 
   override def afterAll {
     system.shutdown()
   }
 
-  implicit val localDomain = CancellableMapFSMDomainProvider.domain
+  implicit val localDomain = AnyMapFSMDomainProvider.domain
 
   import localDomain._
 
-  def create(delay: Int) = CancellableDelay(delay, new Cancellable {
-    var localCancel = false
+  var counter = 0
 
-    def isCancelled = localCancel
-
-    def cancel() {
-      localCancel = true
-    }
-  })
-
-  def create() = create(5000)
+  def create = counter += 1
 
   def initialize() = {
-    val fsm = TestFSMRef[IState, IStateData, CancellableMapFSM](new CancellableMapFSM(3000))
+    val fsm = TestFSMRef[IState, IStateData, AnyMapFSM](new AnyMapFSM())
     fsm ! SetTarget(Some(fsm.underlying.self))
     fsm
   }
@@ -43,16 +62,15 @@ class CancellableMapFSMSpec(_system: ActorSystem)
   "adding" should {
     "put fsm in Active state with a single add" in {
       val fsm = initialize()
-      val put = create(5000)
-      fsm ! Add("test1", put)
+      fsm ! Add("test1", 1)
       fsm.stateName should be(Active)
-      getStateMap(fsm)(localDomain)("test1") should be(put)
+      getStateMap(fsm)(localDomain)("test1") should be(1)
     }
 
     "contain two items when two are added" in {
       val fsm = initialize()
-      fsm ! Add("test1", create(5000))
-      fsm ! Add("test2", create(5000))
+      fsm ! Add("test1", 1)
+      fsm ! Add("test2", 1)
       fsm.stateName should be(Active)
       val size = fsm.stateData match {
         case Todo(_, map) => map.size
@@ -62,8 +80,8 @@ class CancellableMapFSMSpec(_system: ActorSystem)
     }
     "contain one item when two of the same are added" in {
       val fsm = initialize()
-      fsm ! Add("test1", create(5000))
-      fsm ! Add("test1", create(5000))
+      fsm ! Add("test1", 1)
+      fsm ! Add("test1", 1)
       fsm.stateName should be(Active)
       val size = fsm.stateData match {
         case Todo(_, map) => map.size
@@ -75,7 +93,7 @@ class CancellableMapFSMSpec(_system: ActorSystem)
   "removal" should {
     "a single active should put state into idle" in {
       val fsm = initialize()
-      fsm ! Add("test1", create(5000))
+      fsm ! Add("test1", 1)
       fsm ! Remove("test1")
       fsm.stateName should be(Idle)
       getStateMap(fsm)(localDomain).size should be(1)
@@ -98,16 +116,16 @@ class CancellableMapFSMSpec(_system: ActorSystem)
   "adding many" should {
     "be handled" in {
       val fsm = initialize()
-      createAndInject(200, fsm)
+      createAndInject(50, fsm)
       fsm.stateName should be(Active)
-      getStateMap(fsm)(localDomain).size should be(200)
+      getStateMap(fsm)(localDomain).size should be(50)
     }
 
-    "then flush should be handled and goes back to idle" in {
+    "then flushbe handled and back to idle" in {
       val fsm = initialize()
-      createAndInject(200, fsm)
+      createAndInject(50, fsm)
       fsm.stateName should be(Active)
-      getStateMap(fsm)(localDomain).size should be(200)
+      getStateMap(fsm)(localDomain).size should be(50)
       fsm ! Flush
       getStateMap(fsm)(localDomain).size should be(0)
     }

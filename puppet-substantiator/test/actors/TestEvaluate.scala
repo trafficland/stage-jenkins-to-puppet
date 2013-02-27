@@ -1,4 +1,4 @@
-package util.actors
+package actors
 
 import util.evaluations.IEvaluate
 import concurrent._

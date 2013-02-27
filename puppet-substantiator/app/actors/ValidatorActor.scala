@@ -1,11 +1,11 @@
-package util.actors
+package actors
 
 import akka.actor._
+import context.IActorContextProvider
 import scala.concurrent.duration._
 import util.evaluations.IEvaluate
 import concurrent.ExecutionContext
-import util.actors.fsm.CancellableDelay
-import globals.IActorsProvider
+import actors.fsm.CancellableDelay
 
 object ValidatorActor {
 
@@ -23,10 +23,10 @@ object ValidatorActor {
 
 import ValidatorActor._
 
-class ValidatorActor(execCtx: ExecutionContext,provider:IActorsProvider) extends Actor {
+class ValidatorActor(execCtx: ExecutionContext,provider:IActorContextProvider) extends Actor {
   implicit val ctx = execCtx
 
-  import util.actors.fsm.CancellableMapFSMDomainProvider.domain._
+  import actors.fsm.CancellableMapFSMDomainProvider.domain._
 
   lazy val scheduleMaintainer: ActorRef = provider.actors().getActor("scheduler")
 

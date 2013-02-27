@@ -3,10 +3,11 @@ package controllers
 import play.api.mvc._
 import java.io.File
 import scala.io._
-import _root_.util.actors.ScriptExecutorActor._
+import actors.ScriptExecutorActor
+import ScriptExecutorActor._
 import _root_.util.OptionHelper.getOptionOrDefault
-import globals.playframework.ActorsProvider
-import ActorsProvider._
+import actors.context.playframework.ActorContextProvider
+import ActorContextProvider._
 
 /*
 End point to call IO Actor to run scripts

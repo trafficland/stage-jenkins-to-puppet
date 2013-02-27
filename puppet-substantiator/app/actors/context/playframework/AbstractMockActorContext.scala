@@ -1,11 +1,11 @@
-package globals.playframework
+package actors.context.playframework
 
 import akka.testkit.TestProbe
 import play.api.libs.concurrent.Akka
 import org.scalatest.mock.MockitoSugar._
-import globals.IActors
+import actors.context.IActorContext
 
-abstract class AbstractMockActors extends IActors {
+abstract class AbstractMockActorContext extends IActorContext {
   implicit val app = play.api.Play.current
   final val probe = TestProbe()(Akka.system)
 

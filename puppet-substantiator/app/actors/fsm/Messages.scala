@@ -1,4 +1,4 @@
-package util.actors.fsm
+package actors.fsm
 
 import concurrent._
 

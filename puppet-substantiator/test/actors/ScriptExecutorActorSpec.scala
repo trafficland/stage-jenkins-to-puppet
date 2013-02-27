@@ -1,4 +1,4 @@
-package util.actors
+package actors
 
 import akka.actor._
 import akka.testkit._
@@ -11,7 +11,7 @@ import org.mockito._
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-
+import scala.Some
 
 class ScriptExecutorActorSpec(_system: ActorSystem)
   extends TestKit(_system) with ImplicitSender
@@ -47,7 +47,6 @@ class ScriptExecutorActorSpec(_system: ActorSystem)
     when(log.isDebugEnabled).thenReturn(isDebug)
     log
   }
-
 
   "no script exist" should {
     "throw exception" in {

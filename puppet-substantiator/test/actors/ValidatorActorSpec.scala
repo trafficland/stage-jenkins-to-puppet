@@ -1,11 +1,11 @@
-package util.actors
+package actors
 
 import akka.actor._
 import akka.testkit._
+import context.{IActorNames, IActorContextProvider, IActorContext}
 import org.scalatest._
 import org.scalatest.matchers.{ShouldMatchers, MustMatchers}
 import scala.concurrent.ExecutionContext.Implicits.global
-import globals.{IActors, IActorNames, IActorsProvider}
 
 
 class ValidatorActorSpec(_system: ActorSystem)
@@ -17,10 +17,10 @@ class ValidatorActorSpec(_system: ActorSystem)
 
   lazy val kitToPass: TestKit = this
 
-  object TestProvider extends IActorsProvider with IActorNames {
+  object TestProvider extends IActorContextProvider with IActorNames {
     lazy val validatorRef = TestActorRef(new ValidatorActor(global, TestProvider), name = validatorName)
 
-    def actors() = new TestActors(kitToPass) with IActors {
+    def actors() = new TestActors(kitToPass) with IActorContext {
       override def getActor(actorName: String): ActorRef = {
         if (validatorName == actorName)
           validatorRef
@@ -35,7 +35,7 @@ class ValidatorActorSpec(_system: ActorSystem)
   }
 
   import ValidatorActor._
-  import _root_.util.actors.fsm.CancellableMapFSMDomainProvider.domain._
+  import actors.fsm.CancellableMapFSMDomainProvider.domain._
 
   "StartValidation " should {
     "send Add" in {

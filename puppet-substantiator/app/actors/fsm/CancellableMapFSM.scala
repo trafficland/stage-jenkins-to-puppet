@@ -1,4 +1,4 @@
-package util.actors.fsm
+package actors.fsm
 
 import akka.actor.Cancellable
 import concurrent.duration._

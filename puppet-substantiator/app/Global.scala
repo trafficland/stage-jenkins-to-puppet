@@ -1,6 +1,6 @@
 
-import globals.playframework.ActorsProvider
-import ActorsProvider._
+import actors.context.playframework.ActorContextProvider
+import ActorContextProvider._
 import play.api._
 
 object Global extends GlobalSettings {

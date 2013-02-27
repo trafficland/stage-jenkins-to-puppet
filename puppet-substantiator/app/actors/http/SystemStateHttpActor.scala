@@ -1,23 +1,23 @@
-package util.actors.http
+package actors.http
 
 import akka.actor.Actor
 import spray.util.SprayActorLogging
 import spray.http._
 import HttpMethods._
 import spray.http._
-import globals._
 import spray.can.client.{DefaultHttpClient, HttpDialog}
 import spray.http.HttpRequest
 import models.mongo.reactive.ActorState
 import models.mongo.reactive.ActorStateDomain._
 import spray.json.{BasicFormats}
 import concurrent.ExecutionContext.Implicits.global
+import actors.context.{IActorNames, IActorContextProvider}
 
-class SystemStateHttpActor(provider: IActorsProvider, serviceUrl: String)
+class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
   extends Actor
   with SprayActorLogging with IActorNames with BasicFormats {
 
-  import util.actors.fsm.CancellableMapFSMDomainProvider.domain._
+  import actors.fsm.CancellableMapFSMDomainProvider.domain._
 
   val httpClient = DefaultHttpClient(provider.actors().system)
 

@@ -1,11 +1,11 @@
-package util.actors
+package actors
 
 import akka.testkit.TestKit
-import globals.IActors
+import context.IActorContext
 import akka.actor.ActorRef
 import org.scalatest.mock.MockitoSugar._
 
-case class TestActors(kit:TestKit) extends IActors {
+case class TestActors(kit:TestKit) extends IActorContext {
   override def system = kit.system
 
   override protected def getActorPath(actorName: String): String = system.toString + "/user/%s".format(actorName)

@@ -1,8 +1,8 @@
-package globals
+package actors.context
 
 import akka.actor._
 
-trait IActors {
+trait IActorContext {
   def ourlogger: org.slf4j.Logger
 
   def delayMilli: Int
@@ -16,8 +16,8 @@ trait IActors {
   def getActor(actorName: String): ActorRef
 }
 
-trait IActorsProvider {
-  def actors(): IActors
+trait IActorContextProvider {
+  def actors(): IActorContext
 }
 
 trait IActorNames{

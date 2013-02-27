@@ -1,8 +1,8 @@
-package util.actors.fsm
+package actors.fsm
 
 import akka.actor._
 import akka.actor.FSM
-import util.actors.fsm.BasicState.{IStateData, IState}
+import actors.fsm.BasicState.{IStateData, IState}
 import concurrent.duration._
 
 trait IMapFSMDomainProvider[T] {
@@ -63,6 +63,8 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
 
   protected def partialUnHandled: StateFunction = {
     {
+      case Event(SetTarget(ref), Todo(_, map)) =>
+        stay using Todo(ref, map)
       case Event(Status, Todo(ref, map)) =>
         ref.map(_ ! Batch(map))
         stay using Todo(ref, map)
