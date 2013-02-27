@@ -31,7 +31,7 @@ with IAppsRepositoryProvider {
       }
   }
 
-  def validate(name: String, delayMilliSeconds: Int) = Action {
+  def validate(name: String, delayQuerySeconds:Int, delayValidateSeconds:Int) = Action {
     Async {
       val httpResult = for {
         result <- repository.search(MongoSearchCriteria(BSONDocument("name" -> BSONString(name)), None, Some(Paging(0, 1))))
@@ -46,8 +46,8 @@ with IAppsRepositoryProvider {
           case Some(app) =>
             val validatorActorRef = actors().getActor(validatorName)
             //Offset timing so that Query and Updating have a shot to finish first before AppEvaluate Evaluates an Applications State
-            validatorActorRef ! StartValidation(delayMilliSeconds, QueryMachinesUpdateAppEvaluate(app, repository), actors().system)
-            validatorActorRef ! StartValidation(delayMilliSeconds + 60000, AppEvaluate(app, repository), actors().system)
+            validatorActorRef ! StartValidation(delayQuerySeconds, QueryMachinesUpdateAppEvaluate(app, repository), actors().system)
+            validatorActorRef ! StartValidation(delayValidateSeconds, AppEvaluate(app, repository), actors().system)
             Ok("Application found! Validation beginning for app: " + Json.toJson(app).toString() + "\n" +
               "This is the applications current state not the evaluation state!")
           case None =>

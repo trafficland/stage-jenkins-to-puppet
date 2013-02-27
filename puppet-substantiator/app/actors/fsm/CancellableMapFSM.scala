@@ -10,10 +10,10 @@ trait ICancellableMapFSMDomain {
 }
 
 trait ICancellableDelay extends Cancellable{
-  def delayMillisecond:Int
+  def delaySeconds:Int
 }
 
-case class CancellableDelay(override val delayMillisecond:Int,cancelObj:Cancellable) extends ICancellableDelay{
+case class CancellableDelay(override val delaySeconds:Int,cancelObj:Cancellable) extends ICancellableDelay{
   def isCancelled = cancelObj.isCancelled
 
   def cancel() {
@@ -26,7 +26,7 @@ object CancellableMapFSMDomainProvider extends IMapFSMDomainProvider[ICancellabl
 }
 
 class CancellableMapFSM
-(additionalTimeoutMilli: Int,
+(additionalTimeoutSeconds: Int,
  override val domain: MapFSMDomain[ICancellableDelay] with ICancellableMapFSMDomain = CancellableMapFSMDomainProvider.domain)
   extends MapFSM[ICancellableDelay](domain) {
 
@@ -44,7 +44,7 @@ class CancellableMapFSM
   }
 
   override def handelExtraAdd(key: String,obj:ICancellableDelay) {
-    setTimer(key, Cancel(key), obj.delayMillisecond + additionalTimeoutMilli millisecond, false)
+    setTimer(key, Cancel(key), obj.delaySeconds + additionalTimeoutSeconds seconds, false)
   }
 
   override def handelExtraRemove(key: String) {

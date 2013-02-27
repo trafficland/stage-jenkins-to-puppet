@@ -41,7 +41,7 @@ class ValidatorActorSpec(_system: ActorSystem)
     "send Add" in {
       lazy val actorRef = TestProvider.actors().getActor(validatorName)
       val test = TestEvaluate(false)
-      actorRef ! StartValidation(1000, test, system)
+      actorRef ! StartValidation(1, test, system)
       expectMsgType[Add]
       test.evaluate()
       test.state should be("pass")

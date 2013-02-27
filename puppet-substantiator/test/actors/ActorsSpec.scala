@@ -32,9 +32,9 @@ class ActorsSpec(_system: ActorSystem)
         val schedule = actors().getActor(scheduleName)
         val validator = actors().getActor(validatorName)
         schedule ! SetTarget(Some(testActor)) // initialize scheduler
-        validator ! StartValidation(60000, TestEvaluate(false, "test1"), system)
-        validator ! StartValidation(60000, TestEvaluate(true, "test2"), system)
-        validator ! StartValidation(60000, TestEvaluate(true, "test3"), system)
+        validator ! StartValidation(60, TestEvaluate(false, "test1"), system)
+        validator ! StartValidation(60, TestEvaluate(true, "test2"), system)
+        validator ! StartValidation(60, TestEvaluate(true, "test3"), system)
         val spin = (receiveWhile(2 seconds, 2 seconds) {
           case a: Any => a
         })

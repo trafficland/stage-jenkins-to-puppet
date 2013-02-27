@@ -13,7 +13,7 @@ object ValidatorActor {
 
   abstract class Validate[T](toBeEvaluated: IEvaluate[T]) extends IValidateMsg
 
-  case class StartValidation[T](delayMilli: Int, toBeEvaluated: IEvaluate[T], system: ActorSystem) extends Validate(toBeEvaluated)
+  case class StartValidation[T](delaySeconds: Int, toBeEvaluated: IEvaluate[T], system: ActorSystem) extends Validate(toBeEvaluated)
 
   case class TickValidation[T](toBeEvaluated: IEvaluate[T]) extends Validate(toBeEvaluated)
 
@@ -31,10 +31,10 @@ class ValidatorActor(execCtx: ExecutionContext,provider:IActorContextProvider) e
   lazy val scheduleMaintainer: ActorRef = provider.actors().getActor("scheduler")
 
   def receive = {
-    case StartValidation(delayMilli, eval, system) =>
+    case StartValidation(delaySeconds, eval, system) =>
       //dependent on evaluation name being unique
-      val cancel = system.scheduler.scheduleOnce(delayMilli milliseconds, self, TickValidation(eval))
-      scheduleMaintainer ! Add(eval.name, CancellableDelay(delayMilli, cancel))
+      val cancel = system.scheduler.scheduleOnce(delaySeconds seconds, self, TickValidation(eval))
+      scheduleMaintainer ! Add(eval.name, CancellableDelay(delaySeconds, cancel))
     case TickValidation(eval) =>
       scheduleMaintainer ! Remove(eval.name)
       eval.evaluate()

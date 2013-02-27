@@ -2,7 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /apps/validate/:name/:delay         controllers.AppsController.validate(name: String,delay: Int)
+GET     /apps/validate/:name/:delayQuery/:delayValidate         controllers.AppsController.validate(name: String,delayQuery: Int,delayValidate: Int)
 DELETE  /apps/validate/:name                controllers.AppsController.cancelValidation(name: String)
 GET     /apps/name/:name                    controllers.AppsController.name(name: String)
 GET     /apps                               controllers.AppsController.index

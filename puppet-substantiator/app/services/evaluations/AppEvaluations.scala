@@ -82,9 +82,9 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
       machine =>
         app.port match {
           case Some(realPort) =>
-            testMachine(app, machine.machineName, WS.url("http://%s:%s/%s".format(machine.machineName, realPort, app.testUrl)))
+            testMachine(app, machine.machineName, WS.url("http://%s:%s/%s".format(machine.machineName, realPort, filterOutImmediateForwardSlash(app.testUrl))))
           case None =>
-            testMachine(app, machine.machineName, WS.url("http://%s/%s".format(machine.machineName, app.testUrl)))
+            testMachine(app, machine.machineName, WS.url("http://%s/%s".format(machine.machineName, filterOutImmediateForwardSlash(app.testUrl))))
         }
     }
 
@@ -95,6 +95,15 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
       } yield (nowBool1 && nowBool2)
     )
     futOneBoolToPassFail(oneFutBool)
+  }
+
+  def filterOutImmediateForwardSlash(testUrl: String): String = {
+    testUrl.startsWith("/") match {
+      case true =>
+        testUrl.replaceFirst("/", "")
+      case false =>
+        testUrl
+    }
   }
 
   def futQueriesResultsToListOfFutureBools(futQueries: List[Future[Either[Option[App], Exception]]]): List[Future[Boolean]] = {

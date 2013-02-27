@@ -8,12 +8,14 @@ applicationName=${4?missing application name} #example proj1
 commaDelimitedMachineNameList=${5?mising comma delimmited machine list}
 versionExpected=${6?need expected value}
 applicationPortNumber=${7:-9000} #if this is a play app the default will be empty and the port # will be 9000
-isAliveAll=${8:-true}
-currentVersion=${9:-} #default none
-stageHome=${10:-'~/stage/'} #example ~/stage/
-extension=${11:-.zip} #default extension to zip
-extractCmd=${12:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
-validationDelayMilli=${13:-18000000} #30 minutes 1000 x 60 x 30
+validationQuerySeconds=${8:-360} #6 minutes 60*6
+validationValidateSeconds=${9:-600} #10 minutes
+isAliveAll=${10:-true}
+currentVersion=${11:-} #default none
+stageHome=${12:-'~/stage/'} #example ~/stage/
+extension=${13:-.zip} #default extension to zip
+extractCmd=${14:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
+
 
 # echo "$jenkinsJobName"
 # echo "$puppetAddress"
@@ -66,5 +68,5 @@ sleep 5
 
 sleep 5
 
-~/staging/validate "$validatorServiceUrl" "$applicationName" "$validationDelayMilli"
+~/staging/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
 #end validation service interaction

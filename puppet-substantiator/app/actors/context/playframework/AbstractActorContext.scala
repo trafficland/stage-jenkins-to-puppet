@@ -18,7 +18,7 @@ abstract class AbstractActorContext extends IActorContext with SprayCanHttpServe
   implicit lazy val configuration = play.api.Play.configuration
   lazy val ourlogger = logger
 
-  lazy val delayMilli = getOptionOrDefault(configuration.getInt("actor.schedule.delayMilli"), 1000)
+  lazy val delayMilli = getOptionOrDefault(configuration.getInt("actor.schedule.delaySeconds"), 1000)
 
   lazy val listeningInterface = getOptionOrDefault(configuration.getString("actor.httpServer.listeningInterface"), "127.0.0.1")
   lazy val listeningPort = getOptionOrDefault(configuration.getInt("actor.httpServer.listeningPort"), 64800)
