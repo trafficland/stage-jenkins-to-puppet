@@ -9,9 +9,9 @@ object Application extends Controller with GlobalSettings {
     Ok(AppInfo.version)
   }
 
-  def routes = Action {
+  def getRoutes = Action {
     req =>
-      onHandlerNotFound(req)
+      Ok(views.html.defaultpages.devNotFound.f)
   }
 
   def baseUrl = Action {
