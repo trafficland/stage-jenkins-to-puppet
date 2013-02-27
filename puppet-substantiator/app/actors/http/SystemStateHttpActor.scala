@@ -74,7 +74,7 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
         HttpDialog(httpClient, host, port)
           .send(
           HttpRequest(method = HttpMethods.POST,
-            uri = "save/actors",
+            uri = "/actors/save",
             headers =
               HttpHeaders.`Content-Type`(ContentType.`application/json`) :: Nil,
             entity = ent)
