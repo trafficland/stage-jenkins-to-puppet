@@ -72,7 +72,7 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends IAppEvaluate {
     //send email on pass?
   }
 
-  def name = app.name
+  def name = app.name + "Validate"
 
 }
 
@@ -142,7 +142,7 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
 
   def passAction(result: App) {}
 
-  def name = app.name
+  def name = app.name + "Query"
 
 
   def testMachine(appToUpdate: App, machineName: String, request: WS.WSRequestHolder): Future[Either[Option[App], Exception]] = {
