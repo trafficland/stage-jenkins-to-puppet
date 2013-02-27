@@ -71,7 +71,7 @@ object App extends IAppReadersWriters {
         "name" -> BSONString(entity.name),
         "expected" -> BSONString(entity.expected),
         "testUrl" -> BSONString(entity.testUrl),
-        "port" -> BSONString(entity.expected),
+        "port" -> entity.port.map(BSONString(_)),
         "actualCluster" -> bsonWriterAppMach.toBSONArray(entity.actualCluster)
       )
   }
