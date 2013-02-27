@@ -2,6 +2,7 @@ package controllers
 
 import play.api.mvc._
 import play.api.GlobalSettings
+import play.api._
 
 object Application extends Controller with GlobalSettings {
 
@@ -11,7 +12,7 @@ object Application extends Controller with GlobalSettings {
 
   def getRoutes = Action {
     req =>
-      Ok(views.html.defaultpages.devNotFound.f)
+      Ok(views.html.defaultpages.devNotFound(req, Play.maybeApplication.flatMap(_.routes)))
   }
 
   def baseUrl = Action {
