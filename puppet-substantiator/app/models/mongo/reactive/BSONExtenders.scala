@@ -1,6 +1,6 @@
 package models.mongo.reactive
 
-import reactivemongo.bson.{BSONObjectID, BSONDocument, BSONArray}
+import reactivemongo.bson.{BSONDocument, BSONArray}
 import reactivemongo.bson.handlers.{BSONWriter, BSONReader}
 
 trait IBSONWriterExtended[Model] extends BSONWriter[Model] {

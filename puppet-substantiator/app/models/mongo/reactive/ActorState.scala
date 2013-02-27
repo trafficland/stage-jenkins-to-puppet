@@ -26,7 +26,7 @@ trait IActorStateReadersWriters
   extends IReadersWriters[ActorState]
   with CollectionFormats with BasicFormats with DefaultJsonProtocol {
 
-  import ActorState._
+  import ActorStateDomain._
 
   override implicit val bsonReader = BSONReader
   override implicit val bsonWriter = BSONWriter
@@ -35,16 +35,12 @@ trait IActorStateReadersWriters
   implicit val criteriaReader = CriteriaReader
   implicit val uniqueCheckReader = UniqueCheckReader
 
-  implicit val jsonSprayFormat = jsonFormat4 {
-    (name: String, isAlive: Boolean, state: String, id: Option[String]) =>
-      ActorState(name, isAlive, state, id.map(b => BSONObjectID(b)))
-  }
-
+  implicit val jsonSprayFormat = MongoSprayFormats.ActoStateFormat
   implicit val stringBoolMapFormat = mapFormat[String, Boolean](StringJsonFormat, BooleanJsonFormat)
 
 }
 
-object ActorState extends IActorStateReadersWriters {
+object ActorStateDomain extends IActorStateReadersWriters {
 
   implicit object BSONReader extends IBSONReaderExtended[ActorState] {
     def fromBSON(document: BSONDocument) = {

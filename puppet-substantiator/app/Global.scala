@@ -2,7 +2,6 @@
 import globals.playframework.ActorsProvider
 import ActorsProvider._
 import play.api._
-import util.actors.{ScriptExecutorActor, fsm}
 
 object Global extends GlobalSettings {
   override def onStop(app: Application) {
@@ -10,9 +9,9 @@ object Global extends GlobalSettings {
   }
 
   override def onStart(app: Application) {
+    super.onStart(app)
     if (app.mode != Mode.Test) {
       actors().createActors()
     }
-    super.onStart(app)
   }
 }

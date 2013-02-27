@@ -29,7 +29,8 @@ object ApplicationBuild extends Build {
       "io.spray" % "spray-http" % spray,
       "io.spray" % "spray-util" % spray,
       "io.spray" % "spray-httpx" % spray,
-      "io.spray" %% "spray-json" % sprayJson
+      "io.spray" %% "spray-json" % sprayJson,
+      "play" %% "play-test" % play.core.PlayVersion.current
     )
   }
 

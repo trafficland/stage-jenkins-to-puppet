@@ -8,12 +8,16 @@ import util.actors.fsm.CancellableMapFSM
 import util.actors.http.SystemStateHttpActor
 import util.actors.{ScriptExecutorActor, ValidatorActor}
 import concurrent.ExecutionContext.Implicits._
-import scala.Some
 import globals._
-import spray.can.server.SprayCanHttpServerApp
+import spray.can.server.{HttpServer, ServerSettings, SprayCanHttpServerApp}
+import controllers.routes
+import play.api.mvc._
+import play.api.test.Helpers._
+import play.api.test.{FakeHeaders, FakeRequest}
+import concurrent.Await
+import concurrent.duration._
 
-
-abstract class AbstractActors extends IActors with SprayCanHttpServerApp {
+abstract class AbstractActors extends IActors with SprayCanHttpServerApp with Controller {
 
   implicit lazy val playApp = play.api.Play.current
   implicit lazy val configuration = play.api.Play.configuration
@@ -21,16 +25,23 @@ abstract class AbstractActors extends IActors with SprayCanHttpServerApp {
 
   lazy val delayMilli = getOptionOrDefault(configuration.getInt("actor.schedule.delayMilli"), 1000)
 
-  lazy val listeningInterface = getOptionOrDefault(configuration.getString("actor.httpServer.listeningInterface"),"127.0.0.1")
-  lazy val listeningPort = getOptionOrDefault(configuration.getInt("actor.httpServer.listeningPort"),64800)
+  lazy val listeningInterface = getOptionOrDefault(configuration.getString("actor.httpServer.listeningInterface"), "127.0.0.1")
+  lazy val listeningPort = getOptionOrDefault(configuration.getInt("actor.httpServer.listeningPort"), 64800)
 
   def createActors(): Unit = {
-    val scheduler= system.actorOf(Props(() => new CancellableMapFSM(delayMilli)).withDispatcher("akka.actor.default-dispatcher"), name = ActorsProvider.scheduleName)
-    system.actorOf(Props(() => new ValidatorActor(global, ActorsProvider)).withDispatcher("akka.actor.default-dispatcher"), name = ActorsProvider.validatorName)
-    system.actorOf(Props(() => new ScriptExecutorActor(logger = Some(logger))).withDispatcher("akka.actor.default-dispatcher"), name = ActorsProvider.scriptorName)
+    val dispatcherName = "akka.actor.default-dispatcher"
+    val scheduler = system.actorOf(Props(() => new CancellableMapFSM(delayMilli)).withDispatcher(dispatcherName), name = ActorsProvider.scheduleName)
+    system.actorOf(Props(() => new ValidatorActor(global, ActorsProvider)).withDispatcher(dispatcherName), name = ActorsProvider.validatorName)
+    system.actorOf(Props(() => new ScriptExecutorActor(logger = Some(logger))).withDispatcher(dispatcherName), name = ActorsProvider.scriptorName)
 
-    val httpActor = system.actorOf(Props[SystemStateHttpActor],name=ActorsProvider.httpServerName)
-    newHttpServer(httpActor) ! Bind(interface = listeningInterface, port = listeningPort)
+    val absUrl = getOptionOrDefault(configuration.getString("playBaseUrl"),"localhost:9000")
+    val httpActor = system.actorOf(Props(() =>
+      new SystemStateHttpActor(ActorsProvider, absUrl))
+      .withDispatcher(dispatcherName), name = ActorsProvider.httpStateHandlerName)
+
+    val server = newHttpServer(httpActor)
+    server ! HttpServer.Unbind
+    server ! Bind(interface = listeningInterface, port = listeningPort)
 
     import util.actors.fsm.CancellableMapFSMDomainProvider.domain._
     scheduler ! SetTarget(Some(httpActor)) // initialize scheduler
