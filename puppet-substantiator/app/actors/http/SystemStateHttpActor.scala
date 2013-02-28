@@ -43,7 +43,7 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String, 
       val cancel = provider.actors().system.scheduler.scheduleOnce(loopDelaySeconds seconds, self, Ping)
       provider.actors().getActor(scheduleName) ! Add(pollName, CancellableDelay(None, cancel))
       sender ! pollOnOff("on")
-    case HttpRequest(GET, "/actorHook/pollOf", _, _, _) =>
+    case HttpRequest(GET, "/actorHook/pollOff", _, _, _) =>
       provider.actors().getActor(scheduleName) ! Remove(pollName)
       sender ! pollOnOff("off")
     case Ping =>

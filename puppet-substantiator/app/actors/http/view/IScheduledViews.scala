@@ -8,9 +8,9 @@ trait IScheduledViews {
       entity = HttpBody(MediaTypes.`text/html`,
         <html>
           <body>
-            <h1>Actor Hook hit
+            <h1>Actor Hook
               <i>spray-can</i>
-              !</h1>
+            </h1>
             <p>Defined resources:</p>
             <ul>
               <li>
@@ -24,6 +24,9 @@ trait IScheduledViews {
               </li>
               <li>
                 <a href="/actorHook/pollOff">/actorHook/pollOff</a>
+              </li>
+              <li>
+                <a href="http://0.0.0.0:9000/actors">current state</a>
               </li>
             </ul>
           </body>
