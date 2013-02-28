@@ -25,6 +25,7 @@ DELETE  /machines/:id                       controllers.MachinesController.remov
 POST    /machines/uniqueCheck               controllers.MachinesController.uniqueCheck
 
 GET     /actors                             controllers.ActorsStateController.index
+DELETE  /actors                             controllers.ActorsStateController.deleteAll
 GET     /actors/:id                         controllers.ActorsStateController.get(id: String)
 GET     /actors/name/:name                  controllers.ActorsStateController.name(name: String)
 DELETE  /actors/name/:name                  controllers.ActorsStateController.deleteByName(name: String)

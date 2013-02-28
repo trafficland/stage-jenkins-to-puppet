@@ -62,6 +62,18 @@ abstract class RestController[TModel <: IMongoModel[TModel]]
     }
   }
 
+  def deleteAll() = Action {
+    Async {
+      for {
+        isOk <- repository.removeAll()
+      } yield {
+        if (isOk)
+          Status(204)
+        else InternalServerError
+      }
+    }
+  }
+
   def get(id: String) = Action {
     request =>
       Async {

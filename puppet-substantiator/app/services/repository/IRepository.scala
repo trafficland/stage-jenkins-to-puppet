@@ -27,6 +27,8 @@ trait IRepository[ID, TModel <: IModel[ID], Q] {
   def search(criteria: ISearchCriteria[Q])(implicit context: ExecutionContext): Future[ISearchResults[TModel]]
 
   def getByName(name: String)(implicit context: ExecutionContext): Future[Option[TModel]]
+
+  def removeAll()(implicit context: ExecutionContext): Future[Boolean]
 }
 
 trait IRepositoryProvider[ID, TModel <: IModel[ID], Q] {

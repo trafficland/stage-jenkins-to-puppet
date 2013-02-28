@@ -33,6 +33,9 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String, 
 
   val pollName = httpStateHandlerName + "poll"
 
+  def deleteAll() =
+    HttpDialog(httpClient, host, port).send(HttpRequest(method = HttpMethods.DELETE, uri = "/actors")).end
+
   def receive = {
     case HttpRequest(GET, "/actorHook/routes", _, _, _) =>
       sender ! routesView(host, port.toString)
@@ -101,4 +104,6 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String, 
 
   def deleteScheduled(map: Map[String, ICancellableDelay]) =
     HttpDialog(httpClient, host, port).send(HttpRequest(method = HttpMethods.DELETE, uri = "/actors/name/" + scheduleName)).end
+
+  deleteAll()
 }

@@ -130,6 +130,10 @@ abstract class MongoBaseRepository[TModel <: IMongoModel[TModel]]
     }
   }
 
+  def removeAll()(implicit context: ExecutionContext): Future[Boolean] = {
+    collection.remove(BSONDocument(), firstMatchOnly = false).map(_.ok)
+  }
+
   def searchSingle(criteria: ISearchCriteria[BSONDocument])(implicit context: ExecutionContext): Future[Option[TModel]] = {
     collection.find[TModel](QueryBuilder(Some(criteria.query), projectionDoc = projection)).headOption()
   }

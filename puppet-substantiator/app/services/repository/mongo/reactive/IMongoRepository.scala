@@ -30,6 +30,8 @@ trait IMongoRepository[MModel <: IMongoModel[MModel]]
 
   def searchSingle(criteria: ISearchCriteria[BSONDocument])(implicit context: ExecutionContext): Future[Option[MModel]]
 
+  def removeAll()(implicit context: ExecutionContext): Future[Boolean]
+
   override def getByName(name: String)(implicit context: ExecutionContext): Future[Option[MModel]] = {
     searchSingle(MongoSearchCriteria(BSONDocument("name" -> BSONString(name))))
   }
