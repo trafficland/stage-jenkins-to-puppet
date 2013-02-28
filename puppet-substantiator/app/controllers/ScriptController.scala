@@ -25,12 +25,12 @@ abstract class ScriptController extends Controller {
     }
   }
 
-  val puppetServerStageHome = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.home"),"~/stage")
-  val extension = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extension"),"~/.zip")
-  val puppetHostNameOrAddress= getOptionOrDefault(play.api.Play.configuration.getString("puppet.hostName"),"127.0.0.1")
-  val extractCommand = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extractCommand"),"unzip")
+  val puppetServerStageHome = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.home"), "~/stage")
+  val extension = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extension"), "~/.zip")
+  val puppetHostNameOrAddress = getOptionOrDefault(play.api.Play.configuration.getString("puppet.hostName"), "127.0.0.1")
+  val extractCommand = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extractCommand"), "unzip")
 
-  def rollBack(appName: String,appPortNumber:Int) = {
+  def rollBack(appName: String, appPortNumber: Int) = {
     Action {
       optScriptFileName match {
         case Some(scriptPathAndName) =>
@@ -55,7 +55,7 @@ abstract class ScriptController extends Controller {
                 |applicationPortNumber=${6?missing port number for application hosting}
               """
               actors().getActor(scriptorName) ! new Script(scriptPathAndName.replaceFirst(".", new File(".").getCanonicalPath()),
-                Seq(appName,puppetServerStageHome,extension,puppetHostNameOrAddress,extractCommand,appPortNumber.toString))
+                Seq(appName, puppetServerStageHome + "/" + appName, extension, puppetHostNameOrAddress, extractCommand, appPortNumber.toString))
               Ok("Execute Rollback script here!")
             case None =>
               InternalServerError("Script not Found!")
