@@ -6,4 +6,4 @@ sedRemoveAppArg="s/"$applicationName"-//g"
 #echo $sedRemoveAppArg
 result=$(basename "$pathToBase"*"$extension" $f | sed -e "$sedRemoveAppArg" | sed -e 's/.zip//g')
 echo $result
-exit $result
+exit

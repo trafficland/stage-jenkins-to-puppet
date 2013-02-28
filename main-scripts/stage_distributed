@@ -24,8 +24,8 @@ applicationNameNew=$applicationName'.new'$extension
 packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*$extension
 
 ####### PARSE VERSION NUMBER FROM PACKAGED FILE#####
-versionExpected=~/staging/getVersionNumber "$applicationName" /var/lib/jenkins/jobs/"$jenkinsJobName"/workspace/dist/
-echo 'VERSION EXPECTED PARSED!!--'"$versionExpected"'--!!!!!!!!!'
+versionExpected=~/staging/getVersionNumber "$applicationName" /var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/
+echo 'VERSION EXPECTED PARSED!! "$versionExpected"'
 ####### END EXTRACTION  ############
 
 #stagePath will combine the stageHome location to the subdirectory structure we want
