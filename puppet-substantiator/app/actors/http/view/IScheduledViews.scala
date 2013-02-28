@@ -19,6 +19,12 @@ trait IScheduledViews {
               <li>
                 <a href="/actorHook/scheduled">/actorHook/scheduled</a>
               </li>
+              <li>
+                <a href="/actorHook/pollOn">/actorHook/pollOn</a>
+              </li>
+              <li>
+                <a href="/actorHook/pollOff">/actorHook/pollOff</a>
+              </li>
             </ul>
           </body>
         </html>.toString))
