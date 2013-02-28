@@ -3,7 +3,11 @@ package actors.http.view
 import spray.http.{MediaTypes, HttpBody, StatusCodes, HttpResponse}
 
 trait IScheduledViews {
-  def routesView: HttpResponse = {
+  def routesView(host: String, statePort: String): HttpResponse = {
+    val stateHost = host match {
+      case "0.0.0.0" => "127.0.0.1"
+      case _ => host
+    }
     HttpResponse.apply(status = StatusCodes.Accepted,
       entity = HttpBody(MediaTypes.`text/html`,
         <html>
@@ -26,11 +30,11 @@ trait IScheduledViews {
                 <a href="/actorHook/pollOff">/actorHook/pollOff</a>
               </li>
               <li>
-                <a href="http://0.0.0.0:9000/actors">current state</a>
+                <a href="http://%s:%s/actors">current state</a>
               </li>
             </ul>
           </body>
-        </html>.toString))
+        </html>.toString.format(stateHost, statePort)))
   }
 
   def hookView: HttpResponse =

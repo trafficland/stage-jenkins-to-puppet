@@ -35,7 +35,7 @@ class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String, 
 
   def receive = {
     case HttpRequest(GET, "/actorHook/routes", _, _, _) =>
-      sender ! routesView
+      sender ! routesView(host, port.toString)
     case HttpRequest(GET, "/actorHook/scheduled", _, _, _) =>
       self ! Ping
       sender ! hookView
