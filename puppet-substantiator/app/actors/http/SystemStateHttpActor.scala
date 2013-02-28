@@ -10,78 +10,63 @@ import spray.http.HttpRequest
 import models.mongo.reactive.ActorState
 import models.mongo.reactive.ActorStateDomain._
 import spray.json.{BasicFormats}
-import concurrent.ExecutionContext.Implicits.global
 import actors.context.{IActorNames, IActorContextProvider}
-import actors.fsm.ICancellableDelay
+import actors.fsm.{CancellableDelay, ICancellableDelay}
+import concurrent.ExecutionContext.Implicits.global
+import concurrent.duration._
 
-class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String)
+class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String, loopDelaySeconds: Int = 4)
   extends Actor
-  with SprayActorLogging with IActorNames with BasicFormats {
+  with SprayActorLogging
+  with IActorNames with BasicFormats
+  with view.IScheduledViews
+  with view.IBasicViews {
 
   import actors.fsm.CancellableMapFSMDomainProvider.domain._
+
+  protected case object Ping
 
   val host = serviceUrl.split(':')(0)
   val port = serviceUrl.split(':')(1).toInt
 
   val httpClient = DefaultHttpClient(provider.actors().system)
 
+  val pollName = httpStateHandlerName + "poll"
+
   def receive = {
     case HttpRequest(GET, "/actorHook/routes", _, _, _) =>
-      sender ! HttpResponse.apply(status = StatusCodes.Accepted,
-        entity = HttpBody(MediaTypes.`text/html`,
-          <html>
-            <body>
-              <h1>Actor Hook hit
-                <i>spray-can</i>
-                !</h1>
-              <p>Defined resources:</p>
-              <ul>
-                <li>
-                  <a href="/actorHook/routes">/actorHook/routes</a>
-                </li>
-                <li>
-                  <a href="/actorHook/scheduled">/actorHook/scheduled</a>
-                </li>
-              </ul>
-            </body>
-          </html>.toString
-        ))
+      sender ! routesView
     case HttpRequest(GET, "/actorHook/scheduled", _, _, _) =>
+      self ! Ping
+      sender ! hookView
+    case HttpRequest(GET, "/actorHook/pollOn", _, _, _) =>
+      val cancel = provider.actors().system.scheduler.scheduleOnce(loopDelaySeconds seconds, self, Ping)
+      provider.actors().getActor(scheduleName) ! Add(pollName, CancellableDelay(None, cancel))
+      sender ! pollOnOff("on")
+    case HttpRequest(GET, "/actorHook/pollOf", _, _, _) =>
+      provider.actors().getActor(scheduleName) ! Remove(pollName)
+      sender ! pollOnOff("off")
+    case Ping =>
       provider.actors().getActor(scheduleName) ! Status
-      sender ! HttpResponse.apply(status = StatusCodes.Accepted,
-        entity = HttpBody(MediaTypes.`text/html`,
-          <html>
-            <body>
-              <h1>Actor Hook hit from
-                <i>spray-can</i>
-                !</h1>
-            </body>
-          </html>.toString
-        ))
-    case Batch(map) => handleScheduled(map)
+    case Batch(map) =>
+      handleScheduled(map)
     case _ =>
-      sender ! HttpResponse.apply(status = StatusCodes.Accepted,
-        entity = HttpBody(MediaTypes.`text/html`,
-          <html>
-            <body>
-              <h1>Actor Hook hit
-                <i>spray-can</i>
-                !</h1>
-              <p>Resource Not FOUND!!</p>
-            </body>
-          </html>.toString
-        ))
+      sender ! notFoundView
   }
 
+  //Real looping and Polling is happening between Ping and Batch where the decision to Ping again happens here
   def handleScheduled(map: Map[String, ICancellableDelay]) =
-    map.size > 0 match {
-      case true => saveScheduled(map)
-      case false => deleteScheduled(map)
-
+    !map.isEmpty match {
+      case true =>
+        if (map.contains(pollName))
+          provider.actors().system.scheduler.scheduleOnce(loopDelaySeconds seconds, self, Ping)
+        saveScheduled(map)
+      case false =>
+        deleteScheduled(map)
     }
 
   def saveScheduled(map: Map[String, ICancellableDelay]) = {
-    val state = map.map(m => (("{app:" + m._1 + ',' + "isCancelled:" + m._2.isCancelled + '}'))).toList.reduce(_ + "," + _)
+    val state = map.map(m => (("{itemScheduled:" + m._1 + ',' + "isCancelled:" + m._2.isCancelled + '}'))).toList.reduce(_ + "," + _)
     val ent = HttpEntity {
       Some {
         HttpBody(ContentType.`application/json`,

@@ -9,11 +9,12 @@ trait ICancellableMapFSMDomain {
 
 }
 
-trait ICancellableDelay extends Cancellable{
-  def delaySeconds:Int
+trait ICancellableDelay extends Cancellable {
+  def delaySeconds: Option[Int]
+
 }
 
-case class CancellableDelay(override val delaySeconds:Int,cancelObj:Cancellable) extends ICancellableDelay{
+case class CancellableDelay(override val delaySeconds: Option[Int], cancelObj: Cancellable) extends ICancellableDelay {
   def isCancelled = cancelObj.isCancelled
 
   def cancel() {
@@ -43,12 +44,16 @@ class CancellableMapFSM
     List(localPartialUnhandled, super.partialUnHandled) reduceLeft (_ orElse _)
   }
 
-  override def handelExtraAdd(key: String,obj:ICancellableDelay) {
-    setTimer(key, Cancel(key), obj.delaySeconds + additionalTimeoutSeconds seconds, false)
+  override def handelExtraAdd(key: String, obj: ICancellableDelay) {
+    obj.delaySeconds match {
+      case Some(delay) => setTimer(key, Cancel(key), delay + additionalTimeoutSeconds seconds, false)
+      case None =>
+    }
   }
 
   override def handelExtraRemove(key: String) {
-    cancelTimer(key)
+    if (timerActive_?(key))
+      cancelTimer(key)
   }
 }
 

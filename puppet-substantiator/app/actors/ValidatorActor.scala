@@ -34,7 +34,7 @@ class ValidatorActor(execCtx: ExecutionContext,provider:IActorContextProvider) e
     case StartValidation(delaySeconds, eval, system) =>
       //dependent on evaluation name being unique
       val cancel = system.scheduler.scheduleOnce(delaySeconds seconds, self, TickValidation(eval))
-      scheduleMaintainer ! Add(eval.name, CancellableDelay(delaySeconds, cancel))
+      scheduleMaintainer ! Add(eval.name, CancellableDelay(Some(delaySeconds), cancel))
     case TickValidation(eval) =>
       scheduleMaintainer ! Remove(eval.name)
       eval.evaluate()

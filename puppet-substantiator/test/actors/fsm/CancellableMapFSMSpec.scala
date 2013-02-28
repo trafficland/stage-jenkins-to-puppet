@@ -22,7 +22,7 @@ class CancellableMapFSMSpec(_system: ActorSystem)
 
   import localDomain._
 
-  def create(delay: Int) = CancellableDelay(delay, new Cancellable {
+  def create(delay: Int) = CancellableDelay(Some(delay), new Cancellable {
     var localCancel = false
 
     def isCancelled = localCancel

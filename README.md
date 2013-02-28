@@ -7,3 +7,15 @@ Substantiator is a PlayFramework application that will be used to validate deplo
 Current approach will have an expected deployment time, and if it is not finished in time it will be rolled back. Actors will handle the delay and execution of rollbacks to Controllers. 
 
 A rollback will execute another bash script to hit puppet master to push an old version via a manifest.
+
+
+
+
+Example to kick off a workflow:
+
+Staging Distributed
+
+"${path}"/stage_distributed jenkins-job-appName-stage somePuppetServer.com validationServiceIP:Port(127.0.0.1:9000) appName commaDelimitedListOfMachinesInstalledTo(ip1,ip2) expectedValue(a version number? 1.0) appNamesPortNUmber delayInSecondsToQueryMachines delayInSecondsToValidateMachines
+
+Real Example:
+~/staging/stage_distributed app1-stage puppet.foo.com 127.0.0.1:9000 app1 192.168.0.1,192.168.0.2 1.0.0-20130221-230300 8080 20 40
