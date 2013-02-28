@@ -1,11 +1,12 @@
 package actors.http.view
 
 import spray.http.{MediaTypes, HttpBody, StatusCodes, HttpResponse}
+import java.net.InetAddress
 
 trait IScheduledViews {
   def routesView(host: String, statePort: String): HttpResponse = {
     val stateHost = host match {
-      case "0.0.0.0" => "127.0.0.1"
+      case "0.0.0.0" => InetAddress.getLocalHost.getHostAddress
       case _ => host
     }
     HttpResponse.apply(status = StatusCodes.Accepted,
