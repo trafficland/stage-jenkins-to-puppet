@@ -65,7 +65,7 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends IAppEvaluate {
     futFailPass
   }
 
-  def failAction(result: App) = Redirect(routes.ScriptController.rollBack(result.name))
+  def failAction(result: App) = Redirect(routes.ScriptController.rollBack(result.name,result.port.getOrElse("80").toInt))
 
 
   def passAction(result: App) {

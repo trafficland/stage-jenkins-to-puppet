@@ -36,7 +36,7 @@ PUT     /actors/:id                         controllers.ActorsStateController.ed
 DELETE  /actors/:id                         controllers.ActorsStateController.remove(id: String)
 POST    /actors/uniqueCheck                 controllers.ActorsStateController.uniqueCheck
 
-GET     /rollback/:appName                  controllers.ScriptController.rollBack(appName: String)
+GET     /rollback/:appName/:appPort                  controllers.ScriptController.rollBack(appName: String,appPort: Int)
 
 #############################################################################################
 # Actor Hooks #NOT ROUTING
