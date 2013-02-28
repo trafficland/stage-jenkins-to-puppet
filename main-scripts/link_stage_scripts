@@ -1,5 +1,5 @@
 rootOfStageJenkins=${1?need to know where scripts are!}
-whereToLink={$2?need where to link to!}
+whereToLink=${2?need where to link to!}
 
 #tester='ln -s '"$rootOfStageJenkins"'/stage-jenkins-to-puppet/main-scripts/stage '"$whereToLink"
 #echo "$tester"
