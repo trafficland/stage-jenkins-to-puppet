@@ -9,4 +9,5 @@ ln -s "$rootOfStageJenkins"'/stage-jenkins-to-puppet/main-scripts/stage_distribu
 ln -s "$rootOfStageJenkins"'/stage-jenkins-to-puppet/main-scripts/save_app '"$whereToLink"
 ln -s "$rootOfStageJenkins"'/stage-jenkins-to-puppet/main-scripts/save_machine '"$whereToLink"
 ln -s "$rootOfStageJenkins"'/stage-jenkins-to-puppet/main-scripts/validate '"$whereToLink"
+ln -s "$rootOfStageJenkins"'/stage-jenkins-to-puppet/main-scripts/getVersionNumber '"$whereToLink"
 ln -s "$rootOfStageJenkins"'/stage-jenkins-to-puppet/main-scripts/runInSSH/createdFromTemplate/stage_remote.sh '"$whereToLink"
