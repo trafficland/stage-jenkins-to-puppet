@@ -11,26 +11,26 @@ trait IMapFSMDomainProvider[T] {
 
 class MapFSMDomain[V] {
 
-  // received events
-  case class SetTarget(ref: Option[ActorRef])
+  trait IEvent
 
-  case class Add(key: String, value: V)
+  trait IOutPut
 
-  case class Remove(key: String)
+  case class SetTarget(ref: Option[ActorRef]) extends IEvent
 
-  case object Flush
+  case class Add(key: String, value: V) extends IEvent
 
-  case object Status
+  case class Remove(key: String) extends IEvent
 
-  // sent events
-  case class Batch(multiple: Map[String, V])
+  case object Flush extends IEvent
 
-  // states
+  case object Status extends IEvent
+
+  case class Batch(multiple: Map[String, V]) extends IOutPut
+
   case object Idle extends IState
 
   case object Active extends IState
 
-  //state data
   case object Uninitialized extends IStateData
 
   case class Todo(target: Option[ActorRef], map: Map[String, V]) extends IStateData
@@ -48,8 +48,6 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
       stay using Todo(ref, Map.empty[String, T])
   }
 
-
-  // transition elided ...
   when(Active, stateTimeout = 1 second) {
     case Event(Flush, t: Todo) =>
       goto(Idle) using t.copy(map = Map.empty[String, T])
@@ -92,8 +90,6 @@ abstract class MapFSM[T](val domain: MapFSMDomain[T]) extends Actor with FSM[ISt
     }
   }
 
-  // unhandled elided ...
-  // takes care of all state action events
   whenUnhandled(_partialUnhandled)
 
   initialize

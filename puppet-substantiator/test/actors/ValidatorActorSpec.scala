@@ -2,7 +2,7 @@ package actors
 
 import akka.actor._
 import akka.testkit._
-import context.{IActorNames, IActorContextProvider, IActorContext}
+import context.{ActorNames, IActorContextProvider, IActorContext}
 import org.scalatest._
 import org.scalatest.matchers.{ShouldMatchers, MustMatchers}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -11,13 +11,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ValidatorActorSpec(_system: ActorSystem)
   extends TestKit(_system) with ImplicitSender
   with WordSpec with MustMatchers with BeforeAndAfterAll
-  with BeforeAndAfter with ShouldMatchers with IActorNames {
+  with BeforeAndAfter with ShouldMatchers with ActorNames {
 
   def this() = this(ActorSystem("ValidatorActorSpec"))
 
   lazy val kitToPass: TestKit = this
 
-  object TestProvider extends IActorContextProvider with IActorNames {
+  object TestProvider extends IActorContextProvider with ActorNames {
     lazy val validatorRef = TestActorRef(new ValidatorActor(global, TestProvider), name = validatorName)
 
     def actors() = new TestActors(kitToPass) with IActorContext {

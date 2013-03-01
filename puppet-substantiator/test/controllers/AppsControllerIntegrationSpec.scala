@@ -33,10 +33,10 @@ class AppsControllerIntegrationSpec
   ("Validation" should {
 
     "validate should return ok" in new ICleanDatabase {
-      val entity = createValidEntity
-      val request = new FakeRequest(GET, "/%s/validate/%s/%s".format(collectionName, "app199", 5000),
-        FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
       createRunningApp(testName) {
+        val entity = createValidEntity
+        val request = new FakeRequest(GET, "/%s/validate/%s/%s/%s".format(collectionName, "app199", 5000, 5000),
+          FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), "")
         Await.result(db(collectionName).insert[App](entity), timeoutSeconds * 2)
         val result = checkForAsyncResult(route(request).get)
         status(result) must be equalTo OK

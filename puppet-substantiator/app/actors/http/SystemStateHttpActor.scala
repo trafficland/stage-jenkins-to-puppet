@@ -10,7 +10,7 @@ import spray.http.HttpRequest
 import models.mongo.reactive.ActorState
 import models.mongo.reactive.ActorStateDomain._
 import spray.json.{BasicFormats}
-import actors.context.{IActorNames, IActorContextProvider}
+import actors.context.{ActorNames, IActorContextProvider}
 import actors.fsm.{CancellableDelay, ICancellableDelay}
 import concurrent.ExecutionContext.Implicits.global
 import concurrent.duration._
@@ -18,7 +18,7 @@ import concurrent.duration._
 class SystemStateHttpActor(provider: IActorContextProvider, serviceUrl: String, loopDelaySeconds: Int = 4)
   extends Actor
   with SprayActorLogging
-  with IActorNames with BasicFormats
+  with ActorNames with BasicFormats
   with view.IScheduledViews
   with view.IBasicViews {
 

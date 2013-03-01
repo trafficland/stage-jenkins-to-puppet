@@ -20,7 +20,7 @@ trait IActorContextProvider {
   def actors(): IActorContext
 }
 
-trait IActorNames{
+trait ActorNames{
   val scriptorName = "scriptor"
   val scheduleName = "scheduler"
   val validatorName = "validator"

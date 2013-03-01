@@ -10,7 +10,7 @@ import play.api.Logger._
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait IAppEvaluate extends IEvaluate[App] {
+trait AbstractAppEvaluate extends IEvaluate[App] {
   def handleFuturePassFail(futFailPass: Future[PassFail]) = {
     for {
       failPass <- futFailPass
@@ -26,7 +26,7 @@ trait IAppEvaluate extends IEvaluate[App] {
   }
 }
 
-case class AppEvaluate(app: App, repo: IAppsRepository) extends IAppEvaluate {
+case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvaluate {
   def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] = {
     val futFailPass = app.id match {
       case Some(id) =>
@@ -76,7 +76,7 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends IAppEvaluate {
 
 }
 
-case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) extends IAppEvaluate {
+case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvaluate {
   def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] = {
     val futQueries = app.actualCluster.map {
       machine =>

@@ -7,10 +7,10 @@ import models.Model._
 import models.json.{IWritesExtended, IReadsExtended}
 
 /*
-Hybrid Mongo Schema of Embedded to Normalized , normalizing machines for deal with updating independent
-machine state - ie machine isAlive.
-
-If machine is dead or has undesired state and application will remove that machine (AppMachineState) from its cluster
+Hybrid Mongo Schema of Embedded to Normalized
+- normalizing machines for dealing with updating independent
+      - machine state - ie machine isAlive.
+- non normalized this class being the actual current state of an application on a machine!
  */
 case class AppMachineState(val machineName: String, val actual: Option[String] = None)
 

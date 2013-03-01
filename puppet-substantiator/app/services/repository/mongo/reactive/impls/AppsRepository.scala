@@ -32,9 +32,6 @@ abstract class AppsRepository
     } yield (optionalApp)
   }
 
-  /*
-  Creation is mostly like other repos except this is checking for an existing machine
-   */
   override def create(entity: App)(implicit context: ExecutionContext): Future[Either[Option[App], Exception]] =
     ifMachinesExistExecute(entity,
       (ent: App) =>

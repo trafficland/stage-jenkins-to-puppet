@@ -11,7 +11,7 @@ object ApplicationBuild extends Build {
 
     object V {
       val spray = "1.1-M7"
-      val sprayJson="1.2.3"
+      val sprayJson = "1.2.3"
       val reactiveMongo = "0.8"
       val scalaTest = "2.0.M5b"
       val mockito = "1.9.0"
@@ -78,7 +78,8 @@ object ApplicationBuild extends Build {
     parallelExecution in Test := false,
     parallelExecution in IntTests := false,
     parallelExecution in AllTests := false,
-    javaOptions in Runtime += "-Dconfig.file=conf/test.conf"
+    javaOptions in Runtime += "-Dconfig.file=conf/test.conf",
+    resourceDirectory in Compile <<= baseDirectory { _ / "resource" }
 
   )
   //    .dependsOn(gitHubDependencies: _*)

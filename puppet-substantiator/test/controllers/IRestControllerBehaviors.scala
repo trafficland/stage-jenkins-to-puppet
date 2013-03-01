@@ -34,15 +34,6 @@ trait IRestControllerBehaviors[TModel <: IMongoModel[TModel]]
 
   def collectionName: String
 
-  //  def search(criteria: JsValue): Future[(Int, List[TModel])] = {
-  //    url("http://localhost:%s/%s/search".format(serverPort, entityName)).post(criteria) map { response =>
-  //      val json = response.json
-  //      val resultCount = (json \ "resultCount").as[Int]
-  //      val results = (json \ "results").as[JsArray].value.map(_.as[TModel]).toList
-  //      (resultCount, results)
-  //    }
-  //  }
-
   trait ICleanDatabase extends After {
     def after =
       Await.result(db.collection(collectionName).remove(BSONDocument(), firstMatchOnly = false), FiniteDuration(10, "seconds"))

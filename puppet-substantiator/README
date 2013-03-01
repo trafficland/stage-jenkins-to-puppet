@@ -1,4 +1,8 @@
-This is your new Play 2.1 application
-=====================================
+# puppet-substantiator
 
-This file will be packaged with your application, when using `play dist`.
+## Prerequisites for integration tests:
+* Running MongoDB prior to testing
+
+## Prerequisites for "live" instance/interaction testing:
+* JDK 1.7+
+* MongoDB 2.2+

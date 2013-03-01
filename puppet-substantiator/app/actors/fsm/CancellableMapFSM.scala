@@ -37,7 +37,7 @@ class CancellableMapFSM
   override protected def partialUnHandled: StateFunction = {
     val localPartialUnhandled: StateFunction = {
       case Event(Cancel(key), Todo(ref, currentMap)) =>
-        cancelTimer(key) //if called directly and before a timer
+        cancelTimer(key)
         currentMap(key).cancel()
         goto(Active) using Todo(ref, currentMap - key)
     }

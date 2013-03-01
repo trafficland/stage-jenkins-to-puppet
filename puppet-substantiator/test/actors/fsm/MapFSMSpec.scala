@@ -95,14 +95,14 @@ class AnyMapFSMSpec(_system: ActorSystem)
       val fsm = initialize()
       fsm ! Add("test1", 1)
       fsm ! Remove("test1")
+      getStateMap(fsm)(localDomain).size should be(0)
       fsm.stateName should be(Idle)
-      getStateMap(fsm)(localDomain).size should be(1)
     }
     "a single remove from an empty map should not fail in idle" in {
       val fsm = initialize()
       fsm ! Remove("test1")
-      fsm.stateName should be(Idle)
       getStateMap(fsm)(localDomain).size should be(0)
+      fsm.stateName should be(Idle)
     }
     "multiple removes byond the map size should not fail and go to idle" in {
       val fsm = initialize()
@@ -121,13 +121,14 @@ class AnyMapFSMSpec(_system: ActorSystem)
       getStateMap(fsm)(localDomain).size should be(50)
     }
 
-    "then flushbe handled and back to idle" in {
+    "flush should move fsm to idle" in {
       val fsm = initialize()
       createAndInject(50, fsm)
       fsm.stateName should be(Active)
       getStateMap(fsm)(localDomain).size should be(50)
       fsm ! Flush
       getStateMap(fsm)(localDomain).size should be(0)
+      fsm.stateName should be(Idle)
     }
   }
 }

@@ -1,7 +1,6 @@
 package controllers
 
 import org.specs2.mutable._
-
 import play.api.test._
 import play.api.test.Helpers._
 import _root_.util.IPlaySpecHelper
@@ -33,19 +32,25 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
 
   import ScriptControllerFactory._
 
+  override lazy val testName = "test-akka-mock"
+
   "ScriptController" should {
 
     "send 200 config script hosted controller" in {
       createRunningApp(testName) {
-        val result = route(FakeRequest(GET, """/rollback/"appName"""")).get
-        status(result) must equalTo(OK)
-        contentAsString(result) must contain("Execute Rollback script here!")
+        val optResult = route(FakeRequest(GET, "/rollback/appName/8080"))
+        optResult match {
+          case Some(result) => status(result) must equalTo(OK)
+          contentAsString(result) must contain("Execute Rollback script here!")
+          case None =>
+            "have result" must beEqualTo("no result")
+        }
       }
       "send 500 missing script" in {
         createRunningApp(testName) {
           val mockController = create(None)
-          val action = mockController.rollBack("appName")
-          val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))
+          val action = mockController.rollBack("appName", 8080)
+          val result = checkForAsyncResult(action.apply(FakeRequest(GET, "/rollback/appName/8080")))
 
           status(result) must equalTo(INTERNAL_SERVER_ERROR)
           contentAsString(result) must equalTo("No script defined to look up!")
@@ -55,8 +60,8 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
       "send 500 missing wrong script" in {
         createRunningApp(testName) {
           val mockController = create(Some("oops"))
-          val action = mockController.rollBack("appName")
-          val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))
+          val action = mockController.rollBack("appName", 8080)
+          val result = checkForAsyncResult(action.apply(FakeRequest(GET, "/rollback/appName/8080")))
           status(result) must equalTo(INTERNAL_SERVER_ERROR)
           contentAsString(result) must equalTo("Script not Found!")
         }
@@ -64,8 +69,8 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
       "send 200 config script correct" in {
         createRunningApp(testName) {
           val mockController = create(None, true)
-          val action = mockController.rollBack("appName")
-          val result = checkForAsyncResult(action.apply(FakeRequest(GET, """/rollback/"appName"""")))
+          val action = mockController.rollBack("appName", 8080)
+          val result = checkForAsyncResult(action.apply(FakeRequest(GET, "/rollback/appName/8080")))
           status(result) must equalTo(OK)
           contentAsString(result) must equalTo("Execute Rollback script here!")
         }

@@ -77,14 +77,14 @@ class CancellableMapFSMSpec(_system: ActorSystem)
       val fsm = initialize()
       fsm ! Add("test1", create(5000))
       fsm ! Remove("test1")
+      getStateMap(fsm)(localDomain).size should be(0)
       fsm.stateName should be(Idle)
-      getStateMap(fsm)(localDomain).size should be(1)
     }
     "a single remove from an empty map should not fail in idle" in {
       val fsm = initialize()
       fsm ! Remove("test1")
-      fsm.stateName should be(Idle)
       getStateMap(fsm)(localDomain).size should be(0)
+      fsm.stateName should be(Idle)
     }
     "multiple removes byond the map size should not fail and go to idle" in {
       val fsm = initialize()
@@ -103,13 +103,14 @@ class CancellableMapFSMSpec(_system: ActorSystem)
       getStateMap(fsm)(localDomain).size should be(200)
     }
 
-    "then flush should be handled and goes back to idle" in {
+    "flush put fsm back to idle" in {
       val fsm = initialize()
       createAndInject(200, fsm)
       fsm.stateName should be(Active)
       getStateMap(fsm)(localDomain).size should be(200)
       fsm ! Flush
       getStateMap(fsm)(localDomain).size should be(0)
+      fsm.stateName should be(Idle)
     }
   }
 }

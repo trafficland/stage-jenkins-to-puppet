@@ -1,13 +1,9 @@
 package actors
 
-import akka.actor.{Props, Actor}
+import akka.actor.Actor
 import sys.process._
 import org.slf4j.Logger
 
-/*
-Likley to be a IO actor to execute scripts
-Scripts to be stored on File system or mongo db? Only a read operation so FS could be ok
- */
 object ScriptExecutorActor {
 
   case class Script(fileName: String, args: Seq[String])
