@@ -26,7 +26,7 @@ abstract class ScriptController extends Controller {
   }
 
   val puppetServerStageHome = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.home"), "~/stage/")
-  val extension = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extension"), "~/.zip")
+  val extension = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extension"), ".zip")
   val puppetHostNameOrAddress = getOptionOrDefault(play.api.Play.configuration.getString("puppet.hostName"), "127.0.0.1")
   val extractCommand = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extractCommand"), "unzip")
 
