@@ -1,4 +1,4 @@
-package util
+package util.playframework
 
 import java.io.File
 import play.api.Configuration
@@ -23,23 +23,21 @@ trait IPlaySpecHelper {
 
   def timeoutSeconds = 10 seconds
 
-  def createRunningApp[T](configLocation: String = "")(run: => T): T = {
+  def createFakeApp(configLocation: String = ""): FakeApplication =
     configLocation match {
-      case "" => running(FakeApplication())(run)
-      case "test" => running(new FakeApplication() with ITestConfig {
+      case "" => FakeApplication()
+      case "test" => new FakeApplication() with ITestConfig {
         override def configuration: Configuration =
           super.configuration ++ Configuration(ConfigFactory.parseFile(new File("conf/test.conf")))
-
-      })(run)
-      case "test-akka-mock" => running(new FakeApplication() with ITestConfig {
+      }
+      case "test-akka-mock" => new FakeApplication() with ITestConfig {
         override def configuration: Configuration =
           super.configuration ++ Configuration(ConfigFactory.parseFile(new File("conf/test-akka-mock.conf")))
 
-      })(run)
-      case s: String => running(FakeApplication(new File(s)))(run)
-      case _ => running(FakeApplication())(run)
+      }
+      case s: String => FakeApplication(new File(s))
+      case _ => FakeApplication()
     }
-  }
 
   def resultToStatusContentTupleJsonErrors(anyResult: Result): (Int, Boolean) = {
     val result = checkForAsyncResult(anyResult)

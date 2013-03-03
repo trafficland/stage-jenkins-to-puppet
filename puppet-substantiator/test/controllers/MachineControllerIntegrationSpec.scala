@@ -16,7 +16,7 @@ class MachineControllerIntegrationSpec
       index =>
         new Machine("name%d".format(index))
     }
-    db(collectionName).insert[Machine](Enumerator(entities: _*))
+    collection(collectionName).insert[Machine](Enumerator(entities: _*))
   }
 
   def createValidEntity: Machine = new Machine("test1")
@@ -37,14 +37,12 @@ class MachineControllerIntegrationSpec
       val entity = createValidEntity
       val request = new FakeRequest(POST, "/%s".format(collectionName),
         FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
-      createRunningApp(testName) {
         val result = checkForAsyncResult(route(request).get)
         status(result) should be equalTo (OK)
         val content = contentAsString(result)
         val machine = jsonReader.reads(Json.parse(content)).get
         Json.stringify(jsonWriter.writes(machine.copy(id = None))) shouldEqual ("""{"name":"test1","isAlive":true}""")
         resultToFieldComparison(result, "_id", entity.id.get.stringify) should be equalTo true
-      }
     }
   }) :: baseShould
 

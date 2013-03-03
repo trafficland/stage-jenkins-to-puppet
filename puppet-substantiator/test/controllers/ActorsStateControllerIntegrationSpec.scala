@@ -16,7 +16,7 @@ class ActorsStateControllerIntegrationSpec
       index =>
         new ActorState("test%d".format(index), true, "state")
     }
-    db(collectionName).insert[ActorState](Enumerator(entities: _*))
+    collection(collectionName).insert[ActorState](Enumerator(entities: _*))
   }
 
   def createValidEntity = new ActorState("test1", true, "state")
@@ -37,7 +37,6 @@ class ActorsStateControllerIntegrationSpec
       val entity = createValidEntity
       val request = new FakeRequest(POST, "/%s".format(collectionName),
         FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
-      createRunningApp(testName) {
         val result = checkForAsyncResult(route(request).get)
         status(result) should be equalTo (OK)
         val content = contentAsString(result)
@@ -45,9 +44,7 @@ class ActorsStateControllerIntegrationSpec
         Json.stringify(jsonWriter.writes(machine.copy(id = None)))
           .shouldEqual( """{"name":"test1","isAlive":true,"state":"state"}""")
         resultToFieldComparison(result, "_id", entity.id.get.stringify) should be equalTo true
-      }
     }
   }) :: baseShould
-
 }
 

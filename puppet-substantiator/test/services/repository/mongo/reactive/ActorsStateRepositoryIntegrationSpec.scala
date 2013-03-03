@@ -26,7 +26,7 @@ class ActorsStateRepositoryIntegrationSpec
   }
 
   "searching for actor by name " should {
-    "not find actor with empty db" in {
+    "not find actor with empty collection" in {
       val entity = createEntity
       val result = Await.result(repository.getByName(entity.name), 5 seconds)
       result.isEmpty should equal(true)

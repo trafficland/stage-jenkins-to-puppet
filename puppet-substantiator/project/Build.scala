@@ -58,17 +58,22 @@ object ApplicationBuild extends Build {
     },
     testOptions in Test := Seq(
       Tests.Setup {
-        () => System.setProperty("config.file", "conf/test.conf")
+        () =>
+          System.setProperty("config.file", "conf/test.conf")
+          System.setProperty("http.port", "19007")
       },
       Tests.Filter(s => databaseIndependentSpecsFilter(s))),
     testOptions in IntTests := Seq(
       Tests.Setup {
-        () => System.setProperty("config.file", "conf/test.conf")
+        () =>
+          System.setProperty("config.file", "conf/test.conf")
+          System.setProperty("http.port", "19007")
       },
       Tests.Filter(s => databaseDependentSpecsFilter(s))),
     testOptions in AllTests := Seq(
       Tests.Setup {
         () => System.setProperty("config.file", "conf/test.conf")
+        System.setProperty("http.port", "19007")
       },
       Tests.Filter(s => allSpecsFilter(s))
     ),
@@ -79,7 +84,9 @@ object ApplicationBuild extends Build {
     parallelExecution in IntTests := false,
     parallelExecution in AllTests := false,
     javaOptions in Runtime += "-Dconfig.file=conf/test.conf",
-    resourceDirectory in Compile <<= baseDirectory { _ / "resource" }
+    resourceDirectory in Compile <<= baseDirectory {
+      _ / "resource"
+    }
 
   )
   //    .dependsOn(gitHubDependencies: _*)

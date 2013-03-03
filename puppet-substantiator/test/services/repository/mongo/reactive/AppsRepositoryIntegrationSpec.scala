@@ -22,7 +22,7 @@ class AppsRepositoryIntegrationSpec
 
 
   before {
-    Await.result(machineRepoHelper.createEntities(2), 10 seconds)
+    Await.result(machineCreator.createEntities(2), 10 seconds)
   }
   after {
     machineRepoHelper.clean()

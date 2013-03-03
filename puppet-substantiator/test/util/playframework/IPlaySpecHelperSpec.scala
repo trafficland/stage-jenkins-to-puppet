@@ -1,4 +1,4 @@
-package util
+package util.playframework
 
 import org.specs2.mutable._
 import play.api.mvc._
