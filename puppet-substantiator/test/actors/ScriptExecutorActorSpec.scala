@@ -1,5 +1,6 @@
 package actors
 
+import _root_.util.playframework.{LiveTestServer, IPlaySpecHelper}
 import akka.actor._
 import akka.testkit._
 import org.scalatest._
@@ -10,18 +11,19 @@ import org.mockito.Mockito._
 import org.mockito._
 import scala.concurrent._
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.Some
+import controllers.ScriptController
 
 class ScriptExecutorActorSpec(_system: ActorSystem)
   extends TestKit(_system) with ImplicitSender
   with WordSpec with MustMatchers with BeforeAndAfterAll
-  with BeforeAndAfter with ShouldMatchers {
+  with BeforeAndAfter with ShouldMatchers with IPlaySpecHelper with LiveTestServer {
 
   def this() = this(ActorSystem("ScriptExecutorActorSpec"))
 
   override def afterAll {
     system.shutdown()
+    stopServer()
   }
 
   import ScriptExecutorActor._
@@ -65,7 +67,7 @@ class ScriptExecutorActorSpec(_system: ActorSystem)
 
       val actorRef = initialize(log)
       val path = new java.io.File(".").getCanonicalPath
-      actorRef.receive(Script(path + "/test/resources/test.sh", Seq("someApp")))
+      actorRef.receive(ScriptURL(new java.net.URL(ScriptController.urlToScript), Seq("someApp")))
 
       val test = Await.result(future {
         Thread.sleep(2000)

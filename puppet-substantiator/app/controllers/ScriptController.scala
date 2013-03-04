@@ -8,19 +8,35 @@ import ScriptExecutorActor._
 import _root_.util.OptionHelper.getOptionOrDefault
 import actors.context.playframework.ActorContextProvider
 import ActorContextProvider._
+import util.PlaySettings
+import PlaySettings._
+import java.net.URL
+import play.api.test.Helpers._
+import play.api.test.FakeRequest
 
 /*
 End point to call IO Actor to run scripts
  */
 abstract class ScriptController extends Controller {
+  implicit val app = play.api.Play.current
 
-  lazy val optScriptFileName = {
-    try {
-      Some(getOptionOrDefault(play.api.Play.configuration.getString("script.file.location.rollback"),
-        "./private/scripts/rollback.sh"))
-    }
-    catch {
-      case ex: Exception =>
+  lazy val scriptPathAndName =
+    getOptionOrDefault(play.api.Play.configuration.getString("script.file.location.rollback"),
+      "/assets/scripts/rollback_remote.sh")
+
+  lazy val urlToScript = "http://" + absUrl + scriptPathAndName
+
+  lazy val optScriptExists = {
+    route(FakeRequest(GET, scriptPathAndName)) match {
+      case Some(result) =>
+        val stat = status(result)
+        stat match {
+          case OK =>
+            Some(scriptPathAndName)
+          case _ =>
+            None
+        }
+      case None =>
         None
     }
   }
@@ -32,36 +48,22 @@ abstract class ScriptController extends Controller {
 
   def rollBack(appName: String, appPortNumber: Int) = {
     Action {
-      optScriptFileName match {
-        case Some(scriptPathAndName) =>
-          val someFile = try {
-            val s = Source.fromFile(scriptPathAndName)
-            s.getLines()
-            Some(scriptPathAndName)
-          }
-          catch {
-            case ex: Exception =>
-              None
-          }
-          someFile match {
-            case Some(file) =>
-              """
-                RollBackScript Required Args
-                applicationName=${1?missing application name}
-                |stagePath=${2?missing stage path}
-                |extension=${3?missing extension}
-                |destinationAddress=${4?missing destination address}
-                |extractCmd=${5?missing extraction command like "unzip"}
-                |applicationPortNumber=${6?missing port number for application hosting}
-              """
-              actors().getActor(scriptorName) ! new Script(scriptPathAndName.replaceFirst(".", new File(".").getCanonicalPath()),
-                Seq(appName, puppetServerStageHome + appName + "/", extension, puppetHostNameOrAddress, extractCommand, appPortNumber.toString))
-              Ok("Execute Rollback script here!")
-            case None =>
-              InternalServerError("Script not Found!")
-          }
+      optScriptExists match {
+        case Some(workingLocation) =>
+          """
+              RollBackScript Required Args
+            |applicationName=${1?missing application name}
+            |stagePath=${2?missing stage path}
+            |extension=${3?missing extension}
+            |destinationAddress=${4?missing destination address}
+            |extractCmd=${5?missing extraction command like "unzip"}
+            |applicationPortNumber=${6?missing port number for application hosting}
+          """
+          actors().getActor(scriptorName) ! new ScriptURL(new URL(urlToScript),
+            Seq(appName, puppetServerStageHome + appName + "/", extension, puppetHostNameOrAddress, extractCommand, appPortNumber.toString))
+          Ok("Executed Rollback script!")
         case None =>
-          InternalServerError("No script defined to look up!")
+          InternalServerError("Script not Found!")
       }
     }
   }

@@ -24,6 +24,5 @@ trait ActorNames{
   val scriptorName = "scriptor"
   val scheduleName = "scheduler"
   val validatorName = "validator"
-  val httpStateHandlerName= "httpStateHandler"
-  val httpServerName= "http-server"
+  val actorStateHandlerName= "httpStateHandler"
 }

@@ -8,22 +8,24 @@ import org.slf4j.Logger
 import util.playframework.{IPlaySpecHelper, LiveTestServer}
 
 trait IScriptControllerTest {
-  def optScriptFileName: Option[String]
-
   def ourlogger: Logger
+
+  lazy val scriptPathAndName: String = ""
 }
 
 object ScriptControllerFactory {
-  def create(optFileName: Option[String], useOriginal: Boolean = false): ScriptController = {
-    if (!useOriginal)
+  val defaultScript = "/assets/scripts/test.sh"
+
+  def create(scriptPath: String = defaultScript, useOriginalLogger: Boolean = false): ScriptController = {
+    if (!useOriginalLogger)
       new ScriptController() with IScriptControllerTest {
-        override lazy val optScriptFileName: Option[String] = optFileName
         override lazy val ourlogger: Logger = mock[Logger]
+        override lazy val scriptPathAndName: String = scriptPath
       }
     else
       new ScriptController() with IScriptControllerTest {
-        override lazy val optScriptFileName: Option[String] = ScriptController.optScriptFileName
         override lazy val ourlogger: Logger = play.api.Logger.logger
+        override lazy val scriptPathAndName: String = scriptPath
       }
   }
 }
@@ -34,39 +36,32 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
   import ScriptControllerFactory._
 
   override lazy val testName = "test-akka-mock"
+//  actors.context.playframework.ActorContextProvider.actors().createActors()
 
   "ScriptController" should {
-
     "send 200 config script hosted controller" in {
       val optResult = route(FakeRequest(GET, "/rollback/appName/8080"))
       optResult match {
-        case Some(result) => status(result) must equalTo(OK)
-        contentAsString(result) must contain("Execute Rollback script here!")
+        case Some(result) =>
+          status(result) shouldEqual OK
+          contentAsString(result) must contain("Executed Rollback script!")
         case None =>
-          "have result" must beEqualTo("no result")
-      }
-      "send 500 missing script" in {
-        val mockController = create(None)
-        val action = mockController.rollBack("appName", 8080)
-        val result = checkForAsyncResult(action.apply(FakeRequest(GET, "/rollback/appName/8080")))
-
-        status(result) must equalTo(INTERNAL_SERVER_ERROR)
-        contentAsString(result) must equalTo("No script defined to look up!")
+          "have result" shouldEqual ("no result")
       }
 
       "send 500 missing wrong script" in {
-        val mockController = create(Some("oops"))
+        val mockController = create("/assets/junk/file.sh")
         val action = mockController.rollBack("appName", 8080)
         val result = checkForAsyncResult(action.apply(FakeRequest(GET, "/rollback/appName/8080")))
-        status(result) must equalTo(INTERNAL_SERVER_ERROR)
-        contentAsString(result) must equalTo("Script not Found!")
+        status(result) shouldEqual (INTERNAL_SERVER_ERROR)
+        contentAsString(result) shouldEqual ("Script not Found!")
       }
       "send 200 config script correct" in {
-        val mockController = create(None, true)
+        val mockController = create(defaultScript, true)
         val action = mockController.rollBack("appName", 8080)
         val result = checkForAsyncResult(action.apply(FakeRequest(GET, "/rollback/appName/8080")))
-        status(result) must equalTo(OK)
-        contentAsString(result) must equalTo("Execute Rollback script here!")
+        status(result) shouldEqual (OK)
+        contentAsString(result) shouldEqual ("Executed Rollback script!")
       }
     }
   }

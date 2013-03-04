@@ -24,6 +24,10 @@ PUT     /machines/:id                       controllers.MachinesController.edit(
 DELETE  /machines/:id                       controllers.MachinesController.remove(id: String)
 POST    /machines/uniqueCheck               controllers.MachinesController.uniqueCheck
 
+GET     /actors/pollOn                      controllers.ActorsStateController.pollOn
+GET     /actors/pollOff                     controllers.ActorsStateController.pollOff
+GET     /actors/refreshState                controllers.ActorsStateController.refreshState
+GET     /actors/resources                   controllers.ActorsStateController.resources
 GET     /actors                             controllers.ActorsStateController.index
 DELETE  /actors                             controllers.ActorsStateController.deleteAll
 GET     /actors/:id                         controllers.ActorsStateController.get(id: String)
@@ -38,10 +42,6 @@ POST    /actors/uniqueCheck                 controllers.ActorsStateController.un
 
 GET     /rollback/:appName/:appPort                  controllers.ScriptController.rollBack(appName: String,appPort: Int)
 
-#############################################################################################
-# Actor Hooks #NOT ROUTING
-# GET /actorHook/scheduled      util.actors.http.SystemStateHttpActor
-#############################################################################################
 # Home page
 GET     /                                   controllers.Application.baseUrl
 GET     /version                            controllers.Application.version

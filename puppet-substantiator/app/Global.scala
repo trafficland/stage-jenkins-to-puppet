@@ -2,6 +2,7 @@
 import actors.context.playframework.ActorContextProvider
 import ActorContextProvider._
 import play.api._
+import util.OptionHelper._
 
 object Global extends GlobalSettings {
   override def onStop(app: Application) {
@@ -15,3 +16,4 @@ object Global extends GlobalSettings {
     }
   }
 }
+

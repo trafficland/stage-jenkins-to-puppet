@@ -5,7 +5,6 @@ import reactivemongo.bson._
 import models.Model._
 import models.IReadersWriters
 import models.json.{IWritesExtended, IReadsExtended}
-import spray.json.{BasicFormats, CollectionFormats, DefaultJsonProtocol}
 
 case class ActorState(
                        var name: String,
@@ -23,8 +22,7 @@ case class ActorState(
 }
 
 trait IActorStateReadersWriters
-  extends IReadersWriters[ActorState]
-  with CollectionFormats with BasicFormats with DefaultJsonProtocol {
+  extends IReadersWriters[ActorState] {
 
   import ActorStateDomain._
 
@@ -34,11 +32,6 @@ trait IActorStateReadersWriters
   override implicit val jsonWriter = JSONWriter
   implicit val criteriaReader = CriteriaReader
   implicit val uniqueCheckReader = UniqueCheckReader
-
-  implicit val jsonSprayFormat = MongoSprayFormats.ActoStateFormat
-  implicit val stringStringMapFormat = mapFormat[String, String](StringJsonFormat, StringJsonFormat)
-  implicit val stringStringArrayFormat = arrayFormat[(String,String)]
-
 }
 
 object ActorStateDomain extends IActorStateReadersWriters {

@@ -25,18 +25,9 @@ object ApplicationBuild extends Build {
       "org.scalatest" %% "scalatest" % scalaTest,
       "org.mockito" % "mockito-core" % mockito,
       "com.typesafe.akka" %% "akka-testkit" % akka,
-      "io.spray" % "spray-can" % spray,
-      "io.spray" % "spray-http" % spray,
-      "io.spray" % "spray-util" % spray,
-      "io.spray" % "spray-httpx" % spray,
-      "io.spray" %% "spray-json" % sprayJson,
       "play" %% "play-test" % play.core.PlayVersion.current
     )
   }
-
-
-  //  val gitHubDependencies: Array[ClasspathDep[ProjectReference]] =
-  //    Array(RootProject(uri("https://github.com/nmccready/scala-erasure-experiments.git")))
 
   val appDependencies = Dependencies.compileDependencies
 
@@ -87,7 +78,6 @@ object ApplicationBuild extends Build {
     resourceDirectory in Compile <<= baseDirectory {
       _ / "resource"
     }
-
   )
   //    .dependsOn(gitHubDependencies: _*)
 
