@@ -41,7 +41,7 @@ abstract class ActorsStateController
   }
 
   def resources = Action {
-    Ok(views.html.actors.resources())
+    Ok(views.html.actors.resources(routes.ActorsStateController.index().url))
   }
 }
 

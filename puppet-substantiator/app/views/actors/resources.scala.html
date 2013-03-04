@@ -1,4 +1,4 @@
-@()
+@(stateUrl:String)
 
 <!DOCTYPE html>
 
@@ -18,7 +18,7 @@
                 <a href="/actors/pollOff">/actors/pollOff</a>
             </li>
             <li>
-                <a href="http://%s:%s/actors">current state</a>
+                <a href="@stateUrl">current state</a>
             </li>
         </ul>
     </body>
