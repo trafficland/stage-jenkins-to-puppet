@@ -24,7 +24,7 @@ applicationNameNew=$applicationName'.new'$extension
 packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*$extension
 
 ####### PARSE VERSION NUMBER FROM PACKAGED FILE#####
-versionExpected=$(~/staging/getVersionNumber "$applicationName" /var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/)
+versionExpected=$(~/stage/getVersionNumber "$applicationName" /var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/)
 echo 'VERSION EXPECTED PARSED!!' "$versionExpected"
 ####### END EXTRACTION  ############
 
@@ -52,19 +52,19 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/staging/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $applicationPortNumber
+sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $applicationPortNumber
 #end deployment
 
 
 #begin validation service interaction
-~/staging/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
+~/stage/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
 
 #give the operation time to get a machine into the system
 sleep 5
 
-~/staging/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" 
+~/stage/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" 
 
 sleep 5
 
-~/staging/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
+~/stage/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
 #end validation service interaction

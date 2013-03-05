@@ -44,4 +44,4 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/staging/stage_remote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $applicationPortNumber
+sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $applicationPortNumber
