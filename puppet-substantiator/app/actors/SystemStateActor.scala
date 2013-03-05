@@ -63,9 +63,7 @@ class SystemStateActor(provider: IActorContextProvider, serviceUrl: String, loop
     import models.mongo.reactive.ActorStateDomain._
     val state = map.map(m => (("{itemScheduled:" + m._1 + ',' + "isCancelled:" + m._2.isCancelled + '}'))).toList.reduce(_ + "," + _)
     WS.url(baseUrl + "/actors/save").post {
-      jsonWriter.writes(ActorState(scheduleName,
-        true,
-        state))
+      jsonWriter.writes(ActorState(scheduleName, true, state, None))
     }
   }
 
