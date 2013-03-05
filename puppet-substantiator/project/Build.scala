@@ -1,6 +1,10 @@
 import sbt._
 import Keys._
 import trafficland.opensource.sbt.plugins._
+import releasemanagement.ReleaseManagementPlugin
+import scalaconfiguration.ScalaConfigurationPlugin
+import versionmanagement.VersionManagementPlugin
+import trafficland.opensource.sbt.plugins.packagemanagement.PackageManagementPlugin
 
 object ApplicationBuild extends Build {
 
@@ -10,8 +14,6 @@ object ApplicationBuild extends Build {
   object Dependencies {
 
     object V {
-      val spray = "1.1-M7"
-      val sprayJson = "1.2.3"
       val reactiveMongo = "0.8"
       val scalaTest = "2.0.M5b"
       val mockito = "1.9.0"
@@ -29,24 +31,26 @@ object ApplicationBuild extends Build {
     )
   }
 
+  val plugs: Seq[Setting[_]] =
+    Seq[Setting[_]](PackageManagementPlugin.plug: _*) ++
+//      Seq[Setting[_]](ReleaseManagementPlugin.plug: _ *) ++
+      Seq[Setting[_]](ScalaConfigurationPlugin.plug: _ *) ++
+//      Seq[Setting[_]](VersionManagementPlugin.plug: _ *) ++
+      Seq[Setting[_]](Play20.plug: _*)
+
   val appDependencies = Dependencies.compileDependencies
 
   val main = play.Project(appName, appVersion, appDependencies)
-    .configs(IntTests)
+    .configs(IntTests, AllTests)
     .settings(inConfig(IntTests)(Defaults.testTasks): _*)
-    .configs(AllTests)
     .settings(inConfig(AllTests)(Defaults.testTasks): _*)
     .settings(
     resolvers ++= Seq(
       "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/",
       "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/",
-      "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
-      "spray repo" at "http://repo.spray.io"
+      "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
     ),
-    sourceGenerators in Compile <+= sourceManaged in Compile map {
-      outDir: File =>
-        writeVersion(outDir)
-    },
+    testListeners += SbtTapReporting(),
     testOptions in Test := Seq(
       Tests.Setup {
         () =>
@@ -79,19 +83,7 @@ object ApplicationBuild extends Build {
       _ / "resource"
     }
   )
-  //    .dependsOn(gitHubDependencies: _*)
-
-  def writeVersion(outDir: File) = {
-    val file = outDir / "controllers/AppInfo.scala"
-    IO.write(file,
-      """package controllers
-    object AppInfo {
-      val version = "%s"
-      val name = "%s"
-      val vendor = "mccready"
-    }""".format(appVersion, appName))
-    Seq(file)
-  }
+    .settings(plugs: _*)
 
   def systemSpecsFilter(name: String): Boolean = name endsWith "SystemSpec"
 
