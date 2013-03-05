@@ -13,7 +13,7 @@ echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extractio
 applicationNameNew=$applicationName'.new'$extension
 
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
-packageLocation=/var/lib/jenkins/jobs/"$jenkinsJobName"/workspace"$distLocation"/*$extension
+packageLocation=/var/lib/jenkins/jobs/"$jenkinsJobName"/workspace"$distLocation"*$extension
 
 #stagePath will combine the stageHome location to the subdirectory structure we want
 #ie: if stageHome = '~/stage/'' and applicationName = 'proj1'
