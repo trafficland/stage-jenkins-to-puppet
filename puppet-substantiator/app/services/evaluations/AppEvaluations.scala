@@ -1,5 +1,6 @@
 package services.evaluations
 
+import _root_.util.PlaySettings
 import util.evaluations._
 import models.mongo.reactive._
 import play.api.mvc.Results._
@@ -65,7 +66,9 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
     futFailPass
   }
 
-  def failAction(result: App) = Redirect(routes.ScriptController.rollBack(result.name,result.port.getOrElse("80").toInt))
+  lazy val rollBackUrl = "http://" + PlaySettings.absUrl + "/rollback/%s/%s"
+
+  def failAction(result: App) = WS.url(rollBackUrl.format(result.name, result.port)).get()
 
 
   def passAction(result: App) {

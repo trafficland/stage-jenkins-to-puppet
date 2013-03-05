@@ -72,6 +72,4 @@ class SystemStateActor(provider: IActorContextProvider, serviceUrl: String, loop
 
   def deleteScheduled(map: Map[String, ICancellableDelay]) =
     WS.url(baseUrl + "/actors/name/" + scheduleName).delete()
-
-  deleteAll()
 }

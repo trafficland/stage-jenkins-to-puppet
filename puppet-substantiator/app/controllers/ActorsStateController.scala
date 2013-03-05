@@ -23,7 +23,6 @@ abstract class ActorsStateController
       }
   }
 
-
   def pollOn = Action {
     actors().getActor(actorStateHandlerName) ! PollOn
     Ok("pollOn")
@@ -43,6 +42,9 @@ abstract class ActorsStateController
   def resources = Action {
     Ok(views.html.actors.resources(routes.ActorsStateController.index().url))
   }
+
+  def clean =
+    repository.removeAll()
 }
 
 object ActorsStateController
