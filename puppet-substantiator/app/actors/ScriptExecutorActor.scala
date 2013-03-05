@@ -8,10 +8,6 @@ object ScriptExecutorActor {
 
   case class Script(fileName: String, args: Seq[String])
 
-  case class ScriptFile(f: java.io.File, args: Seq[String])
-
-  case class ScriptURL(uri:java.net.URL, args: Seq[String])
-
 }
 
 case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = false, logger: Option[Logger] = None) extends Actor {
@@ -19,15 +15,16 @@ case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = fa
   import ScriptExecutorActor._
 
   def receive = {
-    case Script(scriptString, args) =>
-      handleProcessBuilder((Seq(scriptString) ++ args).cat)
-
-    case ScriptFile(file, args) =>
-      val pipedCommand = Seq("echo") ++ args
-      handleProcessBuilder(file.cat #| pipedCommand.cat)
-    case ScriptURL(url, args) =>
-      val pipedCommand = Seq("echo") ++ args
-      handleProcessBuilder(url.cat #| pipedCommand.cat)
+    case Script(fileName, args) =>
+      val script = fileName.head match {
+        case '.' =>
+          fileName.replaceFirst(".", new java.io.File(".").getCanonicalPath)
+        case '~' =>
+          fileName.replaceFirst(".", System.getProperty("user.home"))
+        case _ =>
+          fileName
+      }
+      handleProcessBuilder((Seq(script) ++ args).cat)
   }
 
   def handleProcessBuilder(toRun: ProcessBuilder) {

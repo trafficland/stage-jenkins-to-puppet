@@ -1,6 +1,7 @@
 package actors
 
 import _root_.util.playframework.{LiveTestServer, IPlaySpecHelper}
+import _root_.util.PlaySettings
 import akka.actor._
 import akka.testkit._
 import org.scalatest._
@@ -13,6 +14,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.Some
 import controllers.ScriptController
+import java.io.File
 
 class ScriptExecutorActorSpec(_system: ActorSystem)
   extends TestKit(_system) with ImplicitSender
@@ -38,9 +40,9 @@ class ScriptExecutorActorSpec(_system: ActorSystem)
     }
   }
 
-  def initialize(logger: Logger):TestActorRef[ScriptExecutorActor] = {
+  def initialize(logger: Logger): TestActorRef[ScriptExecutorActor] = {
     val doThrow = true
-    val ref = TestActorRef(new ScriptExecutorActor(true, doThrow,Some(logger)))
+    val ref = TestActorRef(new ScriptExecutorActor(true, doThrow, Some(logger)))
     ref
   }
 
@@ -61,13 +63,14 @@ class ScriptExecutorActorSpec(_system: ActorSystem)
   }
 
   "script exist" should {
-    "expected results from script log Debug" in {
+    "File script expected results from script log Debug" in {
       lazy val log = logger(true)
       lazy val stringCapture = ArgumentCaptor.forClass(classOf[String])
 
       val actorRef = initialize(log)
-      val path = new java.io.File(".").getCanonicalPath
-      actorRef.receive(ScriptURL(new java.net.URL(ScriptController.urlToScript), Seq("someApp")))
+      actorRef.receive(
+        Script(app.configuration.getString("script.file.location.rollback").get,
+          Seq("someApp")))
 
       val test = Await.result(future {
         Thread.sleep(2000)

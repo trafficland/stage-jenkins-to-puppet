@@ -14,7 +14,7 @@ trait IScriptControllerTest {
 }
 
 object ScriptControllerFactory {
-  val defaultScript = "/assets/scripts/test.sh"
+  val defaultScript = "./resource/test.sh"
 
   def create(scriptPath: String = defaultScript, useOriginalLogger: Boolean = false): ScriptController = {
     if (!useOriginalLogger)
