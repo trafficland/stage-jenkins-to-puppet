@@ -4,10 +4,11 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.iteratee.{Enumerator, Enumeratee}
 import reactivemongo.bson.BSONObjectID
-import concurrent.ExecutionContext.Implicits.global
+import scala.language.reflectiveCalls
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
 import models.mongo.reactive.IMongoModel
 import services.repository.mongo.reactive.{IMongoRepositoryProvider, MongoSearchCriteria}
-import concurrent._
 
 abstract class RestController[TModel <: IMongoModel[TModel]]
   extends Controller
