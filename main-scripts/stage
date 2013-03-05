@@ -4,22 +4,16 @@ jenkinsJobName=${1?missing jenkins job name} #example proj1-stage
 destinationAddress=${2?missing destination ip or hostname}
 applicationName=${3?missing application name} #example proj1
 applicationPortNumber=${4:-9000} #if this is a play app the default will be empty and the port # will be 9000
-stageHome=${5:-'~/stage/'} #example ~/stage/
-extension=${6:-.zip} #default extension to zip
-extractCmd=${7:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
-
-# echo "$jenkinsJobName"
-# echo "$destinationAddress"
-# echo "$applicationName"
-# echo "$stageHome"
-# echo "$extension"
-# echo "$extractCmd"
+distLocation=${5:-'/dist/'}
+stageHome=${6:-'~/stage/'} #example ~/stage/
+extension=${7:-.zip} #default extension to zip
+extractCmd=${8:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
 echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
 applicationNameNew=$applicationName'.new'$extension
 
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
-packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*$extension
+packageLocation=/var/lib/jenkins/jobs/"$jenkinsJobName"/workspace"$distLocation"/*$extension
 
 #stagePath will combine the stageHome location to the subdirectory structure we want
 #ie: if stageHome = '~/stage/'' and applicationName = 'proj1'

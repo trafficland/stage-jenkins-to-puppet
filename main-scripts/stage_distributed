@@ -10,6 +10,7 @@ commaDelimitedMachineNameList=${5?mising comma delimmited machine list}
 applicationPortNumber=${6:-9000} #if this is a play app the default will be empty and the port # will be 9000
 validationQuerySeconds=${7:-360} #6 minutes 60*6
 validationValidateSeconds=${8:-600} #10 minutes
+distLocation=${5:-'/dist/'}
 isAliveAll=${9:-true}
 currentVersion=${10:-} #default none
 stageHome=${11:-'~/stage/'} #example ~/stage/
@@ -21,10 +22,11 @@ echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extractio
 applicationNameNew=$applicationName'.new'$extension
 
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
-packageLocation=/var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/*$extension
+fullDistLocation=/var/lib/jenkins/jobs/"$jenkinsJobName"/workspace"$distLocation"
+packageLocation="$fullDistLocation"*$extension
 
 ####### PARSE VERSION NUMBER FROM PACKAGED FILE#####
-versionExpected=$(~/stage/getVersionNumber "$applicationName" /var/lib/jenkins/jobs/$jenkinsJobName/workspace/dist/)
+versionExpected=$(~/stage/getVersionNumber "$applicationName" "$fullDistLocation")
 echo 'VERSION EXPECTED PARSED!!' "$versionExpected"
 ####### END EXTRACTION  ############
 
