@@ -20,10 +20,6 @@ abstract class AbstractActorContext extends IActorContext with Controller {
 
   lazy val delayMilli = getOptionOrDefault(configuration.getInt("actor.schedule.delaySeconds"), 1000)
 
-  lazy val listeningInterface = getOptionOrDefault(configuration.getString("actor.httpServer.listeningInterface"), "127.0.0.1")
-  lazy val listeningPort = getOptionOrDefault(configuration.getInt("actor.httpServer.listeningPort"), 64800)
-
-
   def createActors(): Unit = {
     val dispatcherName = "akka.actor.default-dispatcher"
     val scheduler = system.actorOf(Props(() => new CancellableMapFSM(delayMilli)).withDispatcher(dispatcherName), name = ActorContextProvider.scheduleName)
