@@ -68,7 +68,7 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
 
   lazy val rollBackUrl = "http://" + PlaySettings.absUrl + "/rollback/%s/%s"
 
-  def failAction(result: App) = WS.url(rollBackUrl.format(result.name, result.port)).get()
+  def failAction(result: App) = WS.url(rollBackUrl.format(result.name, result.port.getOrElse("80"))).get()
 
 
   def passAction(result: App) {
