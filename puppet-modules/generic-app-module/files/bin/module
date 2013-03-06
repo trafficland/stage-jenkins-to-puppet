@@ -12,7 +12,7 @@
 PROC=`ps aux | grep java`
 PROG="REPLACE_CAPS_MODULE_NAME"
 PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
-PID=`ps -C 'java -jar /opt/REPLACE_MODULE_NAME/REPLACE_MODULE_NAME*.jar' -o pid h`
+PID=$(ps aux | grep REPLACE_MODULE_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
 STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/start`
 APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/start`
 OPTDIR="/opt"
