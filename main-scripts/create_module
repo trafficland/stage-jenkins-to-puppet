@@ -2,7 +2,11 @@
 pathToGenericModule=${1?missing path to generic module}
 moduleName=${2?missing moduleName}
 emails=${3?missing email or emails in quotes}
+javaCommands=${4:-} #default to none
 
+#sed in OSX is BSD and does not work the same as linux sed,
+#you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
+      
 cp -R $pathToGenericModule ./"$moduleName"
 
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_MODULE_NAME/'"$moduleName"'/g'
@@ -11,5 +15,7 @@ moduleNameCAPS=$(echo "$moduleName" | tr '[:lower:]' '[:upper:]')
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_CAPS_MODULE_NAME/'"$moduleNameCAPS"'/g'
 
 find ./"$moduleName" -type f|xargs perl -pi -e 's/dummy\@gmail.com/'"$emails"'/g'
+
+find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_JAVA_ARGS/'"$javaCommands"'/g'
 
 mv ./"$moduleName"'/files/bin/module' ./"$moduleName"'/files/bin/'"$moduleName"''

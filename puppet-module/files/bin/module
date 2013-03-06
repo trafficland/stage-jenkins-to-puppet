@@ -45,7 +45,7 @@ fail_if_proc_is_not_running(){
 }
 
 check_existing_back_up(){
-                echo "Checking for existing rollback directory..."
+        echo "Checking for existing rollback directory..."
         if [ -d "$APPDIR"'.rollback' ]; then
                 cd $OPTDIR
                 echo
@@ -60,10 +60,11 @@ check_existing_back_up(){
 }
 startstatus()
 {
-                echo -n "Starting $PROG: "
+        echo -n "Starting $PROG: "
         fail_if_proc_is_running
         cd $APPDIR
-        "/opt/REPLACE_MODULE_NAME/start" && success || failure
+        runApp=$(nohup ./start REPLACE_JAVA_ARGS >/dev/null 2>&1&)
+        $runApp && success || failure
         echo
         echo -n "Please wait 2 seconds.....  "
         sleep 2

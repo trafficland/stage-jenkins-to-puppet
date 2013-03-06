@@ -44,7 +44,7 @@ destination=$puppetAddress:$stagePathWithNewApplication
 #echo "$destination"
 
 #begin deployment
-ssh $puppetAddress applicationName=$applicationName stagePath=$stagePath applicationPortNumber=$applicationPortNumber 'bash -s' <<'ENDSSH'
+ssh $puppetAddress stagePath=$stagePath 'bash -s' <<'ENDSSH'
   # commands to run on remote host
   mkdir -p "$stagePath"
 ENDSSH
@@ -54,7 +54,7 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $applicationPortNumber
+sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd
 #end deployment
 
 

@@ -62,18 +62,11 @@
     
     #BEGIN fix start script ##TEMPORY
       $changeDirIntoZip
-      #sed in linux does not work in osx
-      #replace java with nohup java
-      sed -i 's/exec java/exec nohup java/g' ./start
+      #sed in OSX is BSD and does not work the same as linux sed,
+      #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
 
       #replace and with &, literal & is \& 
       sed -i 's/NettyServer `dirname $0`/NettyServer `dirname $0` \&/g' ./start
-      
-      #put a port number into the stat script if it exists
-      if [ "$applicationPortNumber" != "9000" ]
-      then
-        sed -i 's/play.core.server.NettyServer/-Dhttp.port='"$applicationPortNumber"' play.core.server.NettyServer/g' ./start  
-      fi
 
       cd ../
     #END fix start
