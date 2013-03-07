@@ -3,6 +3,9 @@ pathToGenericModule=${1?missing path to generic module}
 moduleName=${2?missing moduleName}
 emails=${3?missing email or emails in quotes}
 javaCommands=${4:-} #default to none
+startCommand=${5:-'start'}
+finalModuleFolderName=${6:-$moduleName}
+
 
 #sed in OSX is BSD and does not work the same as linux sed,
 #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
@@ -18,4 +21,9 @@ find ./"$moduleName" -type f|xargs perl -pi -e 's/dummy\@gmail.com/'"$emails"'/g
 
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_JAVA_ARGS/'"$javaCommands"'/g'
 
-mv ./"$moduleName"'/files/bin/module' ./"$moduleName"'/files/bin/'"$moduleName"''
+#replace start , for basic apps this is start, more complex maybe start-worker or start-master
+find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_START_COMMAND/'"$startCommand"'/g'
+
+mv ./"$moduleName"'/files/bin/module' ./"$moduleName"'/files/bin/'"$moduleName"'';
+
+mv ./"$moduleName" ./"$finalModuleFolderName";
