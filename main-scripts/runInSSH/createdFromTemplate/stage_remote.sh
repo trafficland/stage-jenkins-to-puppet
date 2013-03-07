@@ -5,15 +5,16 @@ stagePath=${2?missing stage path}
 extension=${3?missing extension}
 destinationAddress=${4?missing destination address}
 extractCmd=${5?missing extraction command like "unzip"}
+renameApplicationTo=${6?:-$applicationName}
 
 #do something in ssh land
-ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd 'bash -s' <<'ENDSSH'
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd renameApplicationTo=$renameApplicationTo 'bash -s' <<'ENDSSH'
 # commands to run on remote host
 ######## Begin local hive replication #TODO - THIS IS PROBABLY being removed, to use git  as rollback
-    newAppToBecomeCurrentApp=$applicationName'.new'$extension
-    currentApp=$applicationName$extension
-    originalBackupApp=$applicationName'.last'$extension
-    rollBackApp=$applicationName'.last.bak'$extension
+    newAppToBecomeCurrentApp=$renameApplicationTo'.new'$extension
+    currentApp=$renameApplicationTo$extension
+    originalBackupApp=$renameApplicationTo'.last'$extension
+    rollBackApp=$renameApplicationTo'.last.bak'$extension
     
     echo 'stagePath: '$stagePath' on '$destinationAddress 
     #pwd
@@ -85,19 +86,22 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
       cd ../
     #END fix start
     rm -f *.zip
+
+    ## Rename extracted to renameApplicationTo , always renaming since renameApplicationTo should default to applicationName
+    mv ./"$applicationName" ./"$renameApplicationTo";
   ####### End Extraction
 
   ############# Actual Puppet Module Copying
   #clean up puppet module hive, and set up puppet module locations
-  puppetModule=/etc/puppet/modules/"$applicationName"/files/stage
-  removeOld=rm' -rf '$puppetModule/"$applicationName"'*'
+  puppetModule=/etc/puppet/modules/"$renameApplicationTo"/files/stage
+  removeOld=rm' -rf '$puppetModule/"$renameApplicationTo"'*'
   $removeOld
   
   #whatever the current naming convention it will be just appName in the end!
-  copyAppToPuppetModule=cp' -r '"$applicationName"'* '"$puppetModule";
+  copyAppToPuppetModule=cp' -r '"$renameApplicationTo"'* '"$puppetModule";
   #execute copy or move
   echo Copying via command $copyAppToPuppetModule
   $copyAppToPuppetModule
   
-  echo 'App should be sent to puppet module @: '$puppetModule
+  echo 'App should be sent to puppet module @: '$puppetModule' as'"$renameApplicationTo"
 ENDSSH
