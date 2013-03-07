@@ -4,7 +4,7 @@ moduleName=${2?missing moduleName}
 emails=${3?missing email or emails in quotes}
 javaCommands=${4:-} #default to none
 startCommand=${5:-'start'}
-finalModuleFolderName=${6:-$moduleName}
+#finalModuleFolderName=${6:-$moduleName}
 
 
 #sed in OSX is BSD and does not work the same as linux sed,
@@ -26,4 +26,4 @@ find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_START_COMMAND/'"$start
 
 mv ./"$moduleName"'/files/bin/module' ./"$moduleName"'/files/bin/'"$moduleName"'';
 
-mv ./"$moduleName" ./"$finalModuleFolderName";
+#mv ./"$moduleName" ./"$finalModuleFolderName";
