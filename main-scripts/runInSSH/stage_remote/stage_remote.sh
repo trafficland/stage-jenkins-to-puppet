@@ -1,3 +1,16 @@
+#!/bin/sh
+#PLEASE NOTE THIS FILE WAS CREATED BY A TEMPLATE!! TO MODIFY , modify the MODULE AND TEMPLATE!
+applicationName=${1?missing application name}
+stagePath=${2?missing stage path}
+extension=${3?missing extension}
+destinationAddress=${4?missing destination address}
+extractCmd=${5?missing extraction command like "unzip"}
+renameApplicationTo=${6:-$applicationName}
+startName=${7:-'start'}
+
+#do something in ssh land
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd renameApplicationTo=$renameApplicationTo startName=$startName 'bash -s' <<'ENDSSH'
+# commands to run on remote host
 ######## Begin local hive replication #TODO - THIS IS PROBABLY being removed, to use git  as rollback
     newAppToBecomeCurrentApp=$renameApplicationTo'.new'$extension
     currentApp=$renameApplicationTo$extension
@@ -97,3 +110,4 @@
   $copyAppToPuppetModule
   
   echo 'App should be sent to puppet module @: '$puppetModule' as'"$renameApplicationTo"
+ENDSSH
