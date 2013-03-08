@@ -86,7 +86,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
       echo 'after to cd "$applicationName", pwd'
       pwd
       $startNameAndPath='./'"$startName"
-      echo 'start name and path = "$startNameAndPath"'
+      echo "$startNameAndPath"
       #replace and with &, literal & is \& 
       ex -sc 's/$/ \&/|w|q' "$fileName" "$startNameAndPath"
 

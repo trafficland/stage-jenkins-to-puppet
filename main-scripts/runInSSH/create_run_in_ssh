@@ -34,3 +34,4 @@ sed -i '/REPLACE_WITH_EXEC_CONTENT/{
 }' "$newSshModuleName"
 
 chmod 755 "$newSshModuleName"
+mv "$newSshModuleName" ./createdFromTemplate
