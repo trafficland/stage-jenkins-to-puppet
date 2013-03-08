@@ -85,10 +85,10 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
       #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
       echo 'after to cd "$applicationName", pwd'
       pwd
-      $startNameAndPath='./'"$startName"
-      echo "$startNameAndPath"
+
+      echo "$startName"
       #replace and with &, literal & is \& 
-      ex -sc 's/$/ \&/|w|q' "$fileName" "$startNameAndPath"
+      ex -sc 's/$/ \&/|w|q' "$startName" 
 
       cd ../
     #END fix start
