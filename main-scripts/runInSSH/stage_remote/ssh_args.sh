@@ -1,1 +1,1 @@
-$destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd renameApplicationTo=$renameApplicationTo
+$destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd renameApplicationTo=$renameApplicationTo startName=$startName

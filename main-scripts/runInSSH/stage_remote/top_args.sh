@@ -8,4 +8,6 @@ destinationAddress=${4?missing destination address}
 
 extractCmd=${5?missing extraction command like "unzip"}
 
-renameApplicationTo=${6?:-$applicationName}
+renameApplicationTo=${6:-$applicationName}
+
+startName=${7:-'start'}

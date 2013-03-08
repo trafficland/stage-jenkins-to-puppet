@@ -69,7 +69,7 @@
       #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
       
       #replace and with &, literal & is \& 
-      sed -i 's/NettyServer `dirname $0`/NettyServer `dirname $0` \&/g' ./start
+      ex -sc 's/$/ \&/|w|q' "$fileName" ./"$startName"
 
       cd ../
     #END fix start

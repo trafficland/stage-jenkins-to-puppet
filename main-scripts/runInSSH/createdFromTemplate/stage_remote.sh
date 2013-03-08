@@ -5,10 +5,11 @@ stagePath=${2?missing stage path}
 extension=${3?missing extension}
 destinationAddress=${4?missing destination address}
 extractCmd=${5?missing extraction command like "unzip"}
-renameApplicationTo=${6?:-$applicationName}
+renameApplicationTo=${6:-$applicationName}
+startName=${7:-'start'}
 
 #do something in ssh land
-ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd renameApplicationTo=$renameApplicationTo 'bash -s' <<'ENDSSH'
+ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath extension=$extension destinationAddress=$destinationAddress extractCmd=$extractCmd renameApplicationTo=$renameApplicationTo startName=$startName 'bash -s' <<'ENDSSH'
 # commands to run on remote host
 ######## Begin local hive replication #TODO - THIS IS PROBABLY being removed, to use git  as rollback
     newAppToBecomeCurrentApp=$renameApplicationTo'.new'$extension
@@ -81,7 +82,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
       #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
       
       #replace and with &, literal & is \& 
-      sed -i 's/NettyServer `dirname $0`/NettyServer `dirname $0` \&/g' ./start
+      ex -sc 's/$/ \&/|w|q' "$fileName" ./"$startName"
 
       cd ../
     #END fix start

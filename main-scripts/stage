@@ -5,9 +5,10 @@ destinationAddress=${2?missing destination ip or hostname}
 applicationName=${3?missing application name} #example proj1
 distLocation=${4:-'/dist/'}
 renameApplicationTo=${5:-$applicationName}
-stageHome=${6:-'~/stage/'} #example ~/stage/
-extension=${7:-.zip} #default extension to zip
-extractCmd=${8:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
+startName=${6:-'start'}
+stageHome=${7:-'~/stage/'} #example ~/stage/
+extension=${8:-.zip} #default extension to zip
+extractCmd=${9:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
 echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
 applicationNameNew=$renameApplicationTo'.new'$extension
@@ -38,4 +39,4 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $renameApplicationTo
+sh ~/stage/stage_remote.sh "$applicationName" "$stagePath" "$extension" "$destinationAddress" "$extractCmd" "$renameApplicationTo" "$startName"
