@@ -66,6 +66,7 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
     changeDirIntoZip=cd' '$applicationName'*'
     $changeDirIntoZip
     
+    echo changed into "$applicationName" directory should be = $(pwd)
     #see if we need to go deeper
       if test -n "$(find $applicationName -maxdepth 1 -print -quit)"
       then
@@ -76,13 +77,18 @@ ssh $destinationAddress applicationName=$applicationName stagePath=$stagePath ex
         cd ../
       fi
     
+      echo 'prior to cd "$applicationName" pwd'
+      pwd
     #BEGIN fix start script ##TEMPORY
       $changeDirIntoZip
       #sed in OSX is BSD and does not work the same as linux sed,
       #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
-      
+      echo 'after to cd "$applicationName", pwd'
+      pwd
+      $startNameAndPath='./"$startName"'
+      echo 'start name and path = "$startNameAndPath"'
       #replace and with &, literal & is \& 
-      ex -sc 's/$/ \&/|w|q' "$fileName" ./"$startName"
+      ex -sc 's/$/ \&/|w|q' "$fileName" "$startNameAndPath"
 
       cd ../
     #END fix start
