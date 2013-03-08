@@ -53,6 +53,7 @@
     changeDirIntoZip=cd' '$applicationName'*'
     $changeDirIntoZip
     
+    echo changed into "$applicationName" directory should be = $(pwd)
     #see if we need to go deeper
       if test -n "$(find $applicationName -maxdepth 1 -print -quit)"
       then
