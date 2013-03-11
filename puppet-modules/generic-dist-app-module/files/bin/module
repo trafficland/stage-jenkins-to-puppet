@@ -13,14 +13,19 @@ PROC=`ps aux | grep java`
 PROG="REPLACE_CAPS_MODULE_NAME"
 PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
 PID=$(ps aux | grep REPLACE_MODULE_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
-STAGETIME=`stat -c %Y /opt/stage/lib/REPLACE_MODULE_NAME*`
-APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/lib/REPLACE_MODULE_NAME*`
+STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
+APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
 OPTDIR="/opt"
 APPDIR="/opt/REPLACE_MODULE_NAME"
 STAGEDIR="/opt/stage/REPLACE_MODULE_NAME"
 ROLLBACKDIR="REPLACE_MODULE_NAME.rollback"
 NOW=`date +"%m-%d-%Y-%H-%M-%S"`
 APP="REPLACE_MODULE_NAME"
+WORKER_PATH="/opt/REPLACE_MODULE_NAME/conf/worker.conf"
+
+#fix worker.conf to have correct hostname
+sed -i 's/hostname = "127.0.0.1"/hostname = "'"$(hostname)"'"/g' "$WORKER_PATH"
+
 
 fail_if_proc_is_running(){
         if [ ! -z "$PID" ];  then
@@ -81,21 +86,21 @@ start(){
         deploy
         startstatus
         if [ "$RETVAL" == 0 ];  then
-          success
-          RETVAL=0
+            success
+            RETVAL=0
         else
-        rollback
+            #rollback - NO ROLLBACK AS IT IS MANAGED BY A PLAYAPP!
+            #echo
         echo
-        echo
-	startstatus
-        echo
+	       startstatus
+            echo
         fi
         echo
 	return $RETVAL
 }
 stop()
 {
-                echo -n "Stopping "$PROG": "
+        echo -n "Stopping "$PROG": "
         fail_if_proc_is_not_running
         if [ -n "$PID" ];  then
                 kill $PID  && success || failure
@@ -174,27 +179,27 @@ deploy(){
         return $RETVAL
         fi
 }
-rollback() {
-                echo "$PROG failed to start after deployment..."
-                echo "Please wait... Attempting to revert $PROG to previous state..."
-        if [ -d "$OPTDIR/$ROLLBACKDIR" ] ; then
-                cd $OPTDIR
-                echo
-                echo "Reverting $PROG to previous state from Rollback directory..."
-                mv "$APP" "$APP.BAD.$NOW"
-                cp -r "$ROLLBACKDIR/" "$APP" 
-                echo
-                echo "Please wait!!! Completing Rollback..."
-                rm -rf $ROLLBACKDIR && success || failure
-                echo
-        	#inset wget commands here and
-        	echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c dummy@gmail.com
-	echo "Completed Reverting $PROG to previous state...Successful "
-                RETVAL=$?
-                echo
-        return $RETVAL
-        fi
-}
+# rollback() {
+#                 echo "$PROG failed to start after deployment..."
+#                 echo "Please wait... Attempting to revert $PROG to previous state..."
+#         if [ -d "$OPTDIR/$ROLLBACKDIR" ] ; then
+#                 cd $OPTDIR
+#                 echo
+#                 echo "Reverting $PROG to previous state from Rollback directory..."
+#                 mv "$APP" "$APP.BAD.$NOW"
+#                 cp -r "$ROLLBACKDIR/" "$APP" 
+#                 echo
+#                 echo "Please wait!!! Completing Rollback..."
+#                 rm -rf $ROLLBACKDIR && success || failure
+#                 echo
+#         	#inset wget commands here and
+#         	echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c dummy@gmail.com
+# 	echo "Completed Reverting $PROG to previous state...Successful "
+#                 RETVAL=$?
+#                 echo
+#         return $RETVAL
+#         fi
+# }
 
 case "$1" in
     start)
@@ -219,11 +224,11 @@ case "$1" in
     deploy)
         deploy
         ;; 
-    rollback)
-        rollback
-        ;;
+    #rollback)
+    #    rollback
+    #    ;;
     *)
-        echo "Usage: $0 {start|stop|restart|halt|status|deploy|rollback}"
+        echo "Usage: $0 {start|stop|restart|halt|status|deploy}"
         RETVAL=1
 esac
 exit $RETVAL

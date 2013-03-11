@@ -4,6 +4,7 @@ moduleName=${2?missing moduleName}
 emails=${3?missing email or emails in quotes}
 javaCommands=${4:-} #default to none
 startCommand=${5:-'start'}
+basicName=${6:-$moduleName} #IE this more for a application package that does not match a jar name, ie worker supervisor app1 and app1-supervisor, basic would be app1
 #finalModuleFolderName=${6:-$moduleName}
 
 
@@ -23,6 +24,8 @@ find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_JAVA_ARGS/'"$javaComma
 
 #replace start , for basic apps this is start, more complex maybe start-worker or start-master
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_START_COMMAND/'"$startCommand"'/g'
+
+find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_BASIC_NAME/'"$basicName"'/g'
 
 mv ./"$moduleName"'/files/bin/module' ./"$moduleName"'/files/bin/'"$moduleName"'';
 
