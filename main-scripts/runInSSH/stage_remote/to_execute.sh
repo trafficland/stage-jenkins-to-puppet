@@ -66,19 +66,6 @@
     
       echo 'prior to cd "$applicationName" pwd'
       pwd
-    #BEGIN fix start script ##TEMPORY
-      $changeDirIntoZip
-      #sed in OSX is BSD and does not work the same as linux sed,
-      #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
-      echo 'after to cd "$applicationName", pwd'
-      pwd
-
-      echo "$startName"
-      #replace and with &, literal & is \& 
-      ex -sc 's/$/ \&/|w|q' "$startName" 
-
-      cd ../
-    #END fix start
     rm -f *.zip
 
     ## Rename extracted to renameApplicationTo , always renaming since renameApplicationTo should default to applicationName

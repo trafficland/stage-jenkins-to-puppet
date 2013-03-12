@@ -1,3 +1,4 @@
+#!/bin/sh
 rootOfStageJenkins=${1?need to know where scripts are!}
 whereToLink=${2?need where to link to!}
 
