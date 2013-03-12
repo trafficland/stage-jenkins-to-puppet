@@ -91,9 +91,9 @@ start(){
         else
             #rollback - NO ROLLBACK AS IT IS MANAGED BY A PLAYAPP!
             #echo
-        echo
-	       startstatus
-            echo
+          echo
+	      startstatus
+          echo
         fi
         echo
 	return $RETVAL
@@ -107,7 +107,7 @@ stop()
                 echo
                 RETVAL=$?
         fi
-        rm -f $PID_PATH
+        #rm -f $PID_PATH not needed on normal stop scala/java code should remove pid on graceful shutdown
                 echo
         return $RETVAL
 }
@@ -121,7 +121,7 @@ halt()
           echo
         RETVAL=$?
         fi
-        rm -f $PID_PATH
+        rm -f $PID_PATH #dirty shudown removal required
         echo
         return $RETVAL
 }
@@ -130,8 +130,8 @@ status()
 {
         if [ -n "$PID" ];  then
           echo " $PROG  is running," 
-        RUNNING_PID=$PID  
-        echo "pid: $RUNNING_PID"
+          RUNNING_PID=$PID  
+          echo "pid: $RUNNING_PID"
           echo 
         else
           echo " $PROG is not running"
@@ -153,7 +153,7 @@ deploy(){
                 echo "Please wait... Attempting to start $PROG for the first time!!!"
                 echo
                 RETVAL=$?
-        return $RETVAL
+                return $RETVAL
        elif [ "$STAGETIME" -gt "$APPTIME" ]; then
                 echo "Please wait...Checking for new version of $PROG in Stage..."
                 echo "Found new verson of $PROG in Stage..."
@@ -176,7 +176,7 @@ deploy(){
                 echo "No new version of $PROG found in Stage...Proceeding to start $PROG"
                 echo
                 RETVAL=$?
-        return $RETVAL
+                return $RETVAL
         fi
 }
 # rollback() {
@@ -217,7 +217,7 @@ case "$1" in
     restart)
         /etc/init.d/REPLACE_MODULE_NAME stop
         echo "Please wait, restarting"
-        sleep 6
+        sleep 12
         echo
         /etc/init.d/REPLACE_MODULE_NAME start
         ;;

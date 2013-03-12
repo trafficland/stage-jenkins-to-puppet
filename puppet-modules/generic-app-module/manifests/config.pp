@@ -5,7 +5,7 @@ class REPLACE_MODULE_NAME::config {
         group => 'root',
         mode => 0755,
     }
-    file { "/opt/REPLACE_MODULE_NAME/REPLACE_START_COMMAND":
+    file { "/opt/REPLACE_MODULE_NAME/start":
         ensure => file,
         owner => 'root',
         group => 'root',

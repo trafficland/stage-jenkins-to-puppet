@@ -13,7 +13,7 @@ PROC=`ps aux | grep java`
 PROG="REPLACE_CAPS_MODULE_NAME"
 PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
 PID=$(ps aux | grep REPLACE_MODULE_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
-STAGETIME=`stat -c %Y /opt/stage/lib/REPLACE_MODULE_NAME*`
+STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/lib/REPLACE_MODULE_NAME*`
 APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/lib/REPLACE_MODULE_NAME*`
 OPTDIR="/opt"
 APPDIR="/opt/REPLACE_MODULE_NAME"
@@ -63,7 +63,7 @@ startstatus()
         echo -n "Starting $PROG: "
         fail_if_proc_is_running
         cd $APPDIR
-        runApp=$(nohup ./REPLACE_START_COMMAND REPLACE_JAVA_ARGS >/dev/null 2>&1&)
+        runApp=$(nohup ./start -Dhttp.port=19001 >/dev/null 2>&1&)
         $runApp && success || failure
         echo
         echo -n "Please wait 2 seconds.....  "
@@ -95,15 +95,15 @@ start(){
 }
 stop()
 {
-                echo -n "Stopping "$PROG": "
+        echo -n "Stopping "$PROG": "
         fail_if_proc_is_not_running
         if [ -n "$PID" ];  then
-                kill $PID  && success || failure
-                echo
-                RETVAL=$?
+            kill $PID  && success || failure
+            echo
+            RETVAL=$?
         fi
-        rm -f $PID_PATH
-                echo
+        #rm -f $PID_PATH not needed on normal stop scala/java code should remove pid on graceful shutdown
+        echo
         return $RETVAL
 }
 
@@ -116,7 +116,7 @@ halt()
           echo
         RETVAL=$?
         fi
-        rm -f $PID_PATH
+        rm -f $PID_PATH #dirty shudown removal required
         echo
         return $RETVAL
 }
@@ -148,7 +148,7 @@ deploy(){
                 echo "Please wait... Attempting to start $PROG for the first time!!!"
                 echo
                 RETVAL=$?
-        return $RETVAL
+                return $RETVAL
        elif [ "$STAGETIME" -gt "$APPTIME" ]; then
                 echo "Please wait...Checking for new version of $PROG in Stage..."
                 echo "Found new verson of $PROG in Stage..."
@@ -171,7 +171,7 @@ deploy(){
                 echo "No new version of $PROG found in Stage...Proceeding to start $PROG"
                 echo
                 RETVAL=$?
-        return $RETVAL
+                return $RETVAL
         fi
 }
 rollback() {
@@ -187,12 +187,12 @@ rollback() {
                 echo "Please wait!!! Completing Rollback..."
                 rm -rf $ROLLBACKDIR && success || failure
                 echo
-        	#inset wget commands here and
-        	echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c dummy@gmail.com
-	echo "Completed Reverting $PROG to previous state...Successful "
+        	    #inset wget commands here and
+        	    echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c developers.com
+	            echo "Completed Reverting $PROG to previous state...Successful "
                 RETVAL=$?
                 echo
-        return $RETVAL
+                return $RETVAL
         fi
 }
 
@@ -212,7 +212,7 @@ case "$1" in
     restart)
         /etc/init.d/REPLACE_MODULE_NAME stop
         echo "Please wait, restarting"
-        sleep 6
+        sleep 12
         echo
         /etc/init.d/REPLACE_MODULE_NAME start
         ;;
