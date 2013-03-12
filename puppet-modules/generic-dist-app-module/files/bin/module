@@ -12,7 +12,7 @@
 PROC=`ps aux | grep java`
 PROG="REPLACE_CAPS_MODULE_NAME"
 PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
-PID=$(ps aux | grep REPLACE_MODULE_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
+PID=$(ps aux | grep REPLACE_BASIC_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
 STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
 APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
 OPTDIR="/opt"
@@ -71,8 +71,8 @@ startstatus()
         runApp=$(nohup ./REPLACE_START_COMMAND REPLACE_JAVA_ARGS >/dev/null 2>&1&)
         $runApp && success || failure
         echo
-        echo -n "Please wait 2 seconds.....  "
-        sleep 2
+        echo -n "Please wait 8 seconds.....  "
+        sleep 8
         echo -n "$PROG status: "
         if [ -f "$PID_PATH" ];  then
           success
