@@ -8,4 +8,6 @@ destinationAddress=${4?missing destination address}
 
 extractCmd=${5?missing extraction command like "unzip"}
 
-applicationPortNumber=${6?missing port number for application hosting}
+renameApplicationTo=${6:-$applicationName}
+
+startName=${7:-}

@@ -66,6 +66,26 @@
     
       echo 'prior to cd "$applicationName" pwd'
       pwd
+      #BEGIN fix start script ##TEMPORY
+      if [ "$startName" ]; then
+        $changeDirIntoZip
+        #sed in OSX is BSD and does not work the same as linux sed,
+        #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
+        echo 'after to cd "$applicationName", pwd'
+        pwd
+        startNameAndPath='./'"$startName"
+        echo 'Original startName and path'"$startNameAndPath"
+        #remove stage.conf from basic start
+        sed -i 's/-Dconfig.file=`dirname $0`/conf/stage.conf//g' "$startNameAndPath"
+
+        startBark="$startNameAndPath"'BarkJavaArgs'
+        cp "$startNameAndPath" "$startBark";
+        echo 'Removing from copyStart stage.conf so that it is called from init.d instead!'
+        #insert argument at the top to force a conf to be called into a startCopy
+        sed -i '2s/^/${1?need java args like -Dconfig.file=./conf/stage.conf -Dhttp.port=9000}\n/' "$$startBark"
+        cd ../
+      fi
+      #END fix start
     rm -f *.zip
 
     ## Rename extracted to renameApplicationTo , always renaming since renameApplicationTo should default to applicationName

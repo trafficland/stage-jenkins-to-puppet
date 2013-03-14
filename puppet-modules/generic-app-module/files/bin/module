@@ -63,7 +63,7 @@ startstatus()
         echo -n "Starting $PROG: "
         fail_if_proc_is_running
         cd $APPDIR
-        runApp=$(nohup ./start -Dhttp.port=19001 >/dev/null 2>&1&)
+        runApp=$(nohup ./start REPLACE_JAVA_ARGS >/dev/null 2>&1&)
         $runApp && success || failure
         echo
         echo -n "Please wait 2 seconds.....  "

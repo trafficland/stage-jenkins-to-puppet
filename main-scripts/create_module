@@ -7,7 +7,7 @@ startCommand=${5:-'start'}
 basicName=${6:-$moduleName} #IE this more for a application package that does not match a jar name, ie worker supervisor app1 and app1-supervisor, basic would be app1
 #finalModuleFolderName=${6:-$moduleName}
 
-
+echo Java Commands "$javaCommands"
 #sed in OSX is BSD and does not work the same as linux sed,
 #you can install gnu-sed with brew to override BSD sed, you will need /usr/bin/local added to your path
       
