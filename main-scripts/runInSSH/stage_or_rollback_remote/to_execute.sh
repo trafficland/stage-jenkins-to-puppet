@@ -7,22 +7,9 @@
     echo 'stagePath: '$stagePath' on '$destinationAddress 
     #pwd
     cd $stagePath
-    #move each app if it exists as a file
-    if [ -f "$originalBackupApp" ]
-    then
-    	mv "$originalBackupApp" "$rollBackApp";
-    fi
-    
-    if [ -f "$currentApp" ]
-    then
-    	mv "$currentApp" "$originalBackupApp";
-    fi
-
-    if [ -f "$newAppToBecomeCurrentApp" ]
-    then
-    	mv "$newAppToBecomeCurrentApp" "$currentApp";
-    fi
-  ######## End local hive replication
+    ####### Start local hive roll forward / back
+    REPLACE_WITH_ROLL_FUNC
+    ######## End local hive roll forward / back
 
   ######## Begin Extraction
     #an extracted package is desirable for puppet management, since the extracted contents is pushed "as is"
@@ -66,7 +53,7 @@
     
       echo 'prior to cd "$applicationName" pwd'
       pwd
-      #BEGIN fix start script ##TEMPORY
+      #BEGIN fix start script ##OPTIONAL
       if [ "$startName" ]; then
         $changeDirIntoZip
         #sed in OSX is BSD and does not work the same as linux sed,
