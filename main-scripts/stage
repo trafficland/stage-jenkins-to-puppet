@@ -14,6 +14,14 @@ extractCmd=${10:-unzip} #argument is used for extraction, if this was tar then "
 echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
 applicationNameNew=$renameApplicationTo'.new'$extension
 
+#making distLocation have a solid path!
+if [[ "$distLocation" != /* ]];then
+    distLocation=\/"$distLocation"
+fi
+if [[ "$distLocation" != */ ]];then
+   distLocation="$distLocation"\/
+fi
+echo "$distLocation"
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
 packageLocation=/var/lib/jenkins/jobs/"$jenkinsJobName"/workspace"$distLocation"*$extension
 
