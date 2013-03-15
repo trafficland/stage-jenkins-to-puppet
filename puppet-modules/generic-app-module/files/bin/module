@@ -24,8 +24,7 @@ APP="REPLACE_MODULE_NAME"
 
 #logging echo(s) to /opt/REPLACE_MODULE_NAME/init-d.log
 function echo {
-  /bin/echo $*
-  #log  
+  #log  & echo at the same time
   /bin/echo `date` $* | tee -a /opt/REPLACE_MODULE_NAME/init-d.log
 }
 

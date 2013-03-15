@@ -28,8 +28,7 @@ sed -i 's/hostname = "127.0.0.1"/hostname = "'"$(hostname)"'"/g' "$WORKER_PATH"
 
 #logging echos to /opt/REPLACE_MODULE_NAME/init-d.log
 function echo {
-  /bin/echo $*
-  #log  
+  #log  & echo at the same time
   /bin/echo `date` $* | tee -a /opt/REPLACE_MODULE_NAME/init-d.log
 }
 
