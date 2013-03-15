@@ -48,6 +48,6 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stage/roll_forward_remote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $renameApplicationTo $startName
+`dirname $0`/roll_forward_remote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $renameApplicationTo $startName
 
-~/stage/puppet-run "$commaDelimitedMachineNameList"
+`dirname $0`/puppet-run "$commaDelimitedMachineNameList"

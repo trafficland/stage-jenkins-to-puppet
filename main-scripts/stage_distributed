@@ -63,23 +63,23 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stage/roll_forward_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $renameApplicationTo $startName
+`dirname $0`/roll_forward_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $renameApplicationTo $startName
 #end deployment
 
 
 #begin validation service interaction
-~/stage/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
+`dirname $0`/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
 
 #give the operation time to get a machine into the system
 sleep 5
 
-~/stage/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" 
+`dirname $0`/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" 
 
 sleep 5
 
-~/stage/puppet-run "$commaDelimitedMachineNameList"
+`dirname $0`/puppet-run "$commaDelimitedMachineNameList"
 
 sleep 5
 
-~/stage/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
+`dirname $0`/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
 #end validation service interaction
