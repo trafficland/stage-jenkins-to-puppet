@@ -10,10 +10,13 @@ ssh_func(){
 
         if [ "$user" ]; then
                 echo Attempting to ssh into "$machine" as "$user" !
-                ssh -t "$user"@"$machine" 'sudo puppet agent -t'
+                ssh -t -t "$user"@"$machine" 'sudo puppet agent -t'
         else
                 echo Attempting to ssh into "$machine" !
-                ssh -t "$machine" 'sudo puppet agent -t'
+                # -t -t forces psuedo terminal even whent here is no stdin
+                #http://stackoverflow.com/questions/7114990/pseudo-terminal-will-not-be-allocated-because-stdin-is-not-a-terminal
+                #required for jenkins
+                ssh -t -t "$machine" 'sudo puppet agent -t'
         fi
 }
 
