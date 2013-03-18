@@ -40,7 +40,7 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                   if (upApp.actualCluster.forall(appMachine =>
                     appMachine.actual match {
                       case Some(actualState) =>
-                        val result = app.expected.contains(actualState)
+                        val result = actualState.contains(app.expected)
                         result match {
                           case true =>
                             val passStr = "Version Check for %s application PASSED for %s version! Actual value is %s !".format(app.name, app.expected, actualState)

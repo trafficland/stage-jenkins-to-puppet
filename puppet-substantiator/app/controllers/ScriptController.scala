@@ -50,8 +50,9 @@ abstract class ScriptController extends Controller {
                   |renameApplicationTo=${6:-$applicationName}
                   |startName=${7:-}
                 """
+                val rename = app.renameAppTo.getOrElse(app.name)
                 actors().getActor(scriptorName) ! new Script(script,
-                  Seq(app.name, puppetServerStageHome + app.name + "/", extension, puppetHostNameOrAddress, extractCommand, app.renameAppTo.getOrElse(app.name)))
+                  Seq(app.name, puppetServerStageHome + rename + "/", extension, puppetHostNameOrAddress, extractCommand, rename))
                 Ok("Executed Rollback script!")
               case None =>
                 InternalServerError("Script not Found!")
