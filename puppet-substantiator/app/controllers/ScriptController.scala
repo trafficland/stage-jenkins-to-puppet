@@ -33,25 +33,33 @@ abstract class ScriptController extends Controller {
   val puppetHostNameOrAddress = getOptionOrDefault(play.api.Play.configuration.getString("puppet.hostName"), "127.0.0.1")
   val extractCommand = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extractCommand"), "unzip")
 
-  def rollBack(appName: String, appPortNumber: Int) = {
-    Action {
-      optScriptExists match {
-        case Some(script) =>
-          """
+  def rollBack = {
+    Action(parse.json) {
+      request =>
+        request.body.asOpt[models.mongo.reactive.App] match {
+          case Some(app) =>
+            optScriptExists match {
+              case Some(script) =>
+                """
               RollBackScript Required Args
-            |applicationName=${1?missing application name}
-            |stagePath=${2?missing stage path}
-            |extension=${3?missing extension}
-            |destinationAddress=${4?missing destination address}
-            |extractCmd=${5?missing extraction command like "unzip"}
-            |applicationPortNumber=${6?missing port number for application hosting}
-          """
-          actors().getActor(scriptorName) ! new Script(script,
-            Seq(appName, puppetServerStageHome + appName + "/", extension, puppetHostNameOrAddress, extractCommand, appPortNumber.toString))
-          Ok("Executed Rollback script!")
-        case None =>
-          InternalServerError("Script not Found!")
-      }
+                  |applicationName=${1?missing application name}
+                  |stagePath=${2?missing stage path}
+                  |extension=${3?missing extension}
+                  |destinationAddress=${4?missing destination address}
+                  |extractCmd=${5?missing extraction command like "unzip"}
+                  |renameApplicationTo=${6:-$applicationName}
+                  |startName=${7:-}
+                """
+                actors().getActor(scriptorName) ! new Script(script,
+                  Seq(app.name, puppetServerStageHome + app.name + "/", extension, puppetHostNameOrAddress, extractCommand, app.renameAppTo.getOrElse(app.name)))
+                Ok("Executed Rollback script!")
+              case None =>
+                InternalServerError("Script not Found!")
+            }
+          case None =>
+            BadRequest("Json for App / Application not defined!")
+        }
+
     }
   }
 }

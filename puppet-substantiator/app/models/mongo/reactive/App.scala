@@ -12,7 +12,8 @@ case class App(
                 val testUrl: String,
                 val actualCluster: List[AppMachineState],
                 val port: Option[String] = Some("9000"),
-                override var id: Option[BSONObjectID] = Some(BSONObjectID.generate)) extends IMongoModel[App] {
+                override var id: Option[BSONObjectID] = Some(BSONObjectID.generate),
+                val renameAppTo: Option[String] = None) extends IMongoModel[App] {
   def getWithID = this.copy(id = Some(BSONObjectID.generate))
 
   def isEqualTo(other: App, useID: Boolean): Boolean = {
@@ -21,6 +22,7 @@ case class App(
       name == other.name &&
       testUrl == other.testUrl &&
       port == other.port &&
+      renameAppTo == other.renameAppTo &&
       actualCluster.forall(appMach => other.actualCluster.exists(otherAppMach =>
         otherAppMach.machineName == appMach.machineName &&
           otherAppMach.actual == appMach.actual))
@@ -59,7 +61,8 @@ object App extends IAppReadersWriters {
         doc.getAs[BSONString]("testUrl").map(_.value).getOrElse(throw errorFrom("BSONRead", "testUrl")),
         bsonReaderAppMach.fromBSONArray(doc.getAs[BSONArray]("actualCluster").getOrElse(throw errorFrom("BSONRead", "actualCluster"))),
         doc.getAs[BSONString]("port").map(_.value),
-        doc.getAs[BSONObjectID]("_id")
+        doc.getAs[BSONObjectID]("_id"),
+        doc.getAs[BSONString]("renameAppTo").map(_.value)
       )
     }
   }
@@ -72,7 +75,8 @@ object App extends IAppReadersWriters {
         "expected" -> BSONString(entity.expected),
         "testUrl" -> BSONString(entity.testUrl),
         "port" -> entity.port.map(BSONString(_)),
-        "actualCluster" -> bsonWriterAppMach.toBSONArray(entity.actualCluster)
+        "actualCluster" -> bsonWriterAppMach.toBSONArray(entity.actualCluster),
+        "renameAppTo" -> entity.renameAppTo.map(BSONString(_))
       )
   }
 
@@ -87,7 +91,9 @@ object App extends IAppReadersWriters {
         (json \ "port").asOpt[String],
         (json \ "_id").asOpt[String] map {
           id => new BSONObjectID(id)
-        })
+        },
+        (json \ "renameAppTo").asOpt[String]
+      )
       )
     }
   }
@@ -104,6 +110,8 @@ object App extends IAppReadersWriters {
         list.+=("_id" -> JsString(entity.id.get.stringify))
       if (entity.port.isDefined)
         list.+=("port" -> JsString(entity.port.get))
+      entity.renameAppTo.map(reName =>
+        list.+=("renameAppTo" -> JsString(reName)))
       JsObject(list.toSeq)
     }
   }
