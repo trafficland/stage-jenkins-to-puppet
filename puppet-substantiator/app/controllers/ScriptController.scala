@@ -13,7 +13,7 @@ abstract class ScriptController extends Controller {
 
   lazy val scriptPathAndName =
     getOptionOrDefault(play.api.Play.configuration.getString("script.file.location.rollback"),
-      "~/stage/rollback_remote.sh")
+      "~/stage/roll_back_remote.sh")
       .replace("~", System.getProperty("user.home"))
 
   lazy val optScriptExists = {
