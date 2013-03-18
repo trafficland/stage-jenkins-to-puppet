@@ -39,7 +39,14 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                   if (upApp.actualCluster.forall(appMachine =>
                     appMachine.actual match {
                       case Some(actualState) =>
-                        app.expected.contains(actualState)
+                        val result = app.expected.contains(actualState)
+                        result match {
+                          case true =>
+                            logger.debug("Version Check for %s application PASSED for %s version!".format(app.name, app.expected))
+                          case false =>
+                            logger.debug("Version Check for %s application FAILED for %s version!".format(app.name, app.expected))
+                        }
+                        result
                       case None =>
                         false
                     }
