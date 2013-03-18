@@ -90,7 +90,7 @@ $cmd
 #give the operation time to get a machine into the system
 sleep 5
 
-`dirname $0`/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" 
+`dirname $0`/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" "$renameApplicationTo"
 
 sleep 5
 
