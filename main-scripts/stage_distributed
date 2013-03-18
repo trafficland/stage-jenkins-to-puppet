@@ -27,6 +27,7 @@ echo applicationPortNumber : "$applicationPortNumber"
 echo validationQuerySeconds : "$validationQuerySeconds"
 echo validationValidateSeconds : "$validationValidateSeconds"
 echo distLocation : "$distLocation"
+echo renameApplicationTo: "$renameApplicationTo"
 echo startName : "$startName"
 echo isAliveAll : "$isAliveAll"
 echo currentVersion : "$currentVersion"
@@ -36,7 +37,7 @@ echo extractCmd : "$extractCmd"
 
 
 echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
-applicationNameNew=$applicationName'.new'$extension
+applicationNameNew=$renameApplicationTo'.new'$extension
 
 #making distLocation have a solid path!
 if [[ "$distLocation" != /* ]];then
