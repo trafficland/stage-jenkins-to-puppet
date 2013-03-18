@@ -19,6 +19,22 @@ stageHome=${14:-'~/stage/'} #example ~/stage/
 extension=${15:-.zip} #default extension to zip
 extractCmd=${16:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
+echo jenkinsJobName : "$jenkinsJobName"
+echo puppetAddress : "$puppetAddress"
+echo validatorServiceUrl : "$validatorServiceUrl"
+echo commaDelimitedMachineNameList : "$commaDelimitedMachineNameList"
+echo applicationPortNumber : "$applicationPortNumber"
+echo validationQuerySeconds : "$validationQuerySeconds"
+echo validationValidateSeconds : "$validationValidateSeconds"
+echo distLocation : "$distLocation"
+echo startName : "$startName"
+echo isAliveAll : "$isAliveAll"
+echo currentVersion : "$currentVersion"
+echo stageHome : "$stageHome"
+echo extension : "$extension"
+echo extractCmd : "$extractCmd"
+
+
 echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
 applicationNameNew=$applicationName'.new'$extension
 
