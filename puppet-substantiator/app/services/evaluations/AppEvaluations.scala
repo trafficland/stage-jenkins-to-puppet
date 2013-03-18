@@ -3,8 +3,6 @@ package services.evaluations
 import _root_.util.PlaySettings
 import util.evaluations._
 import models.mongo.reactive._
-import play.api.mvc.Results._
-import controllers._
 import play.api.libs.ws.WS
 import services.repository.mongo.reactive.impls.IAppsRepository
 import play.api.Logger._
@@ -41,7 +39,7 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                   if (upApp.actualCluster.forall(appMachine =>
                     appMachine.actual match {
                       case Some(actualState) =>
-                        actualState == app.expected
+                        app.expected.contains(actualState)
                       case None =>
                         false
                     }
