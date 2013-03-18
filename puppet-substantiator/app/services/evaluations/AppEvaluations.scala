@@ -42,9 +42,13 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                         val result = app.expected.contains(actualState)
                         result match {
                           case true =>
-                            logger.debug("Version Check for %s application PASSED for %s version!".format(app.name, app.expected))
+                            val passStr = "Version Check for %s application PASSED for %s version! Actual value is %s !".format(app.name, app.expected,actualState)
+                            Console.println(passStr)
+                            logger.debug(passStr)
                           case false =>
-                            logger.debug("Version Check for %s application FAILED for %s version!".format(app.name, app.expected))
+                            val failStr = "Version Check for %s application FAILED for %s version! Actual value is %s !".format(app.name, app.expected,actualState)
+                            logger.debug(failStr)
+                            Console.println(failStr)
                         }
                         result
                       case None =>
