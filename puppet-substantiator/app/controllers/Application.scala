@@ -1,13 +1,13 @@
 package controllers
 
 import play.api.mvc._
-import play.api.GlobalSettings
 import play.api._
+import AppInfo._
 
 object Application extends Controller with GlobalSettings {
 
-  def version = Action {
-    Ok(AppInfo.version)
+  def getVersion = Action {
+    Ok("%s : %s : %s".format(name, version, vendor))
   }
 
   def getRoutes = Action {

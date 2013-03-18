@@ -44,7 +44,8 @@ GET     /rollback/:appName/:appPort                  controllers.ScriptControlle
 
 # Home page
 GET     /                                   controllers.Application.baseUrl
-GET     /version                            controllers.Application.version
+GET     /version                            controllers.Application.getVersion
+GET     /admin/version                      controllers.Application.getVersion
 ### IMPORTANT comment out on production routes
 GET     /routes                             controllers.Application.getRoutes
 # Map static resources from the /public folder to the /assets URL path
