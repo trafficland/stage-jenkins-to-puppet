@@ -58,7 +58,7 @@ echo 'VERSION EXPECTED PARSED!!' "$versionExpected"
 #stagePath will combine the stageHome location to the subdirectory structure we want
 #ie: if stageHome = '~/stage/'' and applicationName = 'proj1'
 #then stagePath = ~/stage/proj1/ 
-stagePath=$stageHome''$applicationName'/'
+stagePath=$stageHome''$renameApplicationTo'/'
 #append appNew, #then stagePath = ~/stage/proj1/proj1.new
 stagePathWithNewApplication=$stagePath''$applicationNameNew
 
