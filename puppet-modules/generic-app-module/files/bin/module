@@ -12,15 +12,21 @@
 PROC=`ps aux | grep java`
 PROG="REPLACE_CAPS_MODULE_NAME"
 PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
-PID=$(ps aux | grep REPLACE_MODULE_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
-STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/lib/REPLACE_MODULE_NAME*`
-APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/lib/REPLACE_MODULE_NAME*`
+PID=$(ps aux | grep REPLACE_BASIC_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
+STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
+APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
 OPTDIR="/opt"
 APPDIR="/opt/REPLACE_MODULE_NAME"
 STAGEDIR="/opt/stage/REPLACE_MODULE_NAME"
 ROLLBACKDIR="REPLACE_MODULE_NAME.rollback"
 NOW=`date +"%m-%d-%Y-%H-%M-%S"`
 APP="REPLACE_MODULE_NAME"
+
+#logging echo(s) to /opt/REPLACE_MODULE_NAME/init-d.log
+function echo {
+  #log  & echo at the same time
+  /bin/echo `date` $* | tee -a /opt/REPLACE_MODULE_NAME/init-d.log
+}
 
 fail_if_proc_is_running(){
         if [ ! -z "$PID" ];  then
@@ -63,7 +69,7 @@ startstatus()
         echo -n "Starting $PROG: "
         fail_if_proc_is_running
         cd $APPDIR
-        runApp=$(nohup ./start -Dhttp.port=19001 >/dev/null 2>&1&)
+        runApp=$(nohup ./start REPLACE_JAVA_ARGS >/dev/null 2>&1&)
         $runApp && success || failure
         echo
         echo -n "Please wait 2 seconds.....  "
@@ -81,6 +87,7 @@ start(){
         deploy
         startstatus
         if [ "$RETVAL" == 0 ];  then
+          echo "Successful start"
           success
           RETVAL=0
         else

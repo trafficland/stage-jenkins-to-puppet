@@ -12,17 +12,41 @@ validationQuerySeconds=${7:-360} #6 minutes 60*6
 validationValidateSeconds=${8:-600} #10 minutes
 distLocation=${9:-'/dist/'}
 renameApplicationTo=${10:-$applicationName}
-startName=${11:-'start'}
+startName=${11:-}
 isAliveAll=${12:-true}
 currentVersion=${13:-} #default none
 stageHome=${14:-'~/stage/'} #example ~/stage/
 extension=${15:-.zip} #default extension to zip
 extractCmd=${16:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
+echo jenkinsJobName : "$jenkinsJobName"
+echo puppetAddress : "$puppetAddress"
+echo validatorServiceUrl : "$validatorServiceUrl"
+echo commaDelimitedMachineNameList : "$commaDelimitedMachineNameList"
+echo applicationPortNumber : "$applicationPortNumber"
+echo validationQuerySeconds : "$validationQuerySeconds"
+echo validationValidateSeconds : "$validationValidateSeconds"
+echo distLocation : "$distLocation"
+echo renameApplicationTo: "$renameApplicationTo"
+echo startName : "$startName"
+echo isAliveAll : "$isAliveAll"
+echo currentVersion : "$currentVersion"
+echo stageHome : "$stageHome"
+echo extension : "$extension"
+echo extractCmd : "$extractCmd"
+
 
 echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
-applicationNameNew=$applicationName'.new'$extension
+applicationNameNew=$renameApplicationTo'.new'$extension
 
+#making distLocation have a solid path!
+if [[ "$distLocation" != /* ]];then
+    distLocation=\/"$distLocation"
+fi
+if [[ "$distLocation" != */ ]];then
+   distLocation="$distLocation"\/
+fi
+echo "$distLocation"
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
 fullDistLocation=/var/lib/jenkins/jobs/"$jenkinsJobName"/workspace"$distLocation"
 packageLocation="$fullDistLocation"*$extension
@@ -35,7 +59,7 @@ echo 'VERSION EXPECTED PARSED!!' "$versionExpected"
 #stagePath will combine the stageHome location to the subdirectory structure we want
 #ie: if stageHome = '~/stage/'' and applicationName = 'proj1'
 #then stagePath = ~/stage/proj1/ 
-stagePath=$stageHome''$applicationName'/'
+stagePath=$stageHome''$renameApplicationTo'/'
 #append appNew, #then stagePath = ~/stage/proj1/proj1.new
 stagePathWithNewApplication=$stagePath''$applicationNameNew
 
@@ -56,19 +80,23 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $renameApplicationTo $startName
+`dirname $0`/roll_forward_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $renameApplicationTo $startName
 #end deployment
 
 
 #begin validation service interaction
-~/stage/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
+`dirname $0`/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
 
 #give the operation time to get a machine into the system
 sleep 5
 
-~/stage/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" 
+`dirname $0`/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" "$renameApplicationTo"
 
 sleep 5
 
-~/stage/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
+`dirname $0`/puppet-run "$commaDelimitedMachineNameList"
+
+sleep 5
+
+`dirname $0`/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
 #end validation service interaction

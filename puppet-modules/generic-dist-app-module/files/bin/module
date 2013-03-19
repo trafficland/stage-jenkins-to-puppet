@@ -26,6 +26,11 @@ WORKER_PATH="/opt/REPLACE_MODULE_NAME/conf/worker.conf"
 #fix worker.conf to have correct hostname
 sed -i 's/hostname = "127.0.0.1"/hostname = "'"$(hostname)"'"/g' "$WORKER_PATH"
 
+#logging echos to /opt/REPLACE_MODULE_NAME/init-d.log
+function echo {
+  #log  & echo at the same time
+  /bin/echo `date` $* | tee -a /opt/REPLACE_MODULE_NAME/init-d.log
+}
 
 fail_if_proc_is_running(){
         if [ ! -z "$PID" ];  then
@@ -86,14 +91,12 @@ start(){
         deploy
         startstatus
         if [ "$RETVAL" == 0 ];  then
+            echo "Successful start"
             success
             RETVAL=0
         else
-            #rollback - NO ROLLBACK AS IT IS MANAGED BY A PLAYAPP!
-            #echo
-          echo
-	      startstatus
-          echo
+          #NO ROLLBACK AS IT IS MANAGED BY A PLAYAPP!
+          echo 'Failed to Start, check configuration and or init.d start arguments!'
         fi
         echo
 	return $RETVAL

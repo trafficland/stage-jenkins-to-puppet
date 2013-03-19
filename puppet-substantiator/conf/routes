@@ -40,11 +40,12 @@ PUT     /actors/:id                         controllers.ActorsStateController.ed
 DELETE  /actors/:id                         controllers.ActorsStateController.remove(id: String)
 POST    /actors/uniqueCheck                 controllers.ActorsStateController.uniqueCheck
 
-GET     /rollback/:appName/:appPort                  controllers.ScriptController.rollBack(appName: String,appPort: Int)
+POST     /rollback                          controllers.ScriptController.rollBack
 
 # Home page
 GET     /                                   controllers.Application.baseUrl
-GET     /version                            controllers.Application.version
+GET     /version                            controllers.Application.getVersion
+GET     /admin/version                      controllers.Application.getVersion
 ### IMPORTANT comment out on production routes
 GET     /routes                             controllers.Application.getRoutes
 # Map static resources from the /public folder to the /assets URL path

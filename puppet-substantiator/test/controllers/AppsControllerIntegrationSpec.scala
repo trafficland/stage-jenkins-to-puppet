@@ -33,6 +33,17 @@ class AppsControllerIntegrationSpec
 
   ("Validation" should {
 
+    "create App with a renameAppTo" in new ICleanDatabase {
+      val test = "renameTest"
+      val entity = createValidEntity.copy(renameAppTo = Some(test))
+      val request = new FakeRequest(POST, "/%s".format(collectionName),
+        FakeHeaders(Seq(CONTENT_TYPE -> Seq("application/json"))), jsonWriter.writes(entity))
+      val result = checkForAsyncResult(route(request).get)
+      status(result) should be equalTo (OK)
+      resultToFieldComparison(result, "_id", entity.id.get.stringify) should be equalTo true
+      resultToOptField(result, "renameAppTo") should be equalTo Some(test)
+    }
+
     "validate should return ok" in new ICleanDatabase {
       val entity = createValidEntity
       val request = new FakeRequest(GET, "/%s/validate/%s/%s/%s".format(collectionName, "app199", 5000, 5000),

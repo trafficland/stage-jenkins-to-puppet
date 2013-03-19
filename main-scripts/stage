@@ -3,16 +3,25 @@
 jenkinsJobName=${1?missing jenkins job name} #example proj1-stage
 destinationAddress=${2?missing destination ip or hostname}
 applicationName=${3?missing application name} #example proj1
-distLocation=${4:-'/dist/'}
-renameApplicationTo=${5:-$applicationName}
-startName=${6:-'start'}
-stageHome=${7:-'~/stage/'} #example ~/stage/
-extension=${8:-.zip} #default extension to zip
-extractCmd=${9:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
+commaDelimitedMachineNameList=${4?missing comma delimmited machine list to install to}
+distLocation=${5:-'/dist/'}
+renameApplicationTo=${6:-$applicationName}
+startName=${7:-}
+stageHome=${8:-'~/stage/'} #example ~/stage/
+extension=${9:-.zip} #default extension to zip
+extractCmd=${10:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
 echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
 applicationNameNew=$renameApplicationTo'.new'$extension
 
+#making distLocation have a solid path!
+if [[ "$distLocation" != /* ]];then
+    distLocation=\/"$distLocation"
+fi
+if [[ "$distLocation" != */ ]];then
+   distLocation="$distLocation"\/
+fi
+echo "$distLocation"
 #create the package location by replacing the jenkinsJobName variable with the actual jobName
 packageLocation=/var/lib/jenkins/jobs/"$jenkinsJobName"/workspace"$distLocation"*$extension
 
@@ -39,4 +48,6 @@ cmd=scp' '$packageLocation' '$destination
 echo $cmd
 $cmd
 
-sh ~/stage/stage_remote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $renameApplicationTo $startName
+`dirname $0`/roll_forward_remote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $renameApplicationTo $startName
+
+`dirname $0`/puppet-run "$commaDelimitedMachineNameList"

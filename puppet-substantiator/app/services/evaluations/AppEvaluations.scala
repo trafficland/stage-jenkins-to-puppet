@@ -3,13 +3,12 @@ package services.evaluations
 import _root_.util.PlaySettings
 import util.evaluations._
 import models.mongo.reactive._
-import play.api.mvc.Results._
-import controllers._
 import play.api.libs.ws.WS
 import services.repository.mongo.reactive.impls.IAppsRepository
 import play.api.Logger._
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.json.Json
 
 trait AbstractAppEvaluate extends IEvaluate[App] {
   def handleFuturePassFail(futFailPass: Future[PassFail]) = {
@@ -27,7 +26,7 @@ trait AbstractAppEvaluate extends IEvaluate[App] {
   }
 }
 
-case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvaluate {
+case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvaluate with IAppReadersWriters {
   def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] = {
     val futFailPass = app.id match {
       case Some(id) =>
@@ -41,7 +40,18 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                   if (upApp.actualCluster.forall(appMachine =>
                     appMachine.actual match {
                       case Some(actualState) =>
-                        actualState == app.expected
+                        val result = actualState.contains(app.expected)
+                        result match {
+                          case true =>
+                            val passStr = "Version Check for %s application PASSED for %s version! Actual value is %s !".format(app.name, app.expected, actualState)
+                            Console.println(passStr)
+                            logger.debug(passStr)
+                          case false =>
+                            val failStr = "Version Check for %s application FAILED for %s version! Actual value is %s !".format(app.name, app.expected, actualState)
+                            logger.debug(failStr)
+                            Console.println(failStr)
+                        }
+                        result
                       case None =>
                         false
                     }
@@ -66,9 +76,9 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
     futFailPass
   }
 
-  lazy val rollBackUrl = "http://" + PlaySettings.absUrl + "/rollback/%s/%s"
+  lazy val rollBackUrl = "http://" + PlaySettings.absUrl + "/rollback"
 
-  def failAction(result: App) = WS.url(rollBackUrl.format(result.name, result.port.getOrElse("80"))).get()
+  def failAction(result: App) = WS.url(rollBackUrl).post(Json.toJson(result))
 
 
   def passAction(result: App) {

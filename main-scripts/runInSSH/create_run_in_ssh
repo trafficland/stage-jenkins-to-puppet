@@ -2,10 +2,22 @@
 #works with gnu sed
 moduleName=${1?need module name}
 pathToModuleName=${2?need module name path}
-OSX=${3:-}
-pathToRunInSSH_SH=${4:-'./'}
+#The purpose of the two replaceExtra Lists are to replace 
+#an unlimited amount unqique portions inside of top_execute.sh
+#prime example is that roll_forward and roll_backward have identical functionality except for roll driection (directory movement)
+replaceExtraLookUpNameCommaList=${3:-} #Name and File must be the same size! 
+replaceExtraLookUpFileCommaList=${4:-}
+renameModuleNameAs=${5:-moduleName}
+pathToRunInSSH_SH=${6:-'./'}
 pathAndmoduleName="$pathToModuleName""$moduleName"
 
+extraReplaceNameArray=(${replaceExtraLookUpNameCommaList//,/ })
+extraReplaceFileArray=(${replaceExtraLookUpFileCommaList//,/ })
+
+if [ ${#extraReplaceNameArray[@]} != ${#extraReplaceFileArray[@]} ]; then
+	echo Array mismatch on extraReplaceNameArray to extraReplaceFileArray, exiting!!!
+	exit 1
+fi
 
 newSshModuleName=$moduleName'.sh'
 cp "$pathToRunInSSH_SH"run_in_ssh.sh  "$newSshModuleName"
@@ -33,5 +45,19 @@ sed -i '/REPLACE_WITH_EXEC_CONTENT/{
 	N
 }' "$newSshModuleName"
 
+#Handle extra replacement
+for i in "${!extraReplaceNameArray[@]}"
+do
+
+	contentPath="$pathAndmoduleName"'/'"${extraReplaceFileArray["$i"]}"
+	echo ContentPath is: "$contentPath"
+	#replace key(lookupName) with value (content)
+	sed -i '/'"${extraReplaceNameArray["$i"]}"'/{
+	s/'"${extraReplaceNameArray["$i"]}"'//g
+	r '"$contentPath"'
+	}' "$newSshModuleName"
+done
+
 chmod 755 "$newSshModuleName"
 mv "$newSshModuleName" ./createdFromTemplate
+mv ./createdFromTemplate/"$newSshModuleName" ./createdFromTemplate/"$renameModuleNameAs"
