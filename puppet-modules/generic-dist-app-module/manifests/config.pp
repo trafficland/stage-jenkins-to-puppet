@@ -5,12 +5,6 @@ class REPLACE_MODULE_NAME::config {
         group => 'root',
         mode => 0755,
     }
-    file { "/opt/REPLACE_MODULE_NAME/REPLACE_START_COMMAND":
-        ensure => file,
-        owner => 'root',
-        group => 'root',
-        mode => 0755,
-    }
     file { "/opt/stage/REPLACE_MODULE_NAME":
         require => Class["stage"],
         ensure => directory,
