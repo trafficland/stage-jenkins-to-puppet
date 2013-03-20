@@ -1,3 +1,4 @@
+#!/bin/sh
 pathToGenericModule=${1?missing path to generic module}
 moduleName=${2?missing moduleName}
 emails=${3?missing email or emails in quotes}
