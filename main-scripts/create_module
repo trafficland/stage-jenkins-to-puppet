@@ -1,6 +1,7 @@
 #!/bin/sh
 pathToGenericModule=${1?missing path to generic module}
 moduleName=${2?missing moduleName}
+#MUST BE ESCAPED WITH \ on @ symbols
 emails=${3?missing email or emails in quotes}
 javaCommands=${4:-} #default to none
 #kvp list delimitted by commas example "localhost:start,google.com:start-google,192.168.0.10:starter" DEFAULT IS EMPTY
@@ -17,7 +18,7 @@ find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_MODULE_NAME/'"$moduleN
 moduleNameCAPS=$(echo "$moduleName" | tr '[:lower:]' '[:upper:]')
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_CAPS_MODULE_NAME/'"$moduleNameCAPS"'/g'
 
-find ./"$moduleName" -type f|xargs perl -pi -e 's/dummy\@gmail.com/'"$emails"'/g'
+find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_WITH_SPACED_EMAILS/'"$emails"'/g'
 
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_JAVA_ARGS/'"$javaCommands"'/g'
 

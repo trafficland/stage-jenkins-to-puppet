@@ -195,7 +195,7 @@ rollback() {
                 rm -rf $ROLLBACKDIR && success || failure
                 echo
         	    #inset wget commands here and
-        	    echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c developers.com
+        	    echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c REPLACE_WITH_SPACED_EMAILS
 	            echo "Completed Reverting $PROG to previous state...Successful "
                 RETVAL=$?
                 echo
