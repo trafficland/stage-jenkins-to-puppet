@@ -51,6 +51,9 @@ abstract class ScriptController extends Controller {
                   |startName=${7:-}
                 """
                 val rename = app.renameAppTo.getOrElse(app.name)
+                val rollBackLogMsg = "------------------------ROLLBACK OCCURRING FOR APP: %s------------------------".format(rename)
+                play.api.Logger.logger.info(rollBackLogMsg)
+                Console.println(rollBackLogMsg)
                 actors().getActor(scriptorName) ! new Script(script,
                   Seq(app.name, puppetServerStageHome + rename + "/", extension, puppetHostNameOrAddress, extractCommand, rename))
                 //TODO: Excute script to send an email out to whomever to notify rollback

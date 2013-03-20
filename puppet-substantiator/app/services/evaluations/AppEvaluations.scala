@@ -95,9 +95,17 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
       machine =>
         app.port match {
           case Some(realPort) =>
-            testMachine(app, machine.machineName, WS.url("http://%s:%s/%s".format(machine.machineName, realPort, filterOutImmediateForwardSlash(app.testUrl))))
+            val url = "http://%s:%s/%s".format(machine.machineName, realPort, filterOutImmediateForwardSlash(app.testUrl))
+            val logMsg = "Testing Machine at %s".format(url)
+            Console.println(logMsg)
+            logger.debug(logMsg)
+            testMachine(app, machine.machineName, WS.url(url))
           case None =>
-            testMachine(app, machine.machineName, WS.url("http://%s/%s".format(machine.machineName, filterOutImmediateForwardSlash(app.testUrl))))
+            val url = "http://%s/%s".format(machine.machineName, filterOutImmediateForwardSlash(app.testUrl))
+            val logMsg = "Testing Machine at %s".format(url)
+            Console.println(logMsg)
+            logger.debug(logMsg)
+            testMachine(app, machine.machineName, WS.url(url))
         }
     }
 
