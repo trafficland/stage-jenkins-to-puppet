@@ -177,11 +177,16 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
       update <- {
         optResponse match {
           case Some(result) =>
-            repo.update(app.copy(actualCluster =
+            val logStr = "------------- Machine: %s got the following response: %s -------------".format(machineName, result.body)
+            val updated = repo.update(app.copy(actualCluster =
               AppMachineState(machineName, Some(result.body)) :: app.actualCluster.filter(m => m.machineName != machineName)
             ))
+            Console.print(logStr)
+            logger.info(logStr)
+            updated
           case None =>
             val logStr = "No Response from machine %s".format(machineName)
+            Console.println(logStr)
             if (logger.isDebugEnabled())
               logger.debug(logStr)
             future(Right(new Exception(logStr)))
