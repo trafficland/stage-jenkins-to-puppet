@@ -21,10 +21,25 @@ STAGEDIR="/opt/stage/REPLACE_MODULE_NAME"
 ROLLBACKDIR="REPLACE_MODULE_NAME.rollback"
 NOW=`date +"%m-%d-%Y-%H-%M-%S"`
 APP="REPLACE_MODULE_NAME"
-WORKER_PATH="/opt/REPLACE_MODULE_NAME/conf/worker.conf"
+#kvp list delimitted by commas example "localhost:start,google.com:start-google,192.168.0.10:starter"
+machineHostToStartList="REPLACE_HOSTNAME_TO_START"
+machines=(${machineHostToStartList//,/ })
 
-#fix worker.conf to have correct hostname
-sed -i 's/hostname = "127.0.0.1"/hostname = "'"$(hostname)"'"/g' "$WORKER_PATH"
+#####BEGIN HACK for modifying whatever on the system (could be to modify a config file)REPLACE_HACK
+
+#####END HACK
+
+declare -A roleMap
+
+for machine in "${machines[@]}"
+do
+    echo machine $machine
+    # key : value
+    KEY=${machine%%:*}
+    VALUE=${machine#*:}
+    #echo 'Key -'$KEY': Value - '$VALUE
+    roleMap[$KEY]=$VALUE
+done
 
 #logging echos to /opt/REPLACE_MODULE_NAME/init-d.log
 function echo {
@@ -73,7 +88,9 @@ startstatus()
         echo -n "Starting $PROG: "
         fail_if_proc_is_running
         cd $APPDIR
-        runApp=$(nohup ./REPLACE_START_COMMAND REPLACE_JAVA_ARGS >/dev/null 2>&1&)
+        startScript=${roleMap[$(hostname)]}
+        echo 'Start Script for '"$PROG"' is '"$startScript"
+        runApp=$(nohup ./"$startScript" REPLACE_JAVA_ARGS >/dev/null 2>&1&)
         $runApp && success || failure
         echo
         echo -n "Please wait 8 seconds.....  "
@@ -182,27 +199,6 @@ deploy(){
                 return $RETVAL
         fi
 }
-# rollback() {
-#                 echo "$PROG failed to start after deployment..."
-#                 echo "Please wait... Attempting to revert $PROG to previous state..."
-#         if [ -d "$OPTDIR/$ROLLBACKDIR" ] ; then
-#                 cd $OPTDIR
-#                 echo
-#                 echo "Reverting $PROG to previous state from Rollback directory..."
-#                 mv "$APP" "$APP.BAD.$NOW"
-#                 cp -r "$ROLLBACKDIR/" "$APP" 
-#                 echo
-#                 echo "Please wait!!! Completing Rollback..."
-#                 rm -rf $ROLLBACKDIR && success || failure
-#                 echo
-#         	#inset wget commands here and
-#         	echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c dummy@gmail.com
-# 	echo "Completed Reverting $PROG to previous state...Successful "
-#                 RETVAL=$?
-#                 echo
-#         return $RETVAL
-#         fi
-# }
 
 case "$1" in
     start)
@@ -227,9 +223,6 @@ case "$1" in
     deploy)
         deploy
         ;; 
-    #rollback)
-    #    rollback
-    #    ;;
     *)
         echo "Usage: $0 {start|stop|restart|halt|status|deploy}"
         RETVAL=1

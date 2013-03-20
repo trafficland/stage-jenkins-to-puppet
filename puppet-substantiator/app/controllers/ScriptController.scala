@@ -53,6 +53,8 @@ abstract class ScriptController extends Controller {
                 val rename = app.renameAppTo.getOrElse(app.name)
                 actors().getActor(scriptorName) ! new Script(script,
                   Seq(app.name, puppetServerStageHome + rename + "/", extension, puppetHostNameOrAddress, extractCommand, rename))
+                //TODO: Excute script to send an email out to whomever to notify rollback
+                //echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c REPLACE_WITH_SPACED_EMAILS
                 Ok("Executed Rollback script!")
               case None =>
                 InternalServerError("Script not Found!")

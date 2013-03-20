@@ -20,7 +20,7 @@ curl_command(){
         json='{"name":"'"$app"'","expected":"'"$expected"'","testUrl":"'"$testEnd"'","port":"'"$port"'","renameAppTo":"'"$rename"'","actualCluster":['"$cluster]"'}'
         echo $json
         echo '///////////////'
-        curl -v -H "Content-type:application/json" -X POST -d $json http://"$url"/apps/save
+        curl -v -H "Content-type:application/json" -X POST -d "$json" http://"$url"/apps/save
 }
 
 declare -a jsonReadyMachines
