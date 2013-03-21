@@ -40,15 +40,16 @@ abstract class ScriptController extends Controller {
           case Some(app) =>
             optScriptExists match {
               case Some(script) =>
-                """RollBackScript Required Args
-                  |applicationName=${1?missing application name}
-                  |stagePath=${2?missing stage path}
-                  |extension=${3?missing extension}
-                  |destinationAddress=${4?missing destination address}
-                  |extractCmd=${5?missing extraction command like "unzip"}
-                  |renameApplicationTo=${6:-$applicationName}
-                  |startName=${7:-}
-                """
+                /*
+                RollBackScript Required Args
+                  applicationName=${1?missing application name}
+                  stagePath=${2?missing stage path}
+                  extension=${3?missing extension}
+                  destinationAddress=${4?missing destination address}
+                  extractCmd=${5?missing extraction command like "unzip"}
+                  renameApplicationTo=${6:-$applicationName}
+                  startName=${7:-}
+                */
                 val rename = app.renameAppTo.getOrElse(app.name)
                 val rollBackLogMsg = "------------------------ROLLBACK OCCURRING FOR APP: %s------------------------".format(rename)
                 play.api.Logger.logger.info(rollBackLogMsg)
