@@ -1,9 +1,8 @@
-// Comment to get more information during initialization
-logLevel := Level.Warn
-
-// The Typesafe repository 
+// The Typesafe repository
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-addSbtPlugin("com.trafficland" % "sbt-plugins" % "0.6.3")
+resolvers += Resolver.url("Artifactory Online", url("http://repo.scala-sbt.org/scalasbt/repo"))(Resolver.ivyStylePatterns)
 
-addSbtPlugin("play" % "sbt-plugin" % "2.1-RC3")
+addSbtPlugin("com.trafficland" % "sbt-plugins" % "0.6.8")
+
+addSbtPlugin("play" % "sbt-plugin" % "2.1.0")

@@ -1,0 +1,17 @@
+#!/bin/sh
+#curl get result and compare it to expected
+serviceUrl=${1?need a url to get from}
+appName=${2?need application name}
+delayQuerySeconds=${3?missing expected delay of a query in seconds} 
+delayValidateSeconds=${4?missing expected delay validation in seconds} 
+
+curl_command(){
+  url=$1
+  app=$2
+  delayQ=$3
+  delayV=$4
+
+  curl 'http://'"$url"'/apps/validate/'"$app"'/'"$delayQ"'/'"$delayV"
+
+}
+echo $(curl_command "$serviceUrl" "$appName" "$delayQuerySeconds" "$delayValidateSeconds")

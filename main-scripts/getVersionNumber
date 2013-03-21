@@ -1,0 +1,9 @@
+#!/bin/sh
+applicationName=${1?need app name!!!}
+pathToBase=${2?need a path to where the version package is!}
+extension=${3:-.zip}
+sedRemoveAppArg="s/"$applicationName"-//g"
+#echo $sedRemoveAppArg
+result=$(basename "$pathToBase"*"$extension" $f | sed -e "$sedRemoveAppArg" | sed -e 's/.zip//g')
+echo $result
+exit

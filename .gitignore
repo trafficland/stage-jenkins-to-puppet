@@ -15,7 +15,7 @@ lib_managed
 src_managed
 project/boot/
 project/project
-
+test-results/
 
 # IntelliJ
 *.iws
@@ -27,7 +27,7 @@ atlassian-ide-plugin.xml
 *.rdb
 
 #OSX
-.DS_STORE 
+.DS_STORE
 
 #Sublime
 .sublime*

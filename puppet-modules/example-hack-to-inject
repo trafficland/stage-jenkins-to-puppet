@@ -1,0 +1,4 @@
+WORKER_PATH="/opt/REPLACE_MODULE_NAME/conf/worker.conf"
+
+#fix worker.conf to have correct hostname
+sed -i 's/hostname = "127.0.0.1"/hostname = "'"$(hostname)"'"/g' "$WORKER_PATH"

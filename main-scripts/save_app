@@ -1,0 +1,39 @@
+#!/bin/sh
+#curl to add an application and a machine set
+appName=${1?need application name}
+versionExpected=${2?need expected value}
+commaDelimitedMachineNameList=${3?missing comma delimmited machine name list}
+applicationPort=${4?need to specify app port!}
+serviceUrl=${5:-localhost:9000}
+currentVersion=${6:-} #default none
+reNameAppTo=${7:-$appName}
+testEndPoint=${8:-'/admin/version'}
+
+machines=(${commaDelimitedMachineNameList//,/ })
+
+curl_command(){
+	app=$1 expected=$2 cluster=$3 testEnd=$4 port=$5 url=$6 rename=$7
+		echo '///////////////'
+        echo $app $expected $cluster $url
+        echo '///////////////'
+        echo '////////---JSON---///////'
+        json='{"name":"'"$app"'","expected":"'"$expected"'","testUrl":"'"$testEnd"'","port":"'"$port"'","renameAppTo":"'"$rename"'","actualCluster":['"$cluster]"'}'
+        echo $json
+        echo '///////////////'
+        curl -v -H "Content-type:application/json" -X POST -d "$json" http://"$url"/apps/save
+}
+
+declare -a jsonReadyMachines
+for i in "${!machines[@]}"
+do
+    if [ "$currentVersion" ]
+    then
+    	jsonReadyMachines["$i"]='{"machineName":"'"${machines["$i"]}"'","actual":"'"$currentVersion"'"},'
+    else
+
+    	jsonReadyMachines["$i"]='{"machineName":"'"${machines["$i"]}"'"},'
+    fi
+done
+machineVersionsPaired="${jsonReadyMachines[*]}"
+machinePairLastCommaRemoved="${machineVersionsPaired%?}"
+curl_command "$appName" "$versionExpected" "$machinePairLastCommaRemoved" "$testEndPoint" "$applicationPort" "$serviceUrl" "$reNameAppTo"

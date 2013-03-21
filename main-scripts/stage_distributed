@@ -1,0 +1,102 @@
+#!/bin/sh
+#get correct arguments
+jenkinsJobName=${1?missing jenkins job name} #example proj1-stage
+puppetAddress=${2?missing destination ip or hostname}
+validatorServiceUrl=${3?missing distrubuted validation service url}
+applicationName=${4?missing application name} #example proj1
+#for save_machine save_app
+commaDelimitedMachineNameList=${5?mising comma delimmited machine list}
+#versionExpected=${6?need expected value}
+applicationPortNumber=${6:-9000} #if this is a play app the default will be empty and the port # will be 9000
+validationQuerySeconds=${7:-360} #6 minutes 60*6
+validationValidateSeconds=${8:-600} #10 minutes
+distLocation=${9:-'/dist/'}
+renameApplicationTo=${10:-$applicationName}
+startName=${11:-}
+isAliveAll=${12:-true}
+currentVersion=${13:-} #default none
+stageHome=${14:-'~/stage/'} #example ~/stage/
+extension=${15:-.zip} #default extension to zip
+extractCmd=${16:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
+
+echo jenkinsJobName : "$jenkinsJobName"
+echo puppetAddress : "$puppetAddress"
+echo validatorServiceUrl : "$validatorServiceUrl"
+echo commaDelimitedMachineNameList : "$commaDelimitedMachineNameList"
+echo applicationPortNumber : "$applicationPortNumber"
+echo validationQuerySeconds : "$validationQuerySeconds"
+echo validationValidateSeconds : "$validationValidateSeconds"
+echo distLocation : "$distLocation"
+echo renameApplicationTo: "$renameApplicationTo"
+echo startName : "$startName"
+echo isAliveAll : "$isAliveAll"
+echo currentVersion : "$currentVersion"
+echo stageHome : "$stageHome"
+echo extension : "$extension"
+echo extractCmd : "$extractCmd"
+
+
+echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
+applicationNameNew=$renameApplicationTo'.new'$extension
+
+#making distLocation have a solid path!
+if [[ "$distLocation" != /* ]];then
+    distLocation=\/"$distLocation"
+fi
+if [[ "$distLocation" != */ ]];then
+   distLocation="$distLocation"\/
+fi
+echo "$distLocation"
+#create the package location by replacing the jenkinsJobName variable with the actual jobName
+fullDistLocation=/var/lib/jenkins/jobs/"$jenkinsJobName"/workspace"$distLocation"
+packageLocation="$fullDistLocation"*$extension
+
+####### PARSE VERSION NUMBER FROM PACKAGED FILE#####
+versionExpected=$(~/stage/getVersionNumber "$applicationName" "$fullDistLocation")
+echo 'VERSION EXPECTED PARSED!!' "$versionExpected"
+####### END EXTRACTION  ############
+
+#stagePath will combine the stageHome location to the subdirectory structure we want
+#ie: if stageHome = '~/stage/'' and applicationName = 'proj1'
+#then stagePath = ~/stage/proj1/ 
+stagePath=$stageHome''$renameApplicationTo'/'
+#append appNew, #then stagePath = ~/stage/proj1/proj1.new
+stagePathWithNewApplication=$stagePath''$applicationNameNew
+
+#destination will combine address/hostname to a full stagePath, this will fulfill the scp destination
+#ie: 127.0.0.1:~/stage/proj1/proj1New
+destination=$puppetAddress:$stagePathWithNewApplication
+
+#echo "$destination"
+
+#begin deployment
+ssh $puppetAddress stagePath=$stagePath 'bash -s' <<'ENDSSH'
+  # commands to run on remote host
+  mkdir -p "$stagePath"
+ENDSSH
+#pack full scp line
+cmd=scp' '$packageLocation' '$destination
+#execute scp
+echo $cmd
+$cmd
+
+`dirname $0`/roll_forward_remote.sh $applicationName $stagePath $extension $puppetAddress $extractCmd $renameApplicationTo $startName
+#end deployment
+
+
+#begin validation service interaction
+`dirname $0`/save_machine "$commaDelimitedMachineNameList" "$isAliveAll" "$validatorServiceUrl"
+
+#give the operation time to get a machine into the system
+sleep 5
+
+`dirname $0`/save_app "$applicationName" "$versionExpected" "$commaDelimitedMachineNameList" "$applicationPortNumber" "$validatorServiceUrl" "$currentVersion" "$renameApplicationTo"
+
+sleep 5
+
+`dirname $0`/puppet-run "$commaDelimitedMachineNameList"
+
+sleep 5
+
+`dirname $0`/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
+#end validation service interaction
