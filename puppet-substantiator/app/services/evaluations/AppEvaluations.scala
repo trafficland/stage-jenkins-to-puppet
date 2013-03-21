@@ -167,32 +167,54 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
 
 
   def testMachine(appToUpdate: App, machineName: String, request: WS.WSRequestHolder): Future[Either[Option[App], Exception]] = {
-    val optFutResponse = request.get()
-      .map(Some(_))
-      .recover {
-      case _ => None
-    }
-    for {
-      optResponse <- optFutResponse
-      update <- {
-        optResponse match {
-          case Some(result) =>
-            val logStr = "------------- Machine: %s got the following response: %s -------------".format(machineName, result.body)
-            val updated = repo.update(app.copy(actualCluster =
-              AppMachineState(machineName, Some(result.body)) :: app.actualCluster.filter(m => m.machineName != machineName)
-            ))
-            Console.print(logStr)
-            logger.info(logStr)
-            updated
-          case None =>
-            val logStr = "No Response from machine %s".format(machineName)
-            Console.println(logStr)
-            if (logger.isDebugEnabled())
-              logger.debug(logStr)
-            future(Right(new Exception(logStr)))
+    appToUpdate.id match {
+      case Some(id) =>
+        val optFutResponse = request.get()
+          .map(Some(_))
+          .recover {
+          case _ => None
         }
-      }
-    } yield (update)
+        for {
+          optResponse <- optFutResponse
+          latestAppState <- repo.get(id)
+          update <- {
+            optResponse match {
+              case Some(result) =>
+                latestAppState match {
+                  case Left(latestOptApp) =>
+                    latestOptApp match {
+                      case Some(latestApp) =>
+                        val logStr = "------------- Machine: %s got the following response: %s -------------".format(machineName, result.body)
+                        val updated = repo.update(latestApp.copy(actualCluster =
+                          AppMachineState(machineName, Some(result.body)) :: latestApp.actualCluster.filter(m => m.machineName != machineName)
+                        ))
+                        Console.print(logStr)
+                        logger.info(logStr)
+                        updated
+                      case None =>
+                        val logStr = "No latest app to update from ap: %s for machine: %s".format(app.name, machineName)
+                        Console.println(logStr)
+                        logger.debug(logStr)
+                        future(Right(new Exception(logStr)))
+                    }
+                  case Right(ex) =>
+                    logger.debug(ex.getMessage)
+                    future(Right(ex))
+                    future(Right(ex))
+                }
+              case None =>
+                val logStr = "No Response from machine %s".format(machineName)
+                Console.println(logStr)
+                logger.debug(logStr)
+                future(Right(new Exception(logStr)))
+            }
+          }
+        } yield (update)
+      case None =>
+        logger.info("No id for application, therefore no application can be be updated frin testMachine. " +
+          "This would cause the state to be out of sync.")
+        future(Left(Some(appToUpdate)))
+    }
   }
 
 }
