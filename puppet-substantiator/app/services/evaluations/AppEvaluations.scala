@@ -13,7 +13,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.libs.json.Json
 
 
-
 object AppEvaluateHelpers extends IEvaluateDomain[App] {
   def filterOutImmediateForwardSlash(testUrl: String): String = {
     testUrl.startsWith("/") match {
@@ -174,9 +173,13 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
                 case Some(latestApp) =>
                   optAppMachine match {
                     case Some(appMachine) =>
-                      futureEitherOfOptionExceptionToOption(repo.update(latestApp.copy(actualCluster =
-                        appMachine :: latestApp.actualCluster.filter(_.machineName != appMachine.machineName))))
+                      TidyConsole.println("Latest App Found")
+                      val appMachineList = appMachine :: latestApp.actualCluster.filter(_.machineName != appMachine.machineName)
+                      TidyConsole.println("Updating AppMachineState with: " + appMachineList.map(state => "{machine: " + state.machineName + "actual: " + state.actual + '}')
+                        .reduce(_ + _))
+                      futureEitherOfOptionExceptionToOption(repo.update(latestApp.copy(actualCluster = appMachineList)))
                     case None =>
+                      TidyConsole.println("No AppMachineState to update !!")
                       future(None)
                   }
                 case None =>
@@ -191,6 +194,7 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
               }
             }
         }
+        TidyConsole.println("Done Iterating AppMachineState Futures! Evaluating pass or fail withing their FutureBool result list!")
         futOneBoolToPassFail(futureBools.reduce((futBool1, futBool2) =>
           for {
             nowBool1 <- futBool1
