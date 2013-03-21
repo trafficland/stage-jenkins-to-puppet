@@ -91,31 +91,65 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
 
 case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvaluate {
   def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] = {
-    val futQueries = app.actualCluster.map {
-      machine =>
-        app.port match {
-          case Some(realPort) =>
-            val url = "http://%s:%s/%s".format(machine.machineName, realPort, filterOutImmediateForwardSlash(app.testUrl))
-            val logMsg = "Testing Machine at %s".format(url)
-            Console.println(logMsg)
-            logger.debug(logMsg)
-            testMachine(app, machine.machineName, WS.url(url))
-          case None =>
-            val url = "http://%s/%s".format(machine.machineName, filterOutImmediateForwardSlash(app.testUrl))
-            val logMsg = "Testing Machine at %s".format(url)
-            Console.println(logMsg)
-            logger.debug(logMsg)
-            testMachine(app, machine.machineName, WS.url(url))
+    app.id match {
+      case Some(id) =>
+        val futQueries = query.map {
+          futAppMachine =>
+            for {
+              optAppMachine <- futAppMachine
+              latestApp <- repo.get(id)
+              updated <- latestApp match {
+                case Left(optApp) =>
+                  optAppMachine match {
+                    case Some(appMachine) =>
+                      val appToUpdate = optApp.getOrElse(app)
+                      repo.update(appToUpdate.copy(actualCluster = appMachine ::
+                        app.actualCluster.filter(appMachineCompare =>
+                          appMachineCompare.machineName == appMachine.machineName)))
+                    case None =>
+                      future(None)
+                  }
+                case Right(ex) => future(None)
+              }
+            }
+            yield {
+              updated match {
+                case Left(someApp) =>
+                  someApp match {
+                    case Some(a) => true
+                    case None => false
+                  }
+                case Right(ex) => false
+              }
+            }
         }
+        futOneBoolToPassFail(futQueries.reduce((futBool1, futBool2) =>
+          for {
+            nowBool1 <- futBool1
+            nowBool2 <- futBool2
+          } yield (nowBool1 && nowBool2)
+        ))
+      case None =>
+        future(Fail(app))
     }
+  }
 
-    val oneFutBool = futQueriesResultsToListOfFutureBools(futQueries).reduce((futBool1, futBool2) =>
-      for {
-        nowBool1 <- futBool1
-        nowBool2 <- futBool2
-      } yield (nowBool1 && nowBool2)
-    )
-    futOneBoolToPassFail(oneFutBool)
+  protected def query = app.actualCluster.map {
+    machine =>
+      app.port match {
+        case Some(realPort) =>
+          val url = "http://%s:%s/%s".format(machine.machineName, realPort, filterOutImmediateForwardSlash(app.testUrl))
+          val logMsg = "Testing Machine at %s".format(url)
+          Console.println(logMsg)
+          logger.debug(logMsg)
+          testMachine(app, machine.machineName, WS.url(url))
+        case None =>
+          val url = "http://%s/%s".format(machine.machineName, filterOutImmediateForwardSlash(app.testUrl))
+          val logMsg = "Testing Machine at %s".format(url)
+          Console.println(logMsg)
+          logger.debug(logMsg)
+          testMachine(app, machine.machineName, WS.url(url))
+      }
   }
 
   def filterOutImmediateForwardSlash(testUrl: String): String = {
@@ -124,26 +158,6 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
         testUrl.replaceFirst("/", "")
       case false =>
         testUrl
-    }
-  }
-
-  def futQueriesResultsToListOfFutureBools(futQueries: List[Future[Either[Option[App], Exception]]]): List[Future[Boolean]] = {
-    futQueries.map {
-      futQuery =>
-        for {
-          query <- futQuery
-          result <- query match {
-            case Left(optUpdatedApp) =>
-              optUpdatedApp match {
-                case Some(upApp) =>
-                  future(true)
-                case None =>
-                  future(false)
-              }
-            case Right(ex) =>
-              future(false)
-          }
-        } yield (result)
     }
   }
 
@@ -158,62 +172,37 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
     }
   }
 
-  def failAction(result: App) = {}
+  def failAction(result: App) = {
+  }
 
 
-  def passAction(result: App) {}
+  def passAction(result: App) {
+  }
 
   def name = app.name + "Query"
 
 
-  def testMachine(appToUpdate: App, machineName: String, request: WS.WSRequestHolder): Future[Either[Option[App], Exception]] = {
-    appToUpdate.id match {
-      case Some(id) =>
-        val optFutResponse = request.get()
-          .map(Some(_))
-          .recover {
-          case _ => None
-        }
-        for {
-          optResponse <- optFutResponse
-          latestAppState <- repo.get(id)
-          update <- {
-            optResponse match {
-              case Some(result) =>
-                latestAppState match {
-                  case Left(latestOptApp) =>
-                    latestOptApp match {
-                      case Some(latestApp) =>
-                        val logStr = "------------- Machine: %s got the following response: %s -------------".format(machineName, result.body)
-                        val updated = repo.update(latestApp.copy(actualCluster =
-                          AppMachineState(machineName, Some(result.body)) :: latestApp.actualCluster.filter(m => m.machineName != machineName)
-                        ))
-                        Console.print(logStr)
-                        logger.info(logStr)
-                        updated
-                      case None =>
-                        val logStr = "No latest app to update from ap: %s for machine: %s".format(app.name, machineName)
-                        Console.println(logStr)
-                        logger.debug(logStr)
-                        future(Right(new Exception(logStr)))
-                    }
-                  case Right(ex) =>
-                    logger.debug(ex.getMessage)
-                    future(Right(ex))
-                    future(Right(ex))
-                }
-              case None =>
-                val logStr = "No Response from machine %s".format(machineName)
-                Console.println(logStr)
-                logger.debug(logStr)
-                future(Right(new Exception(logStr)))
-            }
-          }
-        } yield (update)
-      case None =>
-        logger.info("No id for application, therefore no application can be be updated frin testMachine. " +
-          "This would cause the state to be out of sync.")
-        future(Left(Some(appToUpdate)))
+  def testMachine(appToUpdate: App, machineName: String, request: WS.WSRequestHolder): Future[Option[AppMachineState]] = {
+    val optFutResponse = request.get()
+      .map(Some(_))
+      .recover {
+      case _ => None
+    }
+    for {
+      optResponse <- optFutResponse
+    } yield {
+      optResponse match {
+        case Some(result) =>
+          val logStr = "------------- Machine: %s got the following response: %s -------------".format(machineName, result.body)
+          Console.print(logStr)
+          logger.info(logStr)
+          Some(AppMachineState(machineName, Some(result.body)))
+        case None =>
+          val logStr = "No Response from machine %s".format(machineName)
+          Console.println(logStr)
+          logger.info(logStr)
+          None
+      }
     }
   }
 
