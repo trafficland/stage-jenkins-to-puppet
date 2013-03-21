@@ -7,6 +7,7 @@ import ScriptExecutorActor._
 import _root_.util.OptionHelper.getOptionOrDefault
 import actors.context.playframework.ActorContextProvider
 import ActorContextProvider._
+import org.joda.time._
 
 abstract class ScriptController extends Controller {
   implicit val app = play.api.Play.current
@@ -28,10 +29,11 @@ abstract class ScriptController extends Controller {
     }
   }
 
-  val puppetServerStageHome = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.home"), "~/stage/")
-  val extension = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extension"), ".zip")
-  val puppetHostNameOrAddress = getOptionOrDefault(play.api.Play.configuration.getString("puppet.hostName"), "127.0.0.1")
-  val extractCommand = getOptionOrDefault(play.api.Play.configuration.getString("puppet.stage.extractCommand"), "unzip")
+  val puppetServerStageHome = getOptionOrDefault(app.configuration.getString("puppet.stage.home"), "~/stage/")
+  val extension = getOptionOrDefault(app.configuration.getString("puppet.stage.extension"), ".zip")
+  val puppetHostNameOrAddress = getOptionOrDefault(app.configuration.getString("puppet.hostName"), "127.0.0.1")
+  val extractCommand = getOptionOrDefault(app.configuration.getString("puppet.stage.extractCommand"), "unzip")
+  val optEmailAddresses = app.configuration.getString("notify.commaDelimitedEmails")
 
   def rollBack = {
     Action(parse.json) {
@@ -54,19 +56,41 @@ abstract class ScriptController extends Controller {
                 val rollBackLogMsg = "------------------------ROLLBACK OCCURRING FOR APP: %s------------------------".format(rename)
                 play.api.Logger.logger.info(rollBackLogMsg)
                 Console.println(rollBackLogMsg)
-                actors().getActor(scriptorName) ! new Script(script,
+                actors().getActor(scriptorName) ! new ScriptFile(script,
                   Seq(app.name, puppetServerStageHome + rename + "/", extension, puppetHostNameOrAddress, extractCommand, rename))
-                //TODO: Excute script to send an email out to whomever to notify rollback
-                //echo ""$PROG" on (`uname -n`) failed deployment. Rollback was completed  @ "$NOW"" | mail -s "$PROG (`uname -n`) deployment failed" -c REPLACE_WITH_SPACED_EMAILS
-                Ok("Executed Rollback script!")
+                optEmailAddresses match {
+                  case Some(addresses) =>
+                    sendEmail(addresses, "Puppet Substantiator Rollback for %s".
+                      format(app.renameAppTo),
+                      "%s application rollback was initiated at %s".format(app.renameAppTo, DateTime.now())
+                    )
+                    Ok("Executed Rollback script! Emails sent to: %s".format(addresses))
+                  case None =>
+                    Ok("Executed Rollback script!")
+                }
+
               case None =>
-                InternalServerError("Script not Found!")
+                InternalServerError("ScriptFile not Found!")
             }
           case None =>
             BadRequest("Json for App / Application not defined!")
         }
-
     }
+  }
+
+  def sendEmail(commaDelimitedEmails: String, subject: String, body: String): String = {
+    //TODO: Excute script to send an email out to whomever to notify rollback
+    //echo body | mail -s subject -c commaDelimitedEmails
+    val emailProc = {
+      import sys.process._
+      Seq("echo", body) #| Seq("mail", "-s %s".format(subject), commaDelimitedEmails)
+    }
+    actors().getActor(scriptorName) ! new ScriptProcess(emailProc)
+    emailProc.toString
+  }
+
+  def emailEndpoint(commaDelimitedEmails: String, subject: String, body: String) = Action {
+    Ok(sendEmail(commaDelimitedEmails, subject, body))
   }
 }
 

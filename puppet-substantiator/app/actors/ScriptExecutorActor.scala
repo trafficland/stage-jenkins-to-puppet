@@ -7,7 +7,11 @@ import util.{LogAndConsole, TidyConsole}
 
 object ScriptExecutorActor {
 
-  case class Script(fileName: String, args: Seq[String])
+  case class ScriptProcess(toRun: ProcessBuilder)
+
+  case class ScriptStringSeq(args: String*)
+
+  case class ScriptFile(fileName: String, args: Seq[String])
 
 }
 
@@ -18,7 +22,7 @@ case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = fa
   implicit val ourLogger = logger
 
   def receive = {
-    case Script(fileName, args) =>
+    case ScriptFile(fileName, args) =>
       val script = fileName.head match {
         case '.' =>
           fileName.replaceFirst(".", new java.io.File(".").getCanonicalPath)
@@ -28,6 +32,10 @@ case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = fa
           fileName
       }
       handleProcessBuilder((Seq(script) ++ args).cat)
+    case ScriptStringSeq(args) =>
+      handleProcessBuilder(args.cat)
+    case ScriptProcess(proc) =>
+      handleProcessBuilder(proc)
   }
 
   def handleProcessBuilder(toRun: ProcessBuilder) {
@@ -49,7 +57,7 @@ case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = fa
       case ex: Exception =>
         logger match {
           case Some(logger) =>
-            LogAndConsole.error("Script Execution Error! With Exception: ", Some(ex))(logger)
+            LogAndConsole.error("ScriptFile Execution Error! With Exception: ", Some(ex))(logger)
           case None =>
             if (toConsole)
               Console.println(ex.getMessage)

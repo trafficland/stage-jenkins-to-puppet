@@ -57,7 +57,7 @@ class ScriptExecutorActorSpec(_system: ActorSystem)
       lazy val log = logger(true, true)
       lazy val actorRef = initialize(log)
       intercept[Exception] {
-        actorRef.receive(Script("", Seq("someApp")))
+        actorRef.receive(ScriptFile("", Seq("someApp")))
       }
     }
   }
@@ -69,7 +69,7 @@ class ScriptExecutorActorSpec(_system: ActorSystem)
 
       val actorRef = initialize(log)
       actorRef.receive(
-        Script(app.configuration.getString("script.file.location.rollback").get,
+        ScriptFile(app.configuration.getString("script.file.location.rollback").get,
           Seq("someApp")))
 
       val test = Await.result(future {
