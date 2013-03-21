@@ -46,13 +46,15 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                         val result = actualState.contains(app.expected)
                         result match {
                           case true =>
-                            val passStr = "Version Check for %s application PASSED for %s version! Actual value is %s !".format(app.name, app.expected, actualState)
+                            val passStr = "Version Check for machine %s in %s application PASSED for %s version! Actual value is %s !".format(appMachine.machineName,app.name, app.expected, actualState)
+                            Console.println()
                             Console.println(passStr)
                             logger.debug(passStr)
                           case false =>
-                            val failStr = "Version Check for %s application FAILED for %s version! Actual value is %s !".format(app.name, app.expected, actualState)
-                            logger.debug(failStr)
+                            val failStr = "Version Check for machine %s in %s application FAILED for %s version! Actual value is %s !".format(appMachine.machineName,app.name, app.expected, actualState)
+                            Console.println()
                             Console.println(failStr)
+                            logger.debug(failStr)
                         }
                         result
                       case None =>
@@ -99,8 +101,7 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
         val listOfFutOptAppMachines = query
         val listOfAppMach = listOfFutOptAppMachines.flatMap {
           f => {
-            val appMach = Await.result(f, 3 seconds)
-            appMach
+            Await.result(f, 3 seconds)
           }
         }
         for {
