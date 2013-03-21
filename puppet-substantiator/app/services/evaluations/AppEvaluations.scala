@@ -164,7 +164,7 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
     app.id match {
       case Some(id) =>
         val listOfFutOptAppMachines = query
-        val futureBools = listOfFutOptAppMachines.map {
+        val futureBools = listOfFutOptAppMachines.toList.map {
           futOptAppMachine: Future[Option[AppMachineState]] =>
             for {
               optAppMachine <- futOptAppMachine
@@ -175,7 +175,7 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
                     case Some(appMachine) =>
                       TidyConsole.println("Latest App Found")
                       val appMachineList = appMachine :: latestApp.actualCluster.filter(_.machineName != appMachine.machineName)
-                      TidyConsole.println("Updating AppMachineState with: " + appMachineList.map(state => "{machine: " + state.machineName + "actual: " + state.actual + '}')
+                      TidyConsole.println("Updating AppMachineState with: " + appMachineList.map(state => " {machine: " + state.machineName + " actual: " + state.actual + "} ")
                         .reduce(_ + _))
                       futureEitherOfOptionExceptionToOption(repo.update(latestApp.copy(actualCluster = appMachineList)))
                     case None =>
