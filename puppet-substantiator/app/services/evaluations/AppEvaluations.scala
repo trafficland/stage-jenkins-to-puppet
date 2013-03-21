@@ -160,49 +160,36 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
 
   import AppEvaluateHelpers._
 
-  def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] =
+  def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] = {
     app.id match {
       case Some(id) =>
-        val listOfFutOptAppMachines = query
-        val futureBools = listOfFutOptAppMachines.toList.map {
-          futOptAppMachine: Future[Option[AppMachineState]] =>
-            for {
-              optAppMachine <- futOptAppMachine
-              latestSomeApp <- futureEitherOfOptionExceptionToOption(repo.get(id))
-              optApp <- latestSomeApp match {
-                case Some(latestApp) =>
-                  optAppMachine match {
-                    case Some(appMachine) =>
-                      TidyConsole.println("Latest App Found")
-                      val appMachineList = appMachine :: latestApp.actualCluster.filter(_.machineName != appMachine.machineName)
-                      TidyConsole.println("Updating AppMachineState with: " + appMachineList.map(state => " {machine: " + state.machineName + " actual: " + state.actual + "} ")
-                        .reduce(_ + _))
-                      futureEitherOfOptionExceptionToOption(repo.update(latestApp.copy(actualCluster = appMachineList)))
-                    case None =>
-                      TidyConsole.println("No AppMachineState to update !!")
-                      future(None)
-                  }
-                case None =>
-                  future(None)
-              }
-              answer <- optApp match {
-                case Some(updated) =>
-                  future(true)
-                case None =>
-                  future(false)
-              }
-            } yield answer
+        for {
+          listOfOptionAppMachines <- Future.sequence(query)
+          latestSomeApp <- futureEitherOfOptionExceptionToOption(repo.get(id))
+          optApp <- latestSomeApp match {
+            case Some(latestApp) =>
+              TidyConsole.println("Latest App Found")
+              val mergedAppMachList = latestApp.mergeActualCluster(listOfOptionAppMachines.flatMap(opt => opt))
+              TidyConsole.println("Updating AppMachineState with: " + mergedAppMachList.map(state => " {machine: " + state.machineName + " actual: " + state.actual + "} ")
+                .reduce(_ + _))
+              futureEitherOfOptionExceptionToOption(repo.update(latestApp.copy(actualCluster = mergedAppMachList)))
+            case None =>
+              future(None)
+          }
+        } yield {
+          optApp match {
+            case Some(updated) =>
+              TidyConsole.println("Done Iterating AppMachineState Futures, ends in PASS!!")
+              Pass(app)
+            case None =>
+              TidyConsole.println("Done Iterating AppMachineState Futures, ends in FAIL!!")
+              Fail(app)
+          }
         }
-        TidyConsole.println("Done Iterating AppMachineState Futures! Evaluating pass or fail withing their FutureBool result list!")
-        futOneBoolToPassFail(futureBools.reduce((futBool1, futBool2) =>
-          for {
-            nowBool1 <- futBool1
-            nowBool2 <- futBool2
-          } yield (nowBool1 && nowBool2)
-        ), app)
       case None =>
         future(Fail(app))
     }
+  }
 
   protected def query = testApp(app)
 
