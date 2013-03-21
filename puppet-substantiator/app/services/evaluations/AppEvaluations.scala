@@ -185,14 +185,13 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
                 case None =>
                   future(None)
               }
-            } yield {
-              optApp match {
+              answer <- optApp match {
                 case Some(updated) =>
-                  true
+                  future(true)
                 case None =>
-                  false
+                  future(false)
               }
-            }
+            } yield answer
         }
         TidyConsole.println("Done Iterating AppMachineState Futures! Evaluating pass or fail withing their FutureBool result list!")
         futOneBoolToPassFail(futureBools.reduce((futBool1, futBool2) =>
