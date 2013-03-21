@@ -2,13 +2,16 @@ package services.evaluations
 
 import _root_.util.PlaySettings
 import util.evaluations._
+import util.FutureHelper._
 import models.mongo.reactive._
 import play.api.libs.ws.WS
 import services.repository.mongo.reactive.impls.IAppsRepository
 import play.api.Logger._
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 import play.api.libs.json.Json
+
 
 trait AbstractAppEvaluate extends IEvaluate[App] {
   def handleFuturePassFail(futFailPass: Future[PassFail]) = {
@@ -90,52 +93,36 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
 }
 
 case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvaluate {
-  def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] = {
+  def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] =
     app.id match {
       case Some(id) =>
-        val futQueries = query.map {
-          futAppMachine =>
-            for {
-              optAppMachine <- futAppMachine
-              latestApp <- repo.get(id)
-              updated <- latestApp match {
-                case Left(optApp) =>
-                  optAppMachine match {
-                    case Some(appMachine) =>
-                      val appToUpdate = optApp.getOrElse(app)
-                      repo.update(appToUpdate.copy(actualCluster = appMachine ::
-                        app.actualCluster.filter(appMachineCompare =>
-                          appMachineCompare.machineName == appMachine.machineName)))
-                    case None =>
-                      future(None)
-                  }
-                case Right(ex) => future(None)
-              }
-            }
-            yield {
-              updated match {
-                case Left(someApp) =>
-                  someApp match {
-                    case Some(a) =>
-                      true
-                    case None =>
-                      false
-                  }
-                case Right(ex) =>
-                  false
-              }
-            }
+        val listOfFutOptAppMachines = query
+        val listOfAppMach = listOfFutOptAppMachines.flatMap {
+          f => {
+            val appMach = Await.result(f, 3 seconds)
+            appMach
+          }
         }
-        futOneBoolToPassFail(futQueries.reduce((futBool1, futBool2) =>
-          for {
-            nowBool1 <- futBool1
-            nowBool2 <- futBool2
-          } yield (nowBool1 && nowBool2)
-        ))
+        for {
+          latestSomeApp <- futureEitherOfOptionExceptionToOption(repo.get(id))
+          optApp <- latestSomeApp match {
+            case Some(latestApp) =>
+              futureEitherOfOptionExceptionToOption(repo.update(latestApp.copy(actualCluster = listOfAppMach)))
+            case None =>
+              future(None)
+          }
+        } yield {
+          optApp match {
+            case Some(updated) =>
+              Pass(updated)
+            case None =>
+              Fail(app)
+          }
+        }
       case None =>
         future(Fail(app))
+
     }
-  }
 
   protected def query = app.actualCluster.map {
     machine =>
