@@ -40,8 +40,7 @@ abstract class ScriptController extends Controller {
           case Some(app) =>
             optScriptExists match {
               case Some(script) =>
-                """
-              RollBackScript Required Args
+                """RollBackScript Required Args
                   |applicationName=${1?missing application name}
                   |stagePath=${2?missing stage path}
                   |extension=${3?missing extension}
