@@ -27,6 +27,15 @@ case class App(
         otherAppMach.machineName == appMach.machineName &&
           otherAppMach.actual == appMach.actual))
   }
+
+  def mergeActualCluster(newCluster: List[AppMachineState]): List[AppMachineState] = {
+    newCluster ++ actualCluster
+      .dropWhile {
+      lateAppMachine =>
+        newCluster.exists(_.machineName == lateAppMachine.machineName
+        )
+    }
+  }
 }
 
 trait IAppReadersWriters extends IReadersWriters[App] {

@@ -13,6 +13,16 @@ echo Java Commands "$javaCommands"
       
 cp -R $pathToGenericModule ./"$moduleName"
 
+#doing injection first so it can take advantage of the same replacements below
+#injecting hacking script into a module if need be
+echo $hackFile
+if [ "$hackFile" ]; then
+	sed -i '/REPLACE_HACK/{
+		s/REPLACE_HACK//g
+		r '"$hackFile"'
+	}' ./"$moduleName"'/files/bin/module'
+fi
+
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_MODULE_NAME/'"$moduleName"'/g'
 
 moduleNameCAPS=$(echo "$moduleName" | tr '[:lower:]' '[:upper:]')
@@ -25,14 +35,5 @@ find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_JAVA_ARGS/'"$javaComma
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_HOSTNAME_TO_START/'"$machineHostToStartList"'/g'
 
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_BASIC_NAME/'"$basicName"'/g'
-
-#injecting hacking script into a module if need be
-echo $hackFile
-if [ "$hackFile" ]; then
-	sed -i '/REPLACE_HACK/{
-		s/REPLACE_HACK//g
-		r '"$hackFile"'
-	}' ./"$moduleName"'/files/bin/module'
-fi
 
 mv ./"$moduleName"'/files/bin/module' ./"$moduleName"'/files/bin/'"$moduleName"'';

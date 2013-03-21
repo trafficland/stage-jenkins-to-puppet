@@ -3,17 +3,81 @@ package services.evaluations
 import _root_.util.PlaySettings
 import util.evaluations._
 import util.FutureHelper._
+import util.LogAndConsole
 import models.mongo.reactive._
 import play.api.libs.ws.WS
 import services.repository.mongo.reactive.impls.IAppsRepository
 import play.api.Logger._
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
 import play.api.libs.json.Json
 
 
+object AppEvaluateHelpers extends IEvaluateDomain[App] {
+
+
+  def filterOutImmediateForwardSlash(testUrl: String): String = {
+    testUrl.startsWith("/") match {
+      case true =>
+        testUrl.replaceFirst("/", "")
+      case false =>
+        testUrl
+    }
+  }
+
+  def futOneBoolToPassFail(oneFutBool: Future[Boolean], app: App): Future[IEvaluated[App]] = {
+    for {
+      bool <- oneFutBool
+    } yield {
+      if (bool)
+        Pass(app)
+      else
+        Fail(app)
+    }
+  }
+
+  def testApp(app: App) = app.actualCluster.map {
+    implicit val log = logger
+    machine =>
+      app.port match {
+        case Some(realPort) =>
+          val url = "http://%s:%s/%s".format(machine.machineName, realPort, filterOutImmediateForwardSlash(app.testUrl))
+          LogAndConsole.info("Testing Machine at %s".format(url))
+          testMachine(app, machine.machineName, WS.url(url))
+        case None =>
+          val url = "http://%s/%s".format(machine.machineName, filterOutImmediateForwardSlash(app.testUrl))
+          LogAndConsole.info("Testing Machine at %s".format(url))
+          testMachine(app, machine.machineName, WS.url(url))
+      }
+  }
+
+  def testMachine(appToUpdate: App, machineName: String, request: WS.WSRequestHolder): Future[Option[AppMachineState]] = {
+    implicit val log = logger
+    val optFutResponse = request.get()
+      .map(Some(_))
+      .recover {
+      case _ => None
+    }
+    for {
+      optResponse <- optFutResponse
+    } yield {
+      optResponse match {
+        case Some(result) =>
+          val logStr = "---- Machine: %s got the following response: %s ----".format(machineName, result.body)
+          LogAndConsole.info(logStr)
+          Some(AppMachineState(machineName, Some(result.body)))
+        case None =>
+          val logStr = "No Response from machine %s".format(machineName)
+          LogAndConsole.info(logStr)
+          None
+      }
+    }
+  }
+}
+
 trait AbstractAppEvaluate extends IEvaluate[App] {
+  implicit val implicitLogger = logger
+
   def handleFuturePassFail(futFailPass: Future[PassFail]) = {
     for {
       failPass <- futFailPass
@@ -46,15 +110,9 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                         val result = actualState.contains(app.expected)
                         result match {
                           case true =>
-                            val passStr = "Version Check for machine %s in %s application PASSED for %s version! Actual value is %s !".format(appMachine.machineName,app.name, app.expected, actualState)
-                            Console.println()
-                            Console.println(passStr)
-                            logger.debug(passStr)
+                            LogAndConsole.info("Version Check for machine %s in %s application PASSED for %s version! Actual value is %s !".format(appMachine.machineName, app.name, app.expected, actualState))
                           case false =>
-                            val failStr = "Version Check for machine %s in %s application FAILED for %s version! Actual value is %s !".format(appMachine.machineName,app.name, app.expected, actualState)
-                            Console.println()
-                            Console.println(failStr)
-                            logger.debug(failStr)
+                            LogAndConsole.info("Version Check for machine %s in %s application FAILED for %s version! Actual value is %s !".format(appMachine.machineName, app.name, app.expected, actualState))
                         }
                         result
                       case None =>
@@ -69,8 +127,7 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                   Fail(app)
               }
             case Right(ex) =>
-              if (logger.isDebugEnabled)
-                logger.debug("Getting app failed! Failing at AppEvaluate!")
+              LogAndConsole.info("Getting app failed! Failing at AppEvaluate!")
               Fail(app)
           }
         }
@@ -83,11 +140,14 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
 
   lazy val rollBackUrl = "http://" + PlaySettings.absUrl + "/rollback"
 
-  def failAction(result: App) = WS.url(rollBackUrl).post(Json.toJson(result))
+  def failAction(result: App) = {
+    LogAndConsole.info("--- Application (%s) FAILED! Rollback should occur. ----".format(result.name))
+    WS.url(rollBackUrl).post(Json.toJson(result))
+  }
 
 
   def passAction(result: App) {
-    //send email on pass?
+    LogAndConsole.info("--- Application (%s) PASSED! No rollback should occur. ----".format(result.name))
   }
 
   def name = app.name + "Validate"
@@ -95,73 +155,41 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
 }
 
 case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvaluate {
-  def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] =
+
+  import AppEvaluateHelpers._
+
+  def evaluate()(implicit context: ExecutionContext): Future[IEvaluated[App]] = {
     app.id match {
       case Some(id) =>
-        val listOfFutOptAppMachines = query
-        val listOfAppMach = listOfFutOptAppMachines.flatMap {
-          f => {
-            Await.result(f, 3 seconds)
-          }
-        }
         for {
+          listOfOptionAppMachines <- Future.sequence(query)
           latestSomeApp <- futureEitherOfOptionExceptionToOption(repo.get(id))
           optApp <- latestSomeApp match {
             case Some(latestApp) =>
-              futureEitherOfOptionExceptionToOption(repo.update(latestApp.copy(actualCluster = listOfAppMach)))
+              LogAndConsole.info("Latest App Found")
+              val mergedAppMachList = latestApp.mergeActualCluster(listOfOptionAppMachines.flatMap(opt => opt))
+              LogAndConsole.info("Updating AppMachineState with: " + mergedAppMachList.map(state => " {machine: " + state.machineName + " actual: " + state.actual + "} ")
+                .reduce(_ + _))
+              futureEitherOfOptionExceptionToOption(repo.update(latestApp.copy(actualCluster = mergedAppMachList)))
             case None =>
               future(None)
           }
         } yield {
           optApp match {
             case Some(updated) =>
-              Pass(updated)
+              LogAndConsole.info("Done Iterating AppMachineState Futures, ends in PASS!!")
+              Pass(app)
             case None =>
+              LogAndConsole.info("Done Iterating AppMachineState Futures, ends in FAIL!!")
               Fail(app)
           }
         }
       case None =>
         future(Fail(app))
-
-    }
-
-  protected def query = app.actualCluster.map {
-    machine =>
-      app.port match {
-        case Some(realPort) =>
-          val url = "http://%s:%s/%s".format(machine.machineName, realPort, filterOutImmediateForwardSlash(app.testUrl))
-          val logMsg = "Testing Machine at %s".format(url)
-          Console.println(logMsg)
-          logger.debug(logMsg)
-          testMachine(app, machine.machineName, WS.url(url))
-        case None =>
-          val url = "http://%s/%s".format(machine.machineName, filterOutImmediateForwardSlash(app.testUrl))
-          val logMsg = "Testing Machine at %s".format(url)
-          Console.println(logMsg)
-          logger.debug(logMsg)
-          testMachine(app, machine.machineName, WS.url(url))
-      }
-  }
-
-  def filterOutImmediateForwardSlash(testUrl: String): String = {
-    testUrl.startsWith("/") match {
-      case true =>
-        testUrl.replaceFirst("/", "")
-      case false =>
-        testUrl
     }
   }
 
-  def futOneBoolToPassFail(oneFutBool: Future[Boolean]): Future[IEvaluated[App]] = {
-    for {
-      bool <- oneFutBool
-    } yield {
-      if (bool)
-        Pass(app)
-      else
-        Fail(app)
-    }
-  }
+  protected def query = testApp(app)
 
   def failAction(result: App) = {
   }
@@ -171,30 +199,4 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
   }
 
   def name = app.name + "Query"
-
-
-  def testMachine(appToUpdate: App, machineName: String, request: WS.WSRequestHolder): Future[Option[AppMachineState]] = {
-    val optFutResponse = request.get()
-      .map(Some(_))
-      .recover {
-      case _ => None
-    }
-    for {
-      optResponse <- optFutResponse
-    } yield {
-      optResponse match {
-        case Some(result) =>
-          val logStr = "------------- Machine: %s got the following response: %s -------------".format(machineName, result.body)
-          Console.print(logStr)
-          logger.info(logStr)
-          Some(AppMachineState(machineName, Some(result.body)))
-        case None =>
-          val logStr = "No Response from machine %s".format(machineName)
-          Console.println(logStr)
-          logger.info(logStr)
-          None
-      }
-    }
-  }
-
 }

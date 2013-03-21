@@ -41,7 +41,7 @@ DELETE  /actors/:id                         controllers.ActorsStateController.re
 POST    /actors/uniqueCheck                 controllers.ActorsStateController.uniqueCheck
 
 POST     /rollback                          controllers.ScriptController.rollBack
-
+GET      /email/:addresses/:subject/:body   controllers.ScriptController.emailEndpoint(addresses: String,subject: String, body: String)
 # Home page
 GET     /                                   controllers.Application.baseUrl
 GET     /version                            controllers.Application.getVersion

@@ -37,9 +37,13 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
   import ScriptControllerFactory._
 
   override lazy val testName = "test-akka-mock"
-  //  actors.context.playframework.ActorContextProvider.actors().createActors()
 
   "ScriptController" should {
+    "build a correct email script" in {
+      val res = ScriptController.sendEmail("test@gmail.com", "unit test subject", "unit test body")
+      res shouldEqual (" ( [echo, unit test body] #| [mail, -s unit test subject, test@gmail.com] ) ")
+    }
+
     "send 200 config script hosted controller" in {
       val app = new App("appName", "", "", Nil, None, None, None)
       val optResult = route(FakeRequest(POST, "/rollback",
@@ -62,7 +66,7 @@ class ScriptControllerIntegrationSpec extends Specification with IPlaySpecHelper
           jsonWriter.writes(app))
         val result = checkForAsyncResult(action.apply(request))
         status(result) shouldEqual (INTERNAL_SERVER_ERROR)
-        contentAsString(result) shouldEqual ("Script not Found!")
+        contentAsString(result) shouldEqual ("ScriptFile not Found!")
       }
       "send 200 config script correct" in {
         val mockController = create(defaultScript, true)
