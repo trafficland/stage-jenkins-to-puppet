@@ -116,10 +116,13 @@ case class QueryMachinesUpdateAppEvaluate(app: App, repo: IAppsRepository) exten
               updated match {
                 case Left(someApp) =>
                   someApp match {
-                    case Some(a) => true
-                    case None => false
+                    case Some(a) =>
+                      true
+                    case None =>
+                      false
                   }
-                case Right(ex) => false
+                case Right(ex) =>
+                  false
               }
             }
         }
