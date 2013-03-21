@@ -3,6 +3,7 @@ package services.evaluations
 import _root_.util.PlaySettings
 import util.evaluations._
 import util.FutureHelper._
+import util.TidyConsole
 import models.mongo.reactive._
 import play.api.libs.ws.WS
 import services.repository.mongo.reactive.impls.IAppsRepository
@@ -10,6 +11,7 @@ import play.api.Logger._
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.libs.json.Json
+
 
 
 object AppEvaluateHelpers extends IEvaluateDomain[App] {
@@ -39,13 +41,13 @@ object AppEvaluateHelpers extends IEvaluateDomain[App] {
         case Some(realPort) =>
           val url = "http://%s:%s/%s".format(machine.machineName, realPort, filterOutImmediateForwardSlash(app.testUrl))
           val logMsg = "Testing Machine at %s".format(url)
-          Console.println(logMsg)
+          TidyConsole.println(logMsg)
           logger.debug(logMsg)
           testMachine(app, machine.machineName, WS.url(url))
         case None =>
           val url = "http://%s/%s".format(machine.machineName, filterOutImmediateForwardSlash(app.testUrl))
           val logMsg = "Testing Machine at %s".format(url)
-          Console.println(logMsg)
+          TidyConsole.println(logMsg)
           logger.debug(logMsg)
           testMachine(app, machine.machineName, WS.url(url))
       }
@@ -63,12 +65,12 @@ object AppEvaluateHelpers extends IEvaluateDomain[App] {
       optResponse match {
         case Some(result) =>
           val logStr = "------------- Machine: %s got the following response: %s -------------".format(machineName, result.body)
-          Console.print(logStr)
+          TidyConsole.println(logStr)
           logger.info(logStr)
           Some(AppMachineState(machineName, Some(result.body)))
         case None =>
           val logStr = "No Response from machine %s".format(machineName)
-          Console.println(logStr)
+          TidyConsole.println(logStr)
           logger.info(logStr)
           None
       }
@@ -110,13 +112,11 @@ case class AppEvaluate(app: App, repo: IAppsRepository) extends AbstractAppEvalu
                         result match {
                           case true =>
                             val passStr = "Version Check for machine %s in %s application PASSED for %s version! Actual value is %s !".format(appMachine.machineName, app.name, app.expected, actualState)
-                            Console.println()
-                            Console.println(passStr)
+                            TidyConsole.println(passStr)
                             logger.debug(passStr)
                           case false =>
                             val failStr = "Version Check for machine %s in %s application FAILED for %s version! Actual value is %s !".format(appMachine.machineName, app.name, app.expected, actualState)
-                            Console.println()
-                            Console.println(failStr)
+                            TidyConsole.println(failStr)
                             logger.debug(failStr)
                         }
                         result
