@@ -3,6 +3,7 @@ package actors
 import akka.actor.Actor
 import sys.process._
 import org.slf4j.Logger
+import util.{LogAndConsole, TidyConsole}
 
 object ScriptExecutorActor {
 
@@ -13,6 +14,8 @@ object ScriptExecutorActor {
 case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = false, logger: Option[Logger] = None) extends Actor {
 
   import ScriptExecutorActor._
+
+  implicit val ourLogger = logger
 
   def receive = {
     case Script(fileName, args) =>
@@ -31,17 +34,13 @@ case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = fa
     try {
       logger match {
         case Some(logger) =>
-          if (logger.isDebugEnabled)
-            logger.debug(toRun !!)
-          else {
-            if (toConsole)
-              Console.println(toRun !!)
-            else
-              toRun !
-          }
+          if (toConsole)
+            LogAndConsole.debug(toRun !!)(logger)
+          else
+            toRun !
         case None =>
           if (toConsole)
-            Console.println(toRun !!)
+            TidyConsole.println(toRun !!)
           else
             toRun !
       }
@@ -50,7 +49,7 @@ case class ScriptExecutorActor(toConsole: Boolean = false, rethrow: Boolean = fa
       case ex: Exception =>
         logger match {
           case Some(logger) =>
-            logger.error("Script Execution Error! With Exception: ", ex)
+            LogAndConsole.error("Script Execution Error! With Exception: ", Some(ex))(logger)
           case None =>
             if (toConsole)
               Console.println(ex.getMessage)
