@@ -5,7 +5,7 @@ destinationAddress=${2?missing destination ip or hostname}
 applicationName=${3?missing application name} #example proj1
 commaDelimitedMachineNameList=${4?missing comma delimmited machine list to install to}
 distLocation=${5:-'/dist/'}
-commaDelimitedMachineDelayList${6:-}
+commaDelimitedMachineDelayList=${6:-}
 renameApplicationTo=${7:-$applicationName}
 startName=${8:-}
 stageHome=${9:-'~/stage/'} #example ~/stage/
@@ -50,5 +50,7 @@ echo $cmd
 $cmd
 
 `dirname $0`/roll_forward_remote.sh $applicationName $stagePath $extension $destinationAddress $extractCmd $renameApplicationTo $startName
-
+echo
+echo PUPPET RUNS!!!!!!!!!!!!
+echo Delay List "$commaDelimitedMachineDelayList"
 `dirname $0`/puppet-run "$commaDelimitedMachineNameList" "$commaDelimitedMachineDelayList"
