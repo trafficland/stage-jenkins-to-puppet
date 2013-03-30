@@ -28,6 +28,7 @@ echo applicationPortNumber : "$applicationPortNumber"
 echo validationQuerySeconds : "$validationQuerySeconds"
 echo validationValidateSeconds : "$validationValidateSeconds"
 echo distLocation : "$distLocation"
+echo commaDelimitedMachineDelayList : $commaDelimitedMachineDelayList
 echo renameApplicationTo: "$renameApplicationTo"
 echo startName : "$startName"
 echo isAliveAll : "$isAliveAll"
