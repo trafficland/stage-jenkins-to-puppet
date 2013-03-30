@@ -1,14 +1,16 @@
 #!/bin/sh
 serverCommaList=${1?need comma delimitted list of servers}
 serverDelayCommaList=${2:-} #comma list of integers for a delay between each puppet run
-loginAs=${2:-}
+loginAs=${3:-}
 
 serverArray=(${serverCommaList//,/ })
 if [ $serverDelayCommaList ]; then
         serverDelayArray=(${serverDelayCommaList//,/ })
 fi
+echo Server Array size ${#serverArray[@]}
+echo Server Delay Array size ${#serverDelayArray[@]}
 
-if [ ${#serverArray[@]} != ${#serverDelayCommaList[@]} ]; then
+if [ ${#serverArray[@]} != ${#serverDelayArray[@]} ]; then
         echo Array mismatch on serverArray to serverDelayCommaList, exiting!!!
         exit 1
 fi
@@ -17,7 +19,12 @@ ssh_func(){
         machine=$1
         user=$2
         delay=$3
-
+        
+        if [ $delay ]; then
+                echo sleeping $delay
+                sleep $delay
+        fi
+        
         if [ "$user" ]; then
                 echo Attempting to ssh into "$machine" as "$user" !
                 ssh -t -t "$user"@"$machine" 'sudo puppet agent -t'
@@ -28,9 +35,7 @@ ssh_func(){
                 #required for jenkins
                 ssh -t -t "$machine" 'sudo puppet agent -t'
         fi
-        if [ $delay ]; then
-                sleep $delay
-        fi
+
 }
 
 for i in "${!serverArray[@]}";
