@@ -11,7 +11,7 @@ applicationPortNumber=${6:-9000} #if this is a play app the default will be empt
 validationQuerySeconds=${7:-360} #6 minutes 60*6
 validationValidateSeconds=${8:-600} #10 minutes
 distLocation=${9:-'/dist/'}
-commaDelimitedMachineDelayList${10:-}
+commaDelimitedMachineDelayList=${10:-}
 renameApplicationTo=${11:-$applicationName}
 startName=${12:-}
 isAliveAll=${13:-true}
