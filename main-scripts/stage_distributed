@@ -94,8 +94,11 @@ sleep 5
 
 sleep 5
 
-`dirname $0`/puppet-run "$commaDelimitedMachineNameList" "$commaDelimitedMachineDelayList"
+echo
+echo Delay List "$commaDelimitedMachineDelayList"
 
+`dirname $0`/puppet-run "$commaDelimitedMachineNameList" "$commaDelimitedMachineDelayList"
+echo
 sleep 5
 
 `dirname $0`/validate "$validatorServiceUrl" "$applicationName" "$validationQuerySeconds" "$validationValidateSeconds"
