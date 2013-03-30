@@ -11,13 +11,14 @@ applicationPortNumber=${6:-9000} #if this is a play app the default will be empt
 validationQuerySeconds=${7:-360} #6 minutes 60*6
 validationValidateSeconds=${8:-600} #10 minutes
 distLocation=${9:-'/dist/'}
-renameApplicationTo=${10:-$applicationName}
-startName=${11:-}
-isAliveAll=${12:-true}
-currentVersion=${13:-} #default none
-stageHome=${14:-'~/stage/'} #example ~/stage/
-extension=${15:-.zip} #default extension to zip
-extractCmd=${16:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
+commaDelimitedMachineDelayList${10:-}
+renameApplicationTo=${11:-$applicationName}
+startName=${12:-}
+isAliveAll=${13:-true}
+currentVersion=${14:-} #default none
+stageHome=${15:-'~/stage/'} #example ~/stage/
+extension=${16:-.zip} #default extension to zip
+extractCmd=${17:-unzip} #argument is used for extraction, if this was tar then "tar -xvf" would be here
 
 echo jenkinsJobName : "$jenkinsJobName"
 echo puppetAddress : "$puppetAddress"
@@ -34,7 +35,6 @@ echo currentVersion : "$currentVersion"
 echo stageHome : "$stageHome"
 echo extension : "$extension"
 echo extractCmd : "$extractCmd"
-
 
 echo 'Your extension for '"$applicationName"' is '"$extension"' . Your extraction cmd is '"$extractCmd"'.'
 applicationNameNew=$renameApplicationTo'.new'$extension
@@ -94,7 +94,7 @@ sleep 5
 
 sleep 5
 
-`dirname $0`/puppet-run "$commaDelimitedMachineNameList"
+`dirname $0`/puppet-run "$commaDelimitedMachineNameList" "$commaDelimitedMachineDelayList"
 
 sleep 5
 
