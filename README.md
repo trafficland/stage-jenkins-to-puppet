@@ -1,3 +1,6 @@
+For more latest documentation and updateds please go to the [wikki](https://github.com/trafficland/stage-jenkins-to-puppet/wiki)
+
+
 Bash scripts in this project are expected to be executed from a Jenkins Job via a Post Build Task. This is possible via the Jenkins Post Build Task plugin.
 
 The script takes three arguments; job-name, hostname-or-ip, and path to save to. Once copied commands to execute puppet routines to install to subscribed puppet clients.
