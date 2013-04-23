@@ -84,6 +84,7 @@ object ApplicationBuild extends Build {
     }
   )
     .settings(plugs: _*)
+    .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings : _*)
 
   def systemSpecsFilter(name: String): Boolean = name endsWith "SystemSpec"
 
