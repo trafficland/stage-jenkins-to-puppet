@@ -6,27 +6,39 @@
 # description: REPLACE_CAPS_MODULE_NAME
 # processname: java
 
-# Source function library.
+# ############# BEGIN COPY FROM SNIPPETS SERVICE LOGGING
+# Source functions library.
 . /etc/init.d/functions
-
-PROC=`ps aux | grep java`
-PROG="REPLACE_CAPS_MODULE_NAME"
-PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
-PID=$(ps aux | grep REPLACE_BASIC_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
-STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
-APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
+# ############# BEGIN NOT NEEDED IN PRODUCTION
+# override functions library for cleaner output (DEBUG ONLY)
+logTo="$OPTDIR/$APP/$APP".log
+echo Logging will be at "$logTo"
+. /etc/init.d/override_functions  "$logTo"
+# ############## END  NOT NEEDED IN PRODUCTION
 OPTDIR="/opt"
-APPDIR="/opt/REPLACE_MODULE_NAME"
-STAGEDIR="/opt/stage/REPLACE_MODULE_NAME"
-ROLLBACKDIR="REPLACE_MODULE_NAME.rollback"
-NOW=`date +"%m-%d-%Y-%H-%M-%S"`
 APP="REPLACE_MODULE_NAME"
+APPDIR="$OPTDIR"/"$APP"
+USER="REPLACE_USER_NAME"
 
-#logging echo(s) to /opt/REPLACE_MODULE_NAME/init-d.log
-function echo {
-  #log  & echo at the same time
-  /bin/echo `date` $* | tee -a /opt/REPLACE_MODULE_NAME/init-d.log
-}
+PROC="java"
+PROG="$APP"
+PID_PATH="/opt/$APP/RUNNING_PID"
+INIT_D="/etc/init.d/$APP"
+SERVICE_CMD="service $APP"
+pidCMD="pgrep -u $USER $PROC"
+
+#echo "pidLookUp  cmd is:" "$pidCMD"
+#use eval to evaluate pipes as variables see url below
+#http://stackoverflow.com/questions/11596606/executing-a-variable-with-a-pipe-in-shell
+PID=`eval $pidCMD`
+NOW=`date +"%m-%d-%Y-%H-%M-%S"`
+# ############# END COPY FROM SNIPPETS SERVICE LOGGING
+
+STAGETIME=`stat -c %Y /opt/stage/$APP/lib/REPLACE_BASIC_NAME*`
+APPTIME=`stat -c %Y /opt/$APP/lib/REPLACE_BASIC_NAME*`
+STAGEDIR="/opt/stage/$APP"
+ROLLBACKDIR="$APP.rollback"
+
 
 fail_if_proc_is_running(){
         if [ ! -z "$PID" ];  then
@@ -69,8 +81,7 @@ startstatus()
         echo -n "Starting $PROG: "
         fail_if_proc_is_running
         cd $APPDIR
-        runApp=$(nohup ./start REPLACE_JAVA_ARGS >/dev/null 2>&1&)
-        $runApp && success || failure
+        daemon --user=$USER --pidfile=$PID_PATH "./start REPLACE_JAVA_ARGS > /dev/null 2>&1 &"
         echo
         echo -n "Please wait 2 seconds.....  "
         sleep 2
@@ -78,7 +89,7 @@ startstatus()
         if [ -f "$PID_PATH" ];  then
           success
           RETVAL=0
-       else
+        else
           failure
           RETVAL=1
         fi
