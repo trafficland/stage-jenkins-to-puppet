@@ -39,7 +39,7 @@ APPTIME=`stat -c %Y /opt/$APP/lib/REPLACE_BASIC_NAME*`
 STAGEDIR="/opt/stage/$APP"
 ROLLBACKDIR="$APP.rollback"
 
-# ############## BEGIN GENERIC DIST DIFFERENCES
+# ############## BEGIN GENERIC DIST HEADER DIFFERENCES
 #kvp list delimitted by commas example "localhost:start,google.com:start-google,192.168.0.10:starter"
 machineHostToStartList="REPLACE_HOSTNAME_TO_START"
 machines=(${machineHostToStartList//,/ })
@@ -59,7 +59,7 @@ do
     #echo 'Key -'$KEY': Value - '$VALUE
     roleMap[$KEY]=$VALUE
 done
-# ############## END GENERIC DIST DIFFERENCES
+# ############## END GENERIC DIST HEADER DIFFERENCES
 
 fail_if_proc_is_running(){
         if [ ! -z "$PID" ];  then
@@ -102,18 +102,15 @@ startstatus()
         echo -n "Starting $PROG: "
         fail_if_proc_is_running
         cd $APPDIR
-        startScript=${roleMap[$(hostname)]}
-        echo 'Start Script for '"$PROG"' is '"$startScript"
-        runApp=$(nohup ./"$startScript" REPLACE_JAVA_ARGS >/dev/null 2>&1&)
-        $runApp && success || failure
+        daemon --user=$USER --pidfile=$PID_PATH "./start REPLACE_JAVA_ARGS > /dev/null 2>&1 &"
         echo
-        echo -n "Please wait 8 seconds.....  "
-        sleep 8
+        echo -n "Please wait 2 seconds.....  "
+        sleep 2
         echo -n "$PROG status: "
         if [ -f "$PID_PATH" ];  then
           success
           RETVAL=0
-       else
+        else
           failure
           RETVAL=1
         fi

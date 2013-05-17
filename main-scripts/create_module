@@ -3,11 +3,12 @@ pathToGenericModule=${1?missing path to generic module}
 moduleName=${2?missing moduleName}
 #MUST BE ESCAPED WITH \ on @ symbols
 emails=${3?missing email or emails in quotes}
-javaCommands=${4:-} #default to none
+userName${4?missing user to run service as!}
+javaCommands=${5:-} #default to none
 #kvp list delimitted by commas example "localhost:start,google.com:start-google,192.168.0.10:starter" DEFAULT IS EMPTY
-machineHostToStartList=${5:-}
-basicName=${6:-$moduleName} #IE this more for a application package that does not match a jar name, ie worker supervisor app1 and app1-supervisor, basic would be app1
-hackFile=${7:-} #full path and file name of a script we want to inject into a module
+machineHostToStartList=${6:-}
+basicName=${7:-$moduleName} #IE this more for a application package that does not match a jar name, ie worker supervisor app1 and app1-supervisor, basic would be app1
+hackFile=${8:-} #full path and file name of a script we want to inject into a module
 
 echo Java Commands "$javaCommands"
       
@@ -24,6 +25,8 @@ if [ "$hackFile" ]; then
 fi
 
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_MODULE_NAME/'"$moduleName"'/g'
+
+find ./"$userName" -type f|xargs perl -pi -e 's/REPLACE_USER_NAME/'"$userName"'/g'
 
 moduleNameCAPS=$(echo "$moduleName" | tr '[:lower:]' '[:upper:]')
 find ./"$moduleName" -type f|xargs perl -pi -e 's/REPLACE_CAPS_MODULE_NAME/'"$moduleNameCAPS"'/g'
