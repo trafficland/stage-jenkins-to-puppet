@@ -7,6 +7,10 @@
 # processname: java
 
 # ############# BEGIN COPY FROM SNIPPETS SERVICE LOGGING
+OPTDIR="/opt"
+APP="REPLACE_MODULE_NAME"
+APPDIR="$OPTDIR"/"$APP"
+USER="REPLACE_USER_NAME"
 # Source functions library.
 . /etc/init.d/functions
 # ############# BEGIN NOT NEEDED IN PRODUCTION
@@ -15,10 +19,6 @@ logTo="$OPTDIR/$APP/$APP"-init_d.log
 echo Logging will be at "$logTo"
 . /etc/init.d/override_functions  "$logTo"
 # ############## END  NOT NEEDED IN PRODUCTION
-OPTDIR="/opt"
-APP="REPLACE_MODULE_NAME"
-APPDIR="$OPTDIR"/"$APP"
-USER="REPLACE_USER_NAME"
 
 PROC="java"
 PROG="$APP"
