@@ -11,7 +11,7 @@
 . /etc/init.d/functions
 # ############# BEGIN NOT NEEDED IN PRODUCTION
 # override functions library for cleaner output (DEBUG ONLY)
-logTo="$OPTDIR/$APP/$APP".log
+logTo="$OPTDIR/$APP/$APP"-init_d.log
 echo Logging will be at "$logTo"
 . /etc/init.d/override_functions  "$logTo"
 # ############## END  NOT NEEDED IN PRODUCTION

@@ -1,0 +1,44 @@
+#!/bin/sh
+#copied from https://github.com/nmccready/snippets/blob/master/bash/serviceLogging/override_functions
+
+#idea here is to make it easy to log scripts
+#especially for devugging init.d service scripts for at least debugging (not production, but u may want the history)
+#requires coreutils from brew on OSX!!
+logLocation=${1?missing logg location}
+
+successVar="-ne \t\t\t\t\t[ \033[32mOK\033[0m ]\n"
+failureVar="-ne \t\t\t\t\t[ \033[31mFailed\033[0m ]\n"
+function success(){
+  echo $successVar
+}
+function failure(){
+  echo $failureVar
+}
+function std_echo(){
+  if [[ `uname` == "Darwin" ]]; then
+    /usr/local/bin/gecho $*
+  else
+    /bin/echo $*
+  fi
+}
+function logg_echo(){
+  if [[ `uname` == "Darwin" ]]; then
+    /usr/local/bin/gecho `date` : -  $* >> "$logLocation" 2>&1 & 
+  else
+    /bin/echo `date` : -  $* >> "$logLocation" 2>&1 & 
+  fi
+}
+function echo(){
+  #log  & echo at the same time
+  all=$*
+  if [[ "$all" == "$successVar"  ]]; then
+    loggOnly="[ Ok ]"
+  elif [[ "$all" == "$failureVar"  ]]; then
+    loggOnly="[ Failed ]"
+  else
+    loggOnly="$all"
+  fi
+  
+  std_echo ${all}
+  logg_echo ${loggOnly}  
+}

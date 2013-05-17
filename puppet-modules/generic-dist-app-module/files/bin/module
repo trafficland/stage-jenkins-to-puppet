@@ -6,21 +6,40 @@
 # description: REPLACE_CAPS_MODULE_NAME
 # processname: java
 
-# Source function library.
+# ############# BEGIN COPY FROM SNIPPETS SERVICE LOGGING
+# Source functions library.
 . /etc/init.d/functions
-
-PROC=`ps aux | grep java`
-PROG="REPLACE_CAPS_MODULE_NAME"
-PID_PATH="/opt/REPLACE_MODULE_NAME/RUNNING_PID"
-PID=$(ps aux | grep REPLACE_BASIC_NAME | grep -v grep | grep -v '/etc/init.d/REPLACE_MODULE_NAME' | grep -v 'service REPLACE_MODULE_NAME' | awk '{print $2}')
-STAGETIME=`stat -c %Y /opt/stage/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
-APPTIME=`stat -c %Y /opt/REPLACE_MODULE_NAME/lib/REPLACE_BASIC_NAME*`
+# ############# BEGIN NOT NEEDED IN PRODUCTION
+# override functions library for cleaner output (DEBUG ONLY)
+logTo="$OPTDIR/$APP/$APP"-init_d.log
+echo Logging will be at "$logTo"
+. /etc/init.d/override_functions  "$logTo"
+# ############## END  NOT NEEDED IN PRODUCTION
 OPTDIR="/opt"
-APPDIR="/opt/REPLACE_MODULE_NAME"
-STAGEDIR="/opt/stage/REPLACE_MODULE_NAME"
-ROLLBACKDIR="REPLACE_MODULE_NAME.rollback"
-NOW=`date +"%m-%d-%Y-%H-%M-%S"`
 APP="REPLACE_MODULE_NAME"
+APPDIR="$OPTDIR"/"$APP"
+USER="REPLACE_USER_NAME"
+
+PROC="java"
+PROG="$APP"
+PID_PATH="/opt/$APP/RUNNING_PID"
+INIT_D="/etc/init.d/$APP"
+SERVICE_CMD="service $APP"
+pidCMD="pgrep -u $USER $PROC"
+
+#echo "pidLookUp  cmd is:" "$pidCMD"
+#use eval to evaluate pipes as variables see url below
+#http://stackoverflow.com/questions/11596606/executing-a-variable-with-a-pipe-in-shell
+PID=`eval $pidCMD`
+NOW=`date +"%m-%d-%Y-%H-%M-%S"`
+# ############# END COPY FROM SNIPPETS SERVICE LOGGING
+
+STAGETIME=`stat -c %Y /opt/stage/$APP/lib/REPLACE_BASIC_NAME*`
+APPTIME=`stat -c %Y /opt/$APP/lib/REPLACE_BASIC_NAME*`
+STAGEDIR="/opt/stage/$APP"
+ROLLBACKDIR="$APP.rollback"
+
+# ############## BEGIN GENERIC DIST DIFFERENCES
 #kvp list delimitted by commas example "localhost:start,google.com:start-google,192.168.0.10:starter"
 machineHostToStartList="REPLACE_HOSTNAME_TO_START"
 machines=(${machineHostToStartList//,/ })
@@ -40,12 +59,7 @@ do
     #echo 'Key -'$KEY': Value - '$VALUE
     roleMap[$KEY]=$VALUE
 done
-
-#logging echos to /opt/REPLACE_MODULE_NAME/init-d.log
-function echo {
-  #log  & echo at the same time
-  /bin/echo `date` $* | tee -a /opt/REPLACE_MODULE_NAME/init-d.log
-}
+# ############## END GENERIC DIST DIFFERENCES
 
 fail_if_proc_is_running(){
         if [ ! -z "$PID" ];  then
