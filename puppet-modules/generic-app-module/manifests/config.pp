@@ -30,6 +30,7 @@ class REPLACE_MODULE_NAME::config {
         require => File["/opt/REPLACE_MODULE_NAME"]
     }
     file { "/etc/init.d/REPLACE_MODULE_NAME":
+        require => Class["override_functions"],
         ensure => present,
         owner  => 'root',
         group => 'root',
