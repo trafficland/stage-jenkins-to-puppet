@@ -1,15 +1,19 @@
 class REPLACE_MODULE_NAME::config {
+    Package {
+        require => Class["REPLACE_USER_NAME_user"]
+    }
     file { "/opt/REPLACE_MODULE_NAME":
         ensure => directory,
-        owner => 'root',
-        group => 'root',
+        owner => 'REPLACE_USER_NAME',
+        group => 'REPLACE_USER_NAME',
         mode => 0755,
+        recurse => true
     }
     file { "/opt/REPLACE_MODULE_NAME/start":
         ensure => file,
-        owner => 'root',
-        group => 'root',
-        mode => 0755,
+        owner => 'REPLACE_USER_NAME',
+        group => 'REPLACE_USER_NAME',
+        mode => 0755
     }
     file { "/opt/stage/REPLACE_MODULE_NAME":
         require => Class["stage"],
@@ -24,12 +28,13 @@ class REPLACE_MODULE_NAME::config {
     }
 
     file { "/opt/REPLACE_MODULE_NAME/RUNNING_PID":
-        owner => 'root',
-        group => 'root',
+        owner => 'REPLACE_USER_NAME',
+        group => 'REPLACE_USER_NAME',
         mode  => 0644,
         require => File["/opt/REPLACE_MODULE_NAME"]
     }
     file { "/etc/init.d/REPLACE_MODULE_NAME":
+        require => Class["override_functions"],
         ensure => present,
         owner  => 'root',
         group => 'root',
